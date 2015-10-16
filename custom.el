@@ -22,7 +22,11 @@
  '(package-archives
    (quote
     (("gnu" . "http://elpa.gnu.org/packages/")
-     ("melpa" . "http://melpa.org/packages/")))))
+     ("melpa" . "https://melpa.org/packages/")
+     ("org" . "http://orgmode.org/elpa/"))))
+ '(package-selected-packages
+   (quote
+    (multiple-cursors monokai-theme s php-mode magit json-mode js2-mode imenu+ dash coffee-mode bubbleberry-theme 2048-game))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

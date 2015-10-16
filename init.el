@@ -1,15 +1,9 @@
 (require 'dash)
 (require 's)
-
-;; require ido
-(require 'ido)
-(ido-mode t)
-
-;; require magit
 (require 'magit)
+(require 'ido)
 
-;; Startup messages
-
+(ido-mode t)
 (setq inhibit-startup-message t)
 (setq inhibit-splash-screen t)
 
@@ -64,14 +58,16 @@
           (lambda ()
             (push '("<=" . ?≤) prettify-symbols-alist)))
 
-(-each
-   (-map
-      (lambda (item)
-      (format "~/.emacs.d/elpa/%s" item))
-   (-filter
-      (lambda (item) (s-contains? "theme" item))
-      (directory-files "~/.emacs.d/elpa/")))
-   (lambda (item)
-      (add-to-list 'custom-theme-load-path item)))
+(load-theme 'monokai t)
+
+;; (-each
+;;    (-map
+;;       (lambda (item)
+;;       (format "~/.emacs.d/elpa/%s" item))
+;;    (-filter
+;;       (lambda (item) (s-contains? "theme" item))
+;;       (directory-files "~/.emacs.d/elpa/")))
+;;    (lambda (item)
+;;       (add-to-list 'custom-theme-load-path item)))
 
 (message ".emacs loaded successfully.")
