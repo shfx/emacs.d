@@ -1,25 +1,22 @@
 (package-initialize)
 
+(defvar my-emacs-dir "~/.emacs.d")
+
 (eval-when-compile
   (require 'use-package))
 
-(setq emacsdir "~/.emacs.d"
-      exec-path (append '("/usr/local/bin") exec-path)
-      custom-file (concat emacsdir "/custom.el"))
+(setq exec-path (append '("/usr/local/bin") exec-path)
+      custom-file (concat my-emacs-dir "/custom.el"))
 
 (load custom-file)
 
 (set-frame-font "Meslo LG M DZ for Powerline")
 
-(use-package magit)
+(use-package magit
+  :config
+  (global-set-key (kbd "C-x g") 'magit-status))
 
-(use-package
- ido
- :init
- (ido-mode t))
-
-(use-package
- js2-mode
+(use-package js2-mode
  :mode "\\.js"
  :interpreter "js"
  :config
@@ -33,18 +30,49 @@
   (setq web-mode-css-indent-offset 2)
   (setq web-mode-code-indent-offset 2))
 
-(use-package
-  flycheck
+(use-package multiple-cursors
+  :config
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+(use-package helm
+  :init
+  (progn
+    (helm-mode 1)))
+
+(use-package git-gutter
+  :config
+  (global-git-gutter-mode +1))
+
+(use-package markdown-mode
+  :mode "\\.md")
+
+(use-package projectile
+  :init
+  (projectile-global-mode)
+  :config
+  (setq projectile-switch-project-action 'neotree-projectile-action))
+
+(use-package neotree
+  :init
+  (progn
+    (setq-default neo-smart-open t)
+    (setq-default neo-dont-be-alone t))
+  :config
+  (global-set-key [f8] 'neotree-toggle))
+
+(use-package flycheck
   :init
   (add-hook 'after-init-hook 'global-flycheck-mode)
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq-default flycheck-disabled-checkers
                 (append flycheck-disabled-checkers
-                        '(javascript-jshint)))
-  (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(json-jsonlist))))
+                        '(javascript-jshint
+                          emacs-lisp-checkdoc
+                          json-jsonlist))))
 
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
@@ -57,18 +85,16 @@
       ring-bell-function 'ignore
       transient-mark-mode t
       show-paren-mode 1
-      delete-key-deletes-forward t
       mouse-yank-at-point t
       make-backup-files nil
       auto-save-default nil)
 
-;; Coding
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 
-(load (concat emacsdir "/functions.el"))
-(load (concat emacsdir "/keys.el"))
+(load (concat my-emacs-dir "/functions.el"))
+(load (concat my-emacs-dir "/keys.el"))
 
 (tool-bar-mode 0)
 (menu-bar-mode 0)

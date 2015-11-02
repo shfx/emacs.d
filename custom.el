@@ -7,6 +7,7 @@
    (quote
     ("fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))
  '(js-indent-level 2)
+ '(js2-bounce-indent-p nil)
  '(js3-allow-keywords-as-property-names nil)
  '(js3-auto-indent-p t)
  '(js3-consistent-level-indent-inner-bracket t)
@@ -27,7 +28,7 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme s php-mode magit json-mode js2-mode imenu+ dash coffee-mode bubbleberry-theme 2048-game))))
+    (helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
