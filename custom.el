@@ -28,7 +28,30 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game))))
+    (git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
+ '(popwin:special-display-config
+   (quote
+    (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)
+     ("*Miniedit Help*" :noselect t)
+     (help-mode)
+     (completion-list-mode :noselect t)
+     (compilation-mode :noselect t)
+     (grep-mode :noselect t)
+     (occur-mode :noselect t)
+     ("*Pp Macroexpand Output*" :noselect t)
+     ("*Shell Command Output*")
+     ("*vc-diff*")
+     ("*vc-change-log*")
+     (" *undo-tree*" :width 60 :position right)
+     ("^\\*anything.*\\*$" :regexp t)
+     ("*slime-apropos*")
+     ("*slime-macroexpansion*")
+     ("*slime-description*")
+     ("*slime-compilation*" :noselect t)
+     ("*slime-xref*")
+     (sldb-mode :stick t)
+     (slime-repl-mode)
+     (slime-connection-list-mode)))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

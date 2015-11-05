@@ -17,13 +17,12 @@
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (use-package js2-mode
- :mode "\\.js"
- :interpreter "js"
- :config
- (setq js-indent-level 2))
+  :mode "\\.js"
+  :interpreter "js"
+  :config
+  (setq js-indent-level 2))
 
-(use-package
-  web-mode
+(use-package web-mode
   :mode "\\.html"
   :config
   (setq web-mode-markup-indent-offset 2)
@@ -31,37 +30,29 @@
   (setq web-mode-code-indent-offset 2))
 
 (use-package multiple-cursors
-  :config
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+  :bind
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this))
 
 (use-package helm
   :init
-  (progn
-    (helm-mode 1)))
-
-(use-package git-gutter
+  (helm-mode 1)
   :config
-  (global-git-gutter-mode +1))
+  (setq helm-split-window-preferred-function 'ignore)
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+  (define-key helm-map (kbd "C-a") 'helm-select-action))
+
+(use-package popwin
+  :config
+  (popwin-mode 1)
+  (push '("^\\*helm.*\\*$" :height 0.3 :regexp t :position bottom) popwin:special-display-config))
 
 (use-package markdown-mode
   :mode "\\.md")
 
 (use-package projectile
   :init
-  (projectile-global-mode)
-  :config
-  (setq projectile-switch-project-action 'neotree-projectile-action))
-
-(use-package neotree
-  :init
-  (progn
-    (setq-default neo-smart-open t)
-    (setq-default neo-dont-be-alone t))
-  :config
-  (global-set-key [f8] 'neotree-toggle))
+  (projectile-global-mode))
 
 (use-package flycheck
   :init
@@ -80,7 +71,6 @@
 (setq inhibit-startup-message t 
       inhibit-splash-screen t
       pop-up-frames nil
-      ;; bell
       visible-bell 'top-bottom
       ring-bell-function 'ignore
       transient-mark-mode t
@@ -116,10 +106,6 @@
 (setq-default c-basic-offset 2)
 (setq-default tab-width 2)
 (fset 'yes-or-no-p 'y-or-n-p)
-
-(add-hook 'emacs-lisp-mode-hook
-          (lambda ()
-            (push '("<=" . ?≤) prettify-symbols-alist)))
 
 (load-theme 'monokai t)
 

@@ -2,5 +2,6 @@ auto-save-list
 url
 *~
 eshell
-ido.last
 /elpa/
+/recentf
+*.eld
