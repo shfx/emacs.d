@@ -45,7 +45,10 @@
 (use-package popwin
   :config
   (popwin-mode 1)
-  (push '("^\\*helm.*\\*$" :height 0.3 :regexp t :position bottom) popwin:special-display-config))
+  (push '("^\\*helm.*\\*$" :height 0.3 :regexp t :position bottom) popwin:special-display-config)
+  (push '("*magit-commit*" :noselect t :height 40 :width 80 :stick t) popwin:special-display-config)
+  (push '("*magit-diff*" :noselect t :height 40 :width 80) popwin:special-display-config)
+  (push '("*magit-edit-log*" :noselect t :height 15 :width 80) popwin:special-display-config))
 
 (use-package markdown-mode
   :mode "\\.md")
@@ -110,3 +113,5 @@
 (load-theme 'monokai t)
 
 (message ".emacs loaded successfully.")
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)

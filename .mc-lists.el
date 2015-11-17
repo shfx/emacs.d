@@ -3,11 +3,20 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        dabbrev-expand
+        electric-newline-and-maybe-indent
+        forward-sexp
+        indent-for-tab-command
         kill-region
+        nxml-electric-slash
+        upcase-region
         ))
 
 (setq mc/cmds-to-run-once
       '(
+        completion-at-point
+        electric-pair-delete-pair
+        find-file
         mouse-set-region
         previous-buffer
         ))
