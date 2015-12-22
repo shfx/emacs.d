@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        comment-line
         dabbrev-expand
         electric-newline-and-maybe-indent
         forward-sexp
@@ -17,6 +18,10 @@
         completion-at-point
         electric-pair-delete-pair
         find-file
+        js2-mode-show-node
+        mouse-drag-mode-line
         mouse-set-region
+        next-buffer
         previous-buffer
+        query-replace
         ))

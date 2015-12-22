@@ -12,9 +12,49 @@
 
 (set-frame-font "Meslo LG M DZ for Powerline")
 
+(use-package yasnippet)
+
+(use-package tern
+  :init
+  (add-hook 'js-mode-hook 'tern-mode))
+
 (use-package magit
   :config
   (global-set-key (kbd "C-x g") 'magit-status))
+
+(use-package abbrev
+  :diminish abbrev-mode
+  :config
+  (if (file-exists-p abbrev-file-name)
+      (quietly-read-abbrev-file)))
+
+(use-package company-tern)
+(use-package company-jedi)
+
+(use-package company
+  :defer t
+  :bind
+  ("C-." . company-complete)
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (setq company-idle-delay 0.1
+        company-tooltip-limit 5
+        company-minimum-prefix-length 1
+        company-tooltip-flip-when-above t)
+
+  (add-hook 'js-mode-hook
+            (lambda ()
+              (set (make-local-variable 'company-backends)
+                   '((company-tern company-keywords company-yasnippet)))))
+
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (set (make-local-variable 'company-backends)
+                   '((company-jedi company-keywords company-yasnippet))))))
+
+;; (use-package yaml-mode
+;;   :mode "\\.js")
 
 (use-package js2-mode
   :mode "\\.js"
@@ -24,6 +64,7 @@
 
 (use-package web-mode
   :mode "\\.html"
+  :interpreter "html"
   :config
   (setq web-mode-markup-indent-offset 2)
   (setq web-mode-css-indent-offset 2)
@@ -33,6 +74,10 @@
   :bind
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this))
+
+(use-package editorconfig
+  :init
+  (editorconfig-mode 1))
 
 (use-package helm
   :init
@@ -45,9 +90,9 @@
 (use-package popwin
   :config
   (popwin-mode 1)
-  (push '("^\\*helm.*\\*$" :height 0.3 :regexp t :position bottom) popwin:special-display-config)
-  (push '("*magit-commit*" :noselect t :height 40 :width 80 :stick t) popwin:special-display-config)
-  (push '("*magit-diff*" :noselect t :height 40 :width 80) popwin:special-display-config)
+  (push '("^\\*helm.*\\*$"   :height 0.3 :regexp t :position bottom) popwin:special-display-config)
+  (push '("*magit-commit*"   :noselect t :height 40 :width 80 :stick t) popwin:special-display-config)
+  (push '("*magit-diff*"     :noselect t :height 40 :width 80) popwin:special-display-config)
   (push '("*magit-edit-log*" :noselect t :height 15 :width 80) popwin:special-display-config))
 
 (use-package markdown-mode
@@ -71,7 +116,34 @@
 (when (memq window-system '(mac ns))
   (exec-path-from-shell-initialize))
 
-(setq inhibit-startup-message t 
+(when (window-system)
+  (set-frame-font "Fira Code:weight=light" t))
+
+(let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
+               (35 . ".\\(?:[(?[_{]\\)")
+               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+               (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
+               (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
+               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
+               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+               (58 . ".\\(?:[:=]\\)")
+               (59 . ".\\(?:;\\)")
+               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
+               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+               (63 . ".\\(?:[:=?]\\)")
+               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+               (94 . ".\\(?:=\\)")
+               (123 . ".\\(?:-\\)")
+               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+               (126 . ".\\(?:[=@~-]\\)"))))
+
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+
+(setq inhibit-startup-message t
       inhibit-splash-screen t
       pop-up-frames nil
       visible-bell 'top-bottom
@@ -79,6 +151,9 @@
       transient-mark-mode t
       show-paren-mode 1
       mouse-yank-at-point t
+      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-follow-mouse 't
       make-backup-files nil
       auto-save-default nil)
 
@@ -88,6 +163,8 @@
 
 (load (concat my-emacs-dir "/functions.el"))
 (load (concat my-emacs-dir "/keys.el"))
+
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (tool-bar-mode 0)
 (menu-bar-mode 0)

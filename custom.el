@@ -3,6 +3,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(company-backends
+   (quote
+    (company-jedi company-tern company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf
+                  (company-gtags company-etags company-keywords)
+                  company-oddmuse company-files)))
  '(custom-safe-themes
    (quote
     ("fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))
@@ -28,7 +33,7 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
+    (editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
  '(popwin:special-display-config
    (quote
     (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)
@@ -51,7 +56,8 @@
      ("*slime-xref*")
      (sldb-mode :stick t)
      (slime-repl-mode)
-     (slime-connection-list-mode)))))
+     (slime-connection-list-mode))))
+ '(show-trailing-whitespace t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
