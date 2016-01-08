@@ -5,3 +5,6 @@ eshell
 /elpa/
 /recentf
 *.eld
+.python-environments/
+tramp
+*.cache

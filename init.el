@@ -1,9 +1,9 @@
+(tool-bar-mode 0)
+(menu-bar-mode 0)
+
 (package-initialize)
 
 (defvar my-emacs-dir "~/.emacs.d")
-
-(eval-when-compile
-  (require 'use-package))
 
 (setq exec-path (append '("/usr/local/bin") exec-path)
       custom-file (concat my-emacs-dir "/custom.el"))
@@ -12,7 +12,30 @@
 
 (set-frame-font "Meslo LG M DZ for Powerline")
 
-(use-package yasnippet)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+(load-theme 'monokai t)
+
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
+(setq inhibit-startup-message t
+      inhibit-splash-screen t
+      pop-up-frames nil
+      visible-bell 'top-bottom
+      ring-bell-function 'ignore
+      transient-mark-mode t
+      show-paren-mode 1
+      mouse-yank-at-point t
+      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-follow-mouse 't
+      make-backup-files nil
+      auto-save-default nil)
+
+(eval-when-compile
+  (require 'use-package))
 
 (use-package tern
   :init
@@ -28,33 +51,27 @@
   (if (file-exists-p abbrev-file-name)
       (quietly-read-abbrev-file)))
 
-(use-package company-tern)
-(use-package company-jedi)
+(use-package yasnippet
+  :config
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook 'yas-minor-mode))
 
 (use-package company
-  :defer t
-  :bind
-  ("C-." . company-complete)
-  :init
-  (add-hook 'after-init-hook 'global-company-mode)
+  :init (global-company-mode)
+  :bind ("C-." . company-complete)
   :config
+  (use-package company-tern)
+  (use-package company-jedi)
   (setq company-idle-delay 0.1
         company-tooltip-limit 5
         company-minimum-prefix-length 1
         company-tooltip-flip-when-above t)
+  (push '(company-yasnippet
+          :with company-jedi
+          :with company-tern) company-backends))
 
-  (add-hook 'js-mode-hook
-            (lambda ()
-              (set (make-local-variable 'company-backends)
-                   '((company-tern company-keywords company-yasnippet)))))
-
-  (add-hook 'python-mode-hook
-            (lambda ()
-              (set (make-local-variable 'company-backends)
-                   '((company-jedi company-keywords company-yasnippet))))))
-
-;; (use-package yaml-mode
-;;   :mode "\\.js")
+(use-package yaml-mode
+  :mode "\\.yaml")
 
 (use-package js2-mode
   :mode "\\.js"
@@ -113,61 +130,11 @@
                           emacs-lisp-checkdoc
                           json-jsonlist))))
 
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
-
-(when (window-system)
-  (set-frame-font "Fira Code:weight=light" t))
-
-(let ((alist '((33 . ".\\(?:\\(?:==\\)\\|[!=]\\)")
-               (35 . ".\\(?:[(?[_{]\\)")
-               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-               (42 . ".\\(?:\\(?:\\*\\*\\)\\|[*/]\\)")
-               (43 . ".\\(?:\\(?:\\+\\+\\)\\|\\+\\)")
-               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=]\\)")
-               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-               (58 . ".\\(?:[:=]\\)")
-               (59 . ".\\(?:;\\)")
-               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[/<=>|-]\\)")
-               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-               (63 . ".\\(?:[:=?]\\)")
-               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-               (94 . ".\\(?:=\\)")
-               (123 . ".\\(?:-\\)")
-               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-               (126 . ".\\(?:[=@~-]\\)"))))
-
-  (dolist (char-regexp alist)
-    (set-char-table-range composition-function-table (car char-regexp)
-                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
-
-(setq inhibit-startup-message t
-      inhibit-splash-screen t
-      pop-up-frames nil
-      visible-bell 'top-bottom
-      ring-bell-function 'ignore
-      transient-mark-mode t
-      show-paren-mode 1
-      mouse-yank-at-point t
-      mouse-wheel-scroll-amount '(1 ((shift) . 1))
-      mouse-wheel-progressive-speed nil
-      mouse-wheel-follow-mouse 't
-      make-backup-files nil
-      auto-save-default nil)
-
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-
 (load (concat my-emacs-dir "/functions.el"))
 (load (concat my-emacs-dir "/keys.el"))
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(tool-bar-mode 0)
-(menu-bar-mode 0)
 
 (setq initial-frame-alist
       '((menu-bar-lines . 0)
@@ -179,15 +146,14 @@
 (show-paren-mode 1)
 (global-linum-mode 1)
 (scroll-bar-mode 0)
-(line-number-mode t)
-(column-number-mode t)
+(line-number-mode 0)
+(column-number-mode 0)
 
 (setq-default indent-tabs-mode nil)
 (setq-default c-basic-offset 2)
 (setq-default tab-width 2)
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(load-theme 'monokai t)
 
 (message ".emacs loaded successfully.")
 (put 'downcase-region 'disabled nil)

@@ -3,11 +3,6 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-backends
-   (quote
-    (company-jedi company-tern company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf
-                  (company-gtags company-etags company-keywords)
-                  company-oddmuse company-files)))
  '(custom-safe-themes
    (quote
     ("fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))

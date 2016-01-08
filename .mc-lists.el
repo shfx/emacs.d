@@ -4,13 +4,16 @@
 (setq mc/cmds-to-run-for-all
       '(
         comment-line
+        company-complete
         dabbrev-expand
         electric-newline-and-maybe-indent
         forward-sexp
         indent-for-tab-command
         kill-region
         nxml-electric-slash
+        tern-find-definition
         upcase-region
+        yas-expand
         ))
 
 (setq mc/cmds-to-run-once
