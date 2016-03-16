@@ -28,7 +28,7 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
+    (go-mode anzu smooth-scrolling eyebrowse spaceline editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
  '(popwin:special-display-config
    (quote
     (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)

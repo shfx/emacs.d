@@ -8,6 +8,7 @@
         dabbrev-expand
         electric-newline-and-maybe-indent
         forward-sexp
+        helm-M-x
         indent-for-tab-command
         kill-region
         nxml-electric-slash
@@ -18,13 +19,18 @@
 
 (setq mc/cmds-to-run-once
       '(
+        backward-kill-sentence
         completion-at-point
         electric-pair-delete-pair
         find-file
+        flycheck-error-list-set-filter
         js2-mode-show-node
+        mouse-buffer-menu
         mouse-drag-mode-line
+        mouse-drag-vertical-line
         mouse-set-region
         next-buffer
         previous-buffer
+        push-button
         query-replace
         ))

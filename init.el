@@ -3,22 +3,32 @@
 
 (package-initialize)
 
+(when (memq window-system '(mac ns))
+  (exec-path-from-shell-initialize))
+
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+
+(global-hl-line-mode 0)
+(set-window-margins nil 2 2)
+(electric-pair-mode 1)
+(show-paren-mode 1)
+(global-linum-mode 1)
+(scroll-bar-mode 0)
+(line-number-mode 0)
+(column-number-mode 0)
+
 (defvar my-emacs-dir "~/.emacs.d")
 
 (setq exec-path (append '("/usr/local/bin") exec-path)
       custom-file (concat my-emacs-dir "/custom.el"))
 
-(load custom-file)
-
 (set-frame-font "Meslo LG M DZ for Powerline")
 
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-(load-theme 'monokai t)
+(load custom-file)
 
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
+(load-theme 'monokai t)
 
 (setq inhibit-startup-message t
       inhibit-splash-screen t
@@ -36,6 +46,24 @@
 
 (eval-when-compile
   (require 'use-package))
+
+(use-package eyebrowse-mode
+  :config
+  (eyebrowse-mode t))
+
+(use-package anzu
+  :config
+  (global-anzu-mode +1)
+  (global-set-key (kbd "M-%") 'anzu-query-replace)
+  (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp))
+
+(use-package smooth-scrolling)
+
+
+(use-package spaceline-config
+  :config
+  (spaceline-spacemacs-theme))
+
 
 (use-package tern
   :init
@@ -73,6 +101,15 @@
 (use-package yaml-mode
   :mode "\\.yaml")
 
+(use-package go-mode
+  :mode "\\.go"
+  :interpreter "go"
+  :config
+  (require 'go-mode-autoloads)
+  (add-hook 'go-mode-hook (lambda ()
+    (add-hook 'before-save-hook 'gofmt-before-save)
+    (local-set-key (kbd "M-.") 'godef-jump))))
+
 (use-package js2-mode
   :mode "\\.js"
   :interpreter "js"
@@ -101,8 +138,11 @@
   (helm-mode 1)
   :config
   (setq helm-split-window-preferred-function 'ignore)
+  (global-set-key (kbd "M-x") 'helm-M-x)
   (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
-  (define-key helm-map (kbd "C-a") 'helm-select-action))
+  (define-key helm-map (kbd "C-a") 'helm-select-action)
+  (eval-after-load 'flycheck
+    '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
 
 (use-package popwin
   :config
@@ -135,19 +175,9 @@
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-
 (setq initial-frame-alist
       '((menu-bar-lines . 0)
         (tool-bar-lines . 0)))
-
-(global-hl-line-mode 0)
-(set-window-margins nil 2 2)
-(electric-pair-mode 1)
-(show-paren-mode 1)
-(global-linum-mode 1)
-(scroll-bar-mode 0)
-(line-number-mode 0)
-(column-number-mode 0)
 
 (setq-default indent-tabs-mode nil)
 (setq-default c-basic-offset 2)
@@ -158,3 +188,4 @@
 (message ".emacs loaded successfully.")
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)
