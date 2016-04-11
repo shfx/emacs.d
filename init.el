@@ -110,6 +110,13 @@
     (add-hook 'before-save-hook 'gofmt-before-save)
     (local-set-key (kbd "M-.") 'godef-jump))))
 
+(use-package json-mode
+  :mode "\\.json"
+  :interpreter "js"
+  :config
+  (setq js-indent-level 2))
+
+
 (use-package js2-mode
   :mode "\\.js"
   :interpreter "js"
