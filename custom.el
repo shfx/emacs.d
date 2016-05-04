@@ -3,9 +3,21 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(company-backends
+   (quote
+    (company-bbdb company-nxml company-css company-eclim company-semantic company-clang company-xcode company-cmake company-capf company-files
+                  (company-dabbrev-code company-gtags company-etags company-keywords)
+                  company-oddmuse company-dabbrev)))
+ '(company-transformers (quote (company-sort-by-backend-importance)))
  '(custom-safe-themes
    (quote
     ("fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))
+ '(exec-path-from-shell-arguments (quote ("-l")))
+ '(initial-frame-alist
+   (quote
+    ((menu-bar-lines . 0)
+     (tool-bar-lines . 0)
+     (fullscreen . maximized))))
  '(js-indent-level 2)
  '(js2-bounce-indent-p nil)
  '(js3-allow-keywords-as-property-names nil)
@@ -28,7 +40,7 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (go-mode anzu smooth-scrolling eyebrowse spaceline editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
+    (flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu smooth-scrolling eyebrowse spaceline editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
  '(popwin:special-display-config
    (quote
     (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)

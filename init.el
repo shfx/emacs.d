@@ -4,7 +4,12 @@
 (package-initialize)
 
 (when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize))
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "GOPATH"))
+
+(when (eq system-type 'darwin)
+  (require 'ls-lisp)
+  (setq ls-lisp-use-insert-directory-program nil))
 
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
@@ -21,8 +26,7 @@
 
 (defvar my-emacs-dir "~/.emacs.d")
 
-(setq exec-path (append '("/usr/local/bin") exec-path)
-      custom-file (concat my-emacs-dir "/custom.el"))
+(setq custom-file (concat my-emacs-dir "/custom.el"))
 
 (set-frame-font "Meslo LG M DZ for Powerline")
 
@@ -41,6 +45,10 @@
       mouse-wheel-scroll-amount '(1 ((shift) . 1))
       mouse-wheel-progressive-speed nil
       mouse-wheel-follow-mouse 't
+      scroll-margin 1
+      scroll-step 1
+      scroll-conservatively 10000
+      scroll-preserve-screen-position 1
       make-backup-files nil
       auto-save-default nil)
 
@@ -52,22 +60,25 @@
   (eyebrowse-mode t))
 
 (use-package anzu
-  :config
+  :init
   (global-anzu-mode +1)
+  :config
   (global-set-key (kbd "M-%") 'anzu-query-replace)
   (global-set-key (kbd "C-M-%") 'anzu-query-replace-regexp))
 
-(use-package smooth-scrolling)
-
+(use-package smooth-scrolling
+  :init
+  (smooth-scrolling-mode 1))
 
 (use-package spaceline-config
   :config
   (spaceline-spacemacs-theme))
 
+(use-package tern)
 
-(use-package tern
-  :init
-  (add-hook 'js-mode-hook 'tern-mode))
+(use-package powerline
+  :config
+  (powerline-default-theme))
 
 (use-package magit
   :config
@@ -92,11 +103,9 @@
   (use-package company-jedi)
   (setq company-idle-delay 0.1
         company-tooltip-limit 5
-        company-minimum-prefix-length 1
-        company-tooltip-flip-when-above t)
-  (push '(company-yasnippet
-          :with company-jedi
-          :with company-tern) company-backends))
+        company-minimum-prefix-length 0
+        company-tooltip-flip-when-above t
+        company-backends '(company-yasnippet)))
 
 (use-package yaml-mode
   :mode "\\.yaml")
@@ -106,9 +115,12 @@
   :interpreter "go"
   :config
   (require 'go-mode-autoloads)
-  (add-hook 'go-mode-hook (lambda ()
-    (add-hook 'before-save-hook 'gofmt-before-save)
-    (local-set-key (kbd "M-.") 'godef-jump))))
+  (add-hook 'go-mode-hook
+            (lambda ()
+              (add-hook 'before-save-hook 'gofmt-before-save)
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-go :width company-yasnippet :sorted))
+              (local-set-key (kbd "M-.") 'godef-jump))))
 
 (use-package json-mode
   :mode "\\.json"
@@ -121,7 +133,23 @@
   :mode "\\.js"
   :interpreter "js"
   :config
-  (setq js-indent-level 2))
+  (setq js-indent-level 2)
+  (add-hook 'js2-mode-hook
+            (lambda ()
+              (tern-mode t)
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-tern :width company-yasnippet :sorted))
+              )))
+
+(use-package python-mode
+  :mode "\\.py"
+  :interpreter "py"
+  :config
+  (add-hook 'python-mode-hook
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-jedi :width company-yasnippet :sorted))
+              )))
 
 (use-package web-mode
   :mode "\\.html"
@@ -148,6 +176,7 @@
   (global-set-key (kbd "M-x") 'helm-M-x)
   (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
   (define-key helm-map (kbd "C-a") 'helm-select-action)
+  (helm-projectile-on)
   (eval-after-load 'flycheck
     '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
 
@@ -170,6 +199,7 @@
   :init
   (add-hook 'after-init-hook 'global-flycheck-mode)
   :config
+
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq-default flycheck-disabled-checkers
                 (append flycheck-disabled-checkers

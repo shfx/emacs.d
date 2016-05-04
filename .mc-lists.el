@@ -3,6 +3,7 @@
 
 (setq mc/cmds-to-run-for-all
       '(
+        anzu-query-replace
         comment-line
         company-complete
         dabbrev-expand
@@ -22,12 +23,14 @@
         backward-kill-sentence
         completion-at-point
         electric-pair-delete-pair
+        eval-print-last-sexp
         find-file
         flycheck-error-list-set-filter
         js2-mode-show-node
         mouse-buffer-menu
         mouse-drag-mode-line
         mouse-drag-vertical-line
+        mouse-select-window
         mouse-set-region
         next-buffer
         previous-buffer
