@@ -9,6 +9,7 @@
                   (company-dabbrev-code company-gtags company-etags company-keywords)
                   company-oddmuse company-dabbrev)))
  '(company-transformers (quote (company-sort-by-backend-importance)))
+ '(css-indent-offset 2)
  '(custom-safe-themes
    (quote
     ("fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))
@@ -19,7 +20,11 @@
      (tool-bar-lines . 0)
      (fullscreen . maximized))))
  '(js-indent-level 2)
+ '(js-switch-indent-offset 2)
  '(js2-bounce-indent-p nil)
+ '(js2-indent-switch-body t)
+ '(js2-mode-show-parse-errors nil)
+ '(js2-mode-show-strict-warnings nil)
  '(js3-allow-keywords-as-property-names nil)
  '(js3-auto-indent-p t)
  '(js3-consistent-level-indent-inner-bracket t)
@@ -40,7 +45,7 @@
      ("org" . "http://orgmode.org/elpa/"))))
  '(package-selected-packages
    (quote
-    (flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu smooth-scrolling eyebrowse spaceline editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
+    (scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu smooth-scrolling eyebrowse spaceline editorconfig yasnippet company-web company-jedi company-tern yaml-mode company afternoon-theme pdf-tools helm-package async git-gutter-fringe popwin helm-ack helm-chrome helm-flycheck helm-gitignore helm-google helm-projectile helm git-gutter neotree flx-ido projectile tern markdown-mode exec-path-from-shell flycheck web-mode use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ coffee-mode bubbleberry-theme 2048-game)))
  '(popwin:special-display-config
    (quote
     (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)

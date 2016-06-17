@@ -15,6 +15,7 @@
         nxml-electric-slash
         tern-find-definition
         upcase-region
+        yaml-electric-backspace
         yas-expand
         ))
 

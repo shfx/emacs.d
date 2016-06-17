@@ -103,7 +103,7 @@
   (use-package company-jedi)
   (setq company-idle-delay 0.1
         company-tooltip-limit 5
-        company-minimum-prefix-length 0
+        company-minimum-prefix-length 1
         company-tooltip-flip-when-above t
         company-backends '(company-yasnippet)))
 
@@ -124,14 +124,13 @@
 
 (use-package json-mode
   :mode "\\.json"
-  :interpreter "js"
+  :interpreter "json"
   :config
   (setq js-indent-level 2))
 
 
 (use-package js2-mode
-  :mode "\\.js"
-  :interpreter "js"
+  :mode ("\\.js\\'" . js2-jsx-mode)
   :config
   (setq js-indent-level 2)
   (add-hook 'js2-mode-hook
@@ -140,6 +139,12 @@
               (add-to-list (make-local-variable 'company-backends)
                            '(company-tern :width company-yasnippet :sorted))
               )))
+
+(use-package scss-mode
+  :ensure t
+  :mode "\\.scss"
+  :config
+  (add-hook 'scss-mode-hook 'flycheck-mode))
 
 (use-package python-mode
   :mode "\\.py"
