@@ -11,6 +11,7 @@
         forward-sexp
         helm-M-x
         indent-for-tab-command
+        isearch-repeat-forward
         kill-region
         nxml-electric-slash
         tern-find-definition
@@ -37,4 +38,5 @@
         previous-buffer
         push-button
         query-replace
+        web-mode-comment-indent-new-line
         ))

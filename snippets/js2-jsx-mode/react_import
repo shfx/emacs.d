@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: React Import
+# key: rim
+# --
+import React, { Component, PropTypes } from "react";
