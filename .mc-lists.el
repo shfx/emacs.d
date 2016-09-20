@@ -13,6 +13,7 @@
         indent-for-tab-command
         isearch-repeat-forward
         kill-region
+        markdown-exdent-or-delete
         nxml-electric-slash
         tern-find-definition
         upcase-region

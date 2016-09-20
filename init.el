@@ -18,6 +18,7 @@
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
+(set-default 'truncate-lines t)
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
@@ -32,17 +33,18 @@
 (column-number-mode 0)
 (global-linum-mode 0)
 
-(add-hook 'prog-mode-hook 'linum-mode)
+;; (add-hook 'prog-mode-hook 'linum-mode)
 
 (defvar my-emacs-dir "~/.emacs.d")
 
 (setq custom-file (concat my-emacs-dir "/custom.el"))
 
-(set-frame-font "Meslo LG M DZ for Powerline")
 (load custom-file)
 
 (defvar darkokai-mode-line-padding 1)
 (load-theme 'darkokai t)
+
+(set-frame-font "Fira Code")
 
 (setq mac-right-option-modifier nil
       inhibit-startup-message t
@@ -53,13 +55,13 @@
       transient-mark-mode t
       show-paren-mode 1
       mouse-yank-at-point t
-      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-scroll-amount '(2 ((shift) . 1))
       mouse-wheel-progressive-speed nil
       mouse-wheel-follow-mouse 't
       scroll-margin 1
-      scroll-step 1
-      scroll-conservatively 10000
-      scroll-preserve-screen-position 1
+      scroll-step 0
+      scroll-conservatively most-positive-fixnum
+      scroll-preserve-screen-position nil
       make-backup-files nil
       auto-save-default nil)
 
@@ -113,9 +115,9 @@
     (when (stringp vc-mode)
       (let ((gitlogo (replace-regexp-in-string "^ Git." "  " vc-mode)))
         (setq vc-mode gitlogo))))
-  (spaceline-compile)
 
   :config
+  (spaceline-compile)
   (spaceline-spacemacs-theme)
   (spaceline-helm-mode)
   (setq spaceline-minor-modes-p nil
@@ -184,7 +186,14 @@
   (defun pl/helm-alive-p ()
     (if (boundp 'helm-alive-p)
         (symbol-value 'helm-alive-p)))
-  (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p))
+  (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
+  (setq window-combination-resize t)
+  (when (require 'magit-mode nil 'noerror)
+    (setq magit-display-buffer-noselect t
+          magit-display-buffer-function (lambda (buffer)
+                                          (display-buffer buffer)
+                                          (pop-to-buffer buffer)))))
+
 (use-package yaml-mode
   :mode "\\.yaml")
 
