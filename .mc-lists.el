@@ -12,6 +12,7 @@
         helm-M-x
         indent-for-tab-command
         isearch-repeat-forward
+        js2-line-break
         kill-region
         markdown-exdent-or-delete
         nxml-electric-slash
@@ -30,6 +31,7 @@
         find-file
         flycheck-error-list-set-filter
         js2-mode-show-node
+        magit-status
         mouse-buffer-menu
         mouse-drag-mode-line
         mouse-drag-vertical-line

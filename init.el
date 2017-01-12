@@ -8,15 +8,24 @@
   (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
 (package-initialize)
 
-(when (memq window-system '(mac ns))
-  (exec-path-from-shell-initialize)
-  (exec-path-from-shell-copy-env "GOPATH"))
+(exec-path-from-shell-initialize)
+(exec-path-from-shell-copy-env "GOPATH")
 
 (when (eq system-type 'darwin)
   (setq ns-use-srgb-colorspace nil)
   (defvar ls-lisp-use-insert-directory-program)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
+
+(setq frame-title-format
+      '(:eval
+        (if buffer-file-name
+            (replace-regexp-in-string
+             "\\\\" "/"
+             (replace-regexp-in-string
+              (regexp-quote (getenv "HOME")) "~"
+              (convert-standard-filename buffer-file-name)))
+          (buffer-name))))
 
 (set-default 'truncate-lines t)
 (set-terminal-coding-system 'utf-8)
@@ -32,8 +41,6 @@
 (line-number-mode 0)
 (column-number-mode 0)
 (global-linum-mode 0)
-
-;; (add-hook 'prog-mode-hook 'linum-mode)
 
 (defvar my-emacs-dir "~/.emacs.d")
 
@@ -88,10 +95,9 @@
   :init
   (eyebrowse-mode t))
 
-;; (use-package context-coloring
-;;   :ensure t
-;;   :config
-;;   (tern-context-coloring-setup))
+(use-package move-text
+  :config
+  (move-text-default-bindings))
 
 (use-package fancy-battery
   :config
@@ -157,9 +163,9 @@
     :init
     (company-flx-mode +1))
 
-  (setq company-idle-delay 0.1
-        company-tooltip-limit 10
-        company-minimum-prefix-length 2
+  (setq company-idle-delay 0.3
+        company-tooltip-limit 15
+        company-minimum-prefix-length 1
         company-tooltip-flip-when-above t
         company-backends '()))
 
@@ -210,14 +216,14 @@
               (local-set-key (kbd "M-.") 'godef-jump))))
 
 (use-package json-mode
-  :mode "\\.json"
+  :mode "\\.json$"
   :interpreter "json"
   :config
   (setq js-indent-level 2))
 
 
 (use-package js2-mode
-  :mode ("\\.js" . js2-jsx-mode)
+  :mode ("\\.jsx?$" . js2-jsx-mode)
   :init
   (use-package company-tern)
   :config
@@ -246,9 +252,7 @@
 
 (use-package scss-mode
   :ensure t
-  :mode "\\.scss"
-  :config
-  (add-hook 'scss-mode-hook 'flycheck-mode))
+  :mode "\\.scss")
 
 (use-package python-mode
   :mode "\\.py"
@@ -319,7 +323,7 @@
 
 (use-package projectile
   :init
-  (projectile-global-mode))
+  (projectile-mode))
 
 (use-package diminish
   :config
@@ -330,19 +334,19 @@
   (diminish 'flycheck-mode)
   (diminish 'company-mode)
   (diminish 'golden-ratio-mode)
-  (diminish 'helm-mode))
+  (diminish 'helm-mode)
+  (diminish 'editorconfig-mode))
 
 (use-package flycheck
   :init
   (add-hook 'after-init-hook 'global-flycheck-mode)
   :config
-
-  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
   (setq-default flycheck-disabled-checkers
-                (append flycheck-disabled-checkers
-                        '(javascript-jshint
-                          emacs-lisp-checkdoc
-                          json-jsonlist))))
+                '(javascript-jscs
+                  javascript-jshint
+                  emacs-lisp-checkdoc
+                  json-jsonlist)))
 
 (load (concat my-emacs-dir "/keys.el"))
 
@@ -361,6 +365,49 @@
 (setq-default tab-width 2)
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; (require 'f)
+;; (require 'json)
+
+;; (defun my/parse-flow-context (ctx)
+;;   "Parse each context"
+;;   (cdr (assoc 'descr ctx)))
+
+;; (defun my/parse-flow-error (checker buffer)
+;;   "Parses earch error"
+;;   (lambda (err)
+;;     (let ((msg (assoc 'message err)))
+;;       (let ((info (cadr msg))
+;;             (message (mapcar #'my/parse-flow-context (cdr msg))))
+;;         (setf (nth 0 message) (propertize (concat (nth 0 message) ".") 'face '(:foreground "red")))
+;;         (flycheck-error-new
+;;          :line (cdr (assoc 'line info))
+;;          :column (cdr (assoc 'start info))
+;;          :level 'error
+;;          :message (mapconcat 'identity message "")
+;;          :filename (f-relative
+;;                     (cdr (assoc 'path info))
+;;                     (f-dirname (file-truename
+;;                                 (buffer-file-name))))
+;;          :buffer buffer
+;;          :checker checker)
+;;         ))))
+
+;; (defun my/parse-flow-errors (output checker buffer)
+;;   "Flycheck Error Parser  Checker "
+;;   (let ((json-array-type 'list))
+;;     (let ((o (json-read-from-string output)))
+;;       (mapcar (my/parse-flow-error checker buffer)
+;;               (cdr (assoc 'errors o)))
+;;       )))
+
+;; (flycheck-define-checker my/javascript-flow
+;;   "My Javascript Flowtype error checker"
+;;   :command ("flow" "--json" source-original)
+;;   :error-parser my/parse-flow-errors
+;;   :modes js2-jsx-mode
+;;   :next-checkers ((error . javascript-eslint)))
+
+;; (add-to-list 'flycheck-checkers 'my/javascript-flow)
 
 (message ".emacs loaded successfully.")
 (put 'downcase-region 'disabled nil)
