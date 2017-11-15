@@ -1,31 +1,10 @@
+;; initial setup
+
 (tool-bar-mode 0)
 (menu-bar-mode 0)
 
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/"))
-(when (< emacs-major-version 24)
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-(package-initialize)
-
-(exec-path-from-shell-initialize)
-(exec-path-from-shell-copy-env "GOPATH")
-
-(when (eq system-type 'darwin)
-  (setq ns-use-srgb-colorspace nil)
-  (defvar ls-lisp-use-insert-directory-program)
-  (require 'ls-lisp)
-  (setq ls-lisp-use-insert-directory-program nil))
-
-(setq frame-title-format
-      '(:eval
-        (if buffer-file-name
-            (replace-regexp-in-string
-             "\\\\" "/"
-             (replace-regexp-in-string
-              (regexp-quote (getenv "HOME")) "~"
-              (convert-standard-filename buffer-file-name)))
-          (buffer-name))))
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
 
 (set-default 'truncate-lines t)
 (set-terminal-coding-system 'utf-8)
@@ -41,17 +20,6 @@
 (line-number-mode 0)
 (column-number-mode 0)
 (global-linum-mode 0)
-
-(defvar my-emacs-dir "~/.emacs.d")
-
-(setq custom-file (concat my-emacs-dir "/custom.el"))
-
-(load custom-file)
-
-(defvar darkokai-mode-line-padding 1)
-(load-theme 'darkokai t)
-
-(set-frame-font "Fira Code")
 
 (setq mac-right-option-modifier nil
       inhibit-startup-message t
@@ -72,18 +40,63 @@
       make-backup-files nil
       auto-save-default nil)
 
-(defun toggle-maximize-buffer ()
-  (interactive)
-  (if (= 1 (length (window-list)))
-      (jump-to-register '_)
-    (progn
-      (window-configuration-to-register '_)
-      (delete-other-windows))))
+(defvar my-emacs-dir "~/.emacs.d")
 
-(global-set-key (kbd "<C-return>") 'toggle-maximize-buffer)
+(setq custom-file (concat my-emacs-dir "/custom.el"))
+(load custom-file)
 
+;; Seting up package system
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.org/packages/"))
+(when (< emacs-major-version 24)
+  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+(package-initialize)
+
+;; loading use-package
 (eval-when-compile
   (require 'use-package))
+
+(load-theme 'darkokai t)
+
+(when (eq system-type 'darwin)
+  (setq ns-use-srgb-colorspace t)
+  (defvar ls-lisp-use-insert-directory-program)
+  (require 'ls-lisp)
+  (setq ls-lisp-use-insert-directory-program nil))
+
+(setq frame-title-format
+      '(:eval
+        (if buffer-file-name
+            (replace-regexp-in-string
+             "\\\\" "/"
+             (replace-regexp-in-string
+              (regexp-quote (getenv "HOME")) "~"
+              (convert-standard-filename buffer-file-name)))
+          (buffer-name))))
+
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env "GOPATH"))
+
+(use-package auto-minor-mode
+  :ensure t)
+
+(use-package wolfram
+  :config
+  (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
+
+(use-package paradox
+  :config
+  (setq paradox-github-token "4d9de48594f18b99b8d3296ae7d6f39059cb69be"))
+
+(use-package string-inflection
+  :ensure t
+  :bind
+  ("C-c C-u" . string-inflection-all-cycle))
 
 (use-package dash-at-point
   :ensure t
@@ -124,22 +137,30 @@
 
   :config
   (spaceline-compile)
-  (spaceline-spacemacs-theme)
+  (spaceline-emacs-theme)
   (spaceline-helm-mode)
+  (spaceline-info-mode)
   (setq spaceline-minor-modes-p nil
         spaceline-separator-dir-left '(left . left)
         spaceline-separator-dir-right '(right . right)
+        spaceline-workspace-numbers-unicode t
+        spaceline-window-numbers-unicode t
         spaceline-highlight-face-func 'spaceline-highlight-face-default))
 
-
-
+;; adds colors to matching color names or hex colors
 (use-package rainbow-mode
   :config
   (add-hook 'prog-mode-hook 'rainbow-mode))
 
+;; magical git client
 (use-package magit
   :ensure t
+  :init
+  (use-package magit-gitflow
+    :config
+    (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
   :config
+  (setq magit-process-finish-apply-ansi-colors t)
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (use-package abbrev
@@ -159,9 +180,6 @@
   :bind
   ("C-." . company-complete)
   :config
-  (use-package company-flx
-    :init
-    (company-flx-mode +1))
 
   (setq company-idle-delay 0.3
         company-tooltip-limit 15
@@ -170,6 +188,7 @@
         company-backends '()))
 
 (use-package keyfreq
+  :ensure t
   :config
   (setq keyfreq-excluded-commands
         '(
@@ -186,6 +205,7 @@
   (keyfreq-autosave-mode 1))
 
 (use-package golden-ratio
+  :ensure t
   :init
   (golden-ratio-mode 1)
   :config
@@ -204,6 +224,7 @@
   :mode "\\.yaml")
 
 (use-package go-mode
+  :ensure t
   :mode "\\.go"
   :interpreter "go"
   :config
@@ -221,20 +242,6 @@
   :config
   (setq js-indent-level 2))
 
-
-(use-package js2-mode
-  :mode ("\\.jsx?$" . js2-jsx-mode)
-  :init
-  (use-package company-tern)
-  :config
-  (setq js-indent-level 2)
-  (add-hook 'js2-mode-hook
-            (lambda ()
-              (tern-mode t)
-              (add-to-list (make-local-variable 'company-backends)
-                           '(company-tern :width company-yasnippet :separate))
-              )))
-
 (use-package cask-mode
   :ensure t
   :mode "Cask")
@@ -247,8 +254,7 @@
             (lambda ()
               (elm-oracle-setup-completion)
               (add-to-list (make-local-variable 'company-backends)
-                           '(company-elm :width company-yasnippet :separate))
-              )))
+                           '(company-elm :width company-yasnippet :separate)))))
 
 (use-package scss-mode
   :ensure t
@@ -262,16 +268,39 @@
   (add-hook 'python-mode-hook
             (lambda ()
               (add-to-list (make-local-variable 'company-backends)
-                           '(company-jedi :width company-yasnippet :separate))
-              )))
+                           '(company-jedi :width company-yasnippet :separate)))))
 
 (use-package web-mode
-  :mode "\\.html"
-  :interpreter "html"
+  :ensure t
+  :mode ( "\\.html$"
+          "\\.js$"
+          "\\.php$" )
   :config
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2))
+  (setq web-mode-content-types-alist
+        '(("jsx" . "\\.js[x]?\\'")))
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-flow :width company-yasnippet :separate)))))
+
+(use-package flow-minor-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-minor-mode-alist '("\\.js$" . flow-minor-mode)))
+
+(defun enable-minor-mode (my-pair)
+  "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
+  (if (buffer-file-name)
+      (if (string-match (car my-pair) buffer-file-name)
+      (funcall (cdr my-pair)))))
+
+(use-package prettier-js
+  :ensure t
+  :config
+  (add-to-list 'auto-minor-mode-alist '("\\.js$" . prettier-js-mode)))
+
+(use-package indium
+  :ensure t)
 
 (use-package multiple-cursors
   :bind
@@ -341,10 +370,11 @@
   :init
   (add-hook 'after-init-hook 'global-flycheck-mode)
   :config
-  (flycheck-add-mode 'javascript-eslint 'js2-jsx-mode)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
   (setq-default flycheck-disabled-checkers
                 '(javascript-jscs
                   javascript-jshint
+                  handkebars
                   emacs-lisp-checkdoc
                   json-jsonlist)))
 
@@ -364,50 +394,6 @@
 (setq-default c-basic-offset 2)
 (setq-default tab-width 2)
 (fset 'yes-or-no-p 'y-or-n-p)
-
-;; (require 'f)
-;; (require 'json)
-
-;; (defun my/parse-flow-context (ctx)
-;;   "Parse each context"
-;;   (cdr (assoc 'descr ctx)))
-
-;; (defun my/parse-flow-error (checker buffer)
-;;   "Parses earch error"
-;;   (lambda (err)
-;;     (let ((msg (assoc 'message err)))
-;;       (let ((info (cadr msg))
-;;             (message (mapcar #'my/parse-flow-context (cdr msg))))
-;;         (setf (nth 0 message) (propertize (concat (nth 0 message) ".") 'face '(:foreground "red")))
-;;         (flycheck-error-new
-;;          :line (cdr (assoc 'line info))
-;;          :column (cdr (assoc 'start info))
-;;          :level 'error
-;;          :message (mapconcat 'identity message "")
-;;          :filename (f-relative
-;;                     (cdr (assoc 'path info))
-;;                     (f-dirname (file-truename
-;;                                 (buffer-file-name))))
-;;          :buffer buffer
-;;          :checker checker)
-;;         ))))
-
-;; (defun my/parse-flow-errors (output checker buffer)
-;;   "Flycheck Error Parser  Checker "
-;;   (let ((json-array-type 'list))
-;;     (let ((o (json-read-from-string output)))
-;;       (mapcar (my/parse-flow-error checker buffer)
-;;               (cdr (assoc 'errors o)))
-;;       )))
-
-;; (flycheck-define-checker my/javascript-flow
-;;   "My Javascript Flowtype error checker"
-;;   :command ("flow" "--json" source-original)
-;;   :error-parser my/parse-flow-errors
-;;   :modes js2-jsx-mode
-;;   :next-checkers ((error . javascript-eslint)))
-
-;; (add-to-list 'flycheck-checkers 'my/javascript-flow)
 
 (message ".emacs loaded successfully.")
 (put 'downcase-region 'disabled nil)
