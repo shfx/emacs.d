@@ -22,6 +22,8 @@
         markdown-exdent-or-delete
         markdown-outdent-or-delete
         nxml-electric-slash
+        org-end-of-line
+        org-force-self-insert
         string-inflection-all-cycle
         tern-find-definition
         tern-get-docs

@@ -85,6 +85,11 @@
 (use-package auto-minor-mode
   :ensure t)
 
+(use-package dimmer
+  :ensure t
+  :init
+  (dimmer-mode))
+
 (use-package wolfram
   :config
   (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
@@ -204,21 +209,21 @@
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
 
-(use-package golden-ratio
-  :ensure t
-  :init
-  (golden-ratio-mode 1)
-  :config
-  (defun pl/helm-alive-p ()
-    (if (boundp 'helm-alive-p)
-        (symbol-value 'helm-alive-p)))
-  (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
-  (setq window-combination-resize t)
-  (when (require 'magit-mode nil 'noerror)
-    (setq magit-display-buffer-noselect t
-          magit-display-buffer-function (lambda (buffer)
-                                          (display-buffer buffer)
-                                          (pop-to-buffer buffer)))))
+;; (use-package golden-ratio
+;;   :ensure t
+;;   :init
+;;   (golden-ratio-mode 1)
+;;   :config
+;;   (defun pl/helm-alive-p ()
+;;     (if (boundp 'helm-alive-p)
+;;         (symbol-value 'helm-alive-p)))
+;;   (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
+;;   (setq window-combination-resize t)
+;;   (when (require 'magit-mode nil 'noerror)
+;;     (setq magit-display-buffer-noselect t
+;;           magit-display-buffer-function (lambda (buffer)
+;;                                           (display-buffer buffer)
+;;                                           (pop-to-buffer buffer)))))
 
 (use-package yaml-mode
   :mode "\\.yaml")
@@ -362,7 +367,7 @@
   (diminish 'auto-revert-mode)
   (diminish 'flycheck-mode)
   (diminish 'company-mode)
-  (diminish 'golden-ratio-mode)
+  ;; (diminish 'golden-ratio-mode)
   (diminish 'helm-mode)
   (diminish 'editorconfig-mode))
 

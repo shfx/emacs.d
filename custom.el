@@ -45,7 +45,7 @@
  '(js3-square-indent-offset 2)
  '(package-selected-packages
    (quote
-    (projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core magit-popup prettier-js tide rjsx-mode company-flow magit-gitflow neotree string-inflection color-theme-sanityinc-tomorrow wttrin helm-spotify wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text flycheck-flow zoom-frm zoom-window ujelly-theme gruvbox-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl company-tern tern-context-coloring system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile tern markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (dimmer-mode dimmer zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core magit-popup prettier-js tide rjsx-mode company-flow magit-gitflow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl company-tern tern-context-coloring system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile tern markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star t)
  '(popwin:special-display-config
    (quote
@@ -73,14 +73,7 @@
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
  '(tramp-default-method "ssh")
- '(tramp-default-proxies-alist
-   (quote
-    (("pwitkowski\\.users\\.wroclaw\\.osa" "root" "/ssh:tvp@pwitkowski.users.wroclaw.osa:")
-     ("otvs-int\\.tvstore\\.ams\\.osa" "root" "/ssh:mwisniowski@otvs-int.tvstore.ams.osa:")
-     ("C02QG3PDFVH5" "root" "/ssh:motvs-int.tvstore.ams.osa:")
-     ("C02QG3PDFVH5" "root" "/ssh:otvs-int.tvstore.ams.osa:")
-     ("C02QG3PDFVH5" nil "/ssh:mwisniowski@otvs-int.tvstore.ams.osa:")
-     ("C02QG3PDFVH5" "root" "/ssh:mwisniowski@otvs-int.tvstore.ams.osa:"))))
+ '(tramp-default-proxies-alist nil)
  '(tramp-save-ad-hoc-proxies t)
  '(yaml-indent-offset 4))
 (custom-set-faces
