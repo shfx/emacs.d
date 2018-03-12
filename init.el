@@ -50,21 +50,32 @@
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
 (when (< emacs-major-version 24)
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
+  (add-to-list 'package-archives
+               '("gnu" . "http://elpa.gnu.org/packages/")))
+
 (package-initialize)
 
 ;; loading use-package
 (eval-when-compile
   (require 'use-package))
 
+;; theme
 (load-theme 'darkokai t)
 
+(defun on-after-init ()
+  (unless (display-graphic-p (selected-frame))
+    (set-face-background 'default "unspecified-bg" (selected-frame))))
+
+(add-hook 'window-setup-hook 'on-after-init)
+
+;; defaults for ls
 (when (eq system-type 'darwin)
   (setq ns-use-srgb-colorspace t)
   (defvar ls-lisp-use-insert-directory-program)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
+;; title format
 (setq frame-title-format
       '(:eval
         (if buffer-file-name
@@ -72,7 +83,9 @@
              "\\\\" "/"
              (replace-regexp-in-string
               (regexp-quote (getenv "HOME")) "~"
-              (convert-standard-filename buffer-file-name)))
+              (replace-regexp-in-string
+               (projectile-project-root) (concat (projectile-project-name) "/")
+               (convert-standard-filename buffer-file-name))))
           (buffer-name))))
 
 (use-package exec-path-from-shell
@@ -90,13 +103,35 @@
   :init
   (dimmer-mode))
 
+(use-package which-key
+  :ensure t
+  :init
+  (which-key-mode)
+  :config
+  (setq which-key-popup-type 'side-window
+        which-key-side-window-location 'right
+        which-key-side-window-max-width 0.33
+        which-key-side-window-max-height 0.25))
+
+(use-package zoom
+  :init
+  (zoom-mode)
+  :config
+  (setq zoom-size '(0.618 . 0.618)
+        zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
+
 (use-package wolfram
   :config
   (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
 
 (use-package paradox
-  :config
-  (setq paradox-github-token "4d9de48594f18b99b8d3296ae7d6f39059cb69be"))
+  :init
+  (paradox-enable))
+
+(use-package copy-as-format
+  :bind (("C-c w g" . copy-as-format-gitlab)
+         ("C-c w s" . copy-as-format-slack)))
+
 
 (use-package string-inflection
   :ensure t
@@ -128,9 +163,6 @@
   ("M-%" . anzu-query-replace)
   ("C-M-%" . anzu-query-replace-regexp))
 
-(use-package tern
-  :ensure t)
-
 (use-package spaceline-config
   :init
   (defvar powerline-default-separator)
@@ -156,6 +188,10 @@
 (use-package rainbow-mode
   :config
   (add-hook 'prog-mode-hook 'rainbow-mode))
+
+(use-package helm-spotify-plus
+  :bind
+  ("C-c s s" . 'helm-spotify-plus))
 
 ;; magical git client
 (use-package magit
@@ -184,8 +220,8 @@
   (global-company-mode)
   :bind
   ("C-." . company-complete)
+  ("C-c /" . 'company-files)
   :config
-
   (setq company-idle-delay 0.3
         company-tooltip-limit 15
         company-minimum-prefix-length 1
@@ -208,22 +244,6 @@
 
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
-
-;; (use-package golden-ratio
-;;   :ensure t
-;;   :init
-;;   (golden-ratio-mode 1)
-;;   :config
-;;   (defun pl/helm-alive-p ()
-;;     (if (boundp 'helm-alive-p)
-;;         (symbol-value 'helm-alive-p)))
-;;   (add-to-list 'golden-ratio-inhibit-functions 'pl/helm-alive-p)
-;;   (setq window-combination-resize t)
-;;   (when (require 'magit-mode nil 'noerror)
-;;     (setq magit-display-buffer-noselect t
-;;           magit-display-buffer-function (lambda (buffer)
-;;                                           (display-buffer buffer)
-;;                                           (pop-to-buffer buffer)))))
 
 (use-package yaml-mode
   :mode "\\.yaml")
@@ -251,15 +271,15 @@
   :ensure t
   :mode "Cask")
 
-(use-package elm-mode
-  :mode "\\.elm"
-  :config
-  (add-hook 'flycheck-mode-hook 'flycheck-elm-setup)
-  (add-hook 'elm-mode-hook
-            (lambda ()
-              (elm-oracle-setup-completion)
-              (add-to-list (make-local-variable 'company-backends)
-                           '(company-elm :width company-yasnippet :separate)))))
+;; (use-package elm-mode
+;;   :mode "\\.elm"
+;;   :config
+;;   (add-hook 'flycheck-mode-hook 'flycheck-elm-setup)
+;;   (add-hook 'elm-mode-hook
+;;             (lambda ()
+;;               (elm-oracle-setup-completion)
+;;               (add-to-list (make-local-variable 'company-backends)
+;;                            '(company-elm :width company-yasnippet :separate)))))
 
 (use-package scss-mode
   :ensure t
@@ -290,8 +310,7 @@
 
 (use-package flow-minor-mode
   :ensure t
-  :config
-  (add-to-list 'auto-minor-mode-alist '("\\.js$" . flow-minor-mode)))
+  :minor ("\\.js$" . flow-minor-mode))
 
 (defun enable-minor-mode (my-pair)
   "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
@@ -301,8 +320,7 @@
 
 (use-package prettier-js
   :ensure t
-  :config
-  (add-to-list 'auto-minor-mode-alist '("\\.js$" . prettier-js-mode)))
+  :minor ("\\.js(on)?$" . prettier-js-mode))
 
 (use-package indium
   :ensure t)
@@ -328,9 +346,9 @@
   (defvar helm-M-x-fuzzy-match)
   (defvar flycheck-mode-map)
 
-  (setq helm-display-header-line nil)
-  (setq helm-split-window-preferred-function 'ignore)
-  (setq helm-M-x-fuzzy-match t)
+  (setq helm-display-header-line nil
+        helm-split-window-preferred-function 'ignore
+        helm-M-x-fuzzy-match t)
 
   (helm-projectile-on)
   (eval-after-load 'flycheck
@@ -371,11 +389,15 @@
   (diminish 'helm-mode)
   (diminish 'editorconfig-mode))
 
+(use-package flycheck-flow
+  :ensure t)
+
 (use-package flycheck
   :init
   (add-hook 'after-init-hook 'global-flycheck-mode)
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (flycheck-add-mode 'javascript-flow 'web-mode)
   (setq-default flycheck-disabled-checkers
                 '(javascript-jscs
                   javascript-jshint

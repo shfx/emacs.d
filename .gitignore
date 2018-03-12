@@ -8,3 +8,4 @@ eshell
 .python-environments/
 tramp
 *.cache
+/network-security.data
