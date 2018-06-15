@@ -29,14 +29,6 @@
       ring-bell-function 'ignore
       transient-mark-mode t
       show-paren-mode 1
-      mouse-yank-at-point t
-      mouse-wheel-scroll-amount '(2 ((shift) . 1))
-      mouse-wheel-progressive-speed nil
-      mouse-wheel-follow-mouse 't
-      scroll-margin 1
-      scroll-step 0
-      scroll-conservatively most-positive-fixnum
-      scroll-preserve-screen-position nil
       make-backup-files nil
       auto-save-default nil)
 
@@ -47,20 +39,23 @@
 
 ;; Seting up package system
 (require 'package)
+
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives
                '("gnu" . "http://elpa.gnu.org/packages/")))
 
+
 (package-initialize)
 
-;; loading use-package
 (eval-when-compile
   (require 'use-package))
 
 ;; theme
 (load-theme 'darkokai t)
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
 
 (defun on-after-init ()
   (unless (display-graphic-p (selected-frame))
@@ -70,8 +65,10 @@
 
 ;; defaults for ls
 (when (eq system-type 'darwin)
-  (setq ns-use-srgb-colorspace t)
   (defvar ls-lisp-use-insert-directory-program)
+  (defvar powerline-image-apple-rgb)
+  (setq ns-use-srgb-colorspace t)
+  (setq powerline-image-apple-rgb t)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
@@ -98,10 +95,14 @@
 (use-package auto-minor-mode
   :ensure t)
 
-(use-package dimmer
+;; (use-package dimmer
+;;   :ensure t
+;;   :init
+;;   (dimmer-mode))
+
+(use-package nlinum-hl
   :ensure t
-  :init
-  (dimmer-mode))
+  :config (setq nlinum-highlight-current-line t))
 
 (use-package which-key
   :ensure t
@@ -118,6 +119,7 @@
   (zoom-mode)
   :config
   (setq zoom-size '(0.618 . 0.618)
+        zoom-ignored-major-modes '(ranger-mode)
         zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
 
 (use-package wolfram
@@ -125,7 +127,8 @@
   (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
 
 (use-package paradox
-  :init
+  :ensure t
+  :config
   (paradox-enable))
 
 (use-package copy-as-format
@@ -154,7 +157,7 @@
 
 (use-package fancy-battery
   :config
-  (add-hook 'after-init-hook #'fancy-battery-mode))
+  (add-hook 'after-init-hook 'fancy-battery-mode))
 
 (use-package anzu
   :init
@@ -186,8 +189,7 @@
 
 ;; adds colors to matching color names or hex colors
 (use-package rainbow-mode
-  :config
-  (add-hook 'prog-mode-hook 'rainbow-mode))
+  :hook (prog-mode . rainbow-mode))
 
 (use-package helm-spotify-plus
   :bind
@@ -198,8 +200,7 @@
   :ensure t
   :init
   (use-package magit-gitflow
-    :config
-    (add-hook 'magit-mode-hook 'turn-on-magit-gitflow))
+    :hook (magit-mode . turn-on-magit-gitflow))
   :config
   (setq magit-process-finish-apply-ansi-colors t)
   (global-set-key (kbd "C-x g") 'magit-status))
@@ -213,7 +214,7 @@
 (use-package yasnippet
   :config
   (yas-reload-all)
-  (add-hook 'prog-mode-hook 'yas-minor-mode))
+  :hook (prog-mode . yas-minor-mode))
 
 (use-package company
   :init
@@ -320,7 +321,7 @@
 
 (use-package prettier-js
   :ensure t
-  :minor ("\\.js(on)?$" . prettier-js-mode))
+  :minor ("\\.js" . prettier-js-mode))
 
 (use-package indium
   :ensure t)
@@ -393,8 +394,8 @@
   :ensure t)
 
 (use-package flycheck
-  :init
-  (add-hook 'after-init-hook 'global-flycheck-mode)
+  :hook
+  (after-init . global-flycheck-mode)
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-flow 'web-mode)

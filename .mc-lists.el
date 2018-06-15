@@ -59,4 +59,5 @@
         push-button
         query-replace
         web-mode-comment-indent-new-line
+        web-mode-jshint
         ))
