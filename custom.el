@@ -5,16 +5,18 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
- '(company-transformers '(company-sort-by-backend-importance))
- '(compilation-message-face 'default)
- '(custom-enabled-themes '(dracula))
+ '(company-transformers (quote (company-sort-by-backend-importance)))
+ '(compilation-message-face (quote default))
+ '(custom-enabled-themes (quote (dracula)))
  '(custom-safe-themes
-   '("a4df5d4a4c343b2712a8ed16bc1488807cd71b25e3108e648d4a26b02bc990b3" "eecacf3fb8efc90e6f7478f6143fd168342bbfa261654a754c7d47761cec07c8" "12b204c8fcce23885ce58e1031a137c5a14461c6c7e1db81998222f8908006af" "ff7625ad8aa2615eae96d6b4469fcc7d3d20b2e1ebc63b761a349bebbb9d23cb" "6ee6f99dc6219b65f67e04149c79ea316ca4bcd769a9e904030d38908fd7ccf9" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "10e231624707d46f7b2059cc9280c332f7c7a530ebc17dba7e506df34c5332c4" "412206319b30011cf38b45e63466f16473e8afee0854bebba3bab54a7d43ce74" "38e64ea9b3a5e512ae9547063ee491c20bd717fe59d9c12219a0b1050b439cdd" "eb0a314ac9f75a2bf6ed53563b5d28b563eeba938f8433f6d1db781a47da1366" "70403e220d6d7100bae7775b3334eddeb340ba9c37f4b39c189c2c29d458543b" "557c283f4f9d461f897b8cac5329f1f39fac785aa684b78949ff329c33f947ec" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "be4025b1954e4ac2a6d584ccfa7141334ddd78423399447b96b6fa582f206194" "fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default))
+   (quote
+    ("a4df5d4a4c343b2712a8ed16bc1488807cd71b25e3108e648d4a26b02bc990b3" "eecacf3fb8efc90e6f7478f6143fd168342bbfa261654a754c7d47761cec07c8" "12b204c8fcce23885ce58e1031a137c5a14461c6c7e1db81998222f8908006af" "ff7625ad8aa2615eae96d6b4469fcc7d3d20b2e1ebc63b761a349bebbb9d23cb" "6ee6f99dc6219b65f67e04149c79ea316ca4bcd769a9e904030d38908fd7ccf9" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "10e231624707d46f7b2059cc9280c332f7c7a530ebc17dba7e506df34c5332c4" "412206319b30011cf38b45e63466f16473e8afee0854bebba3bab54a7d43ce74" "38e64ea9b3a5e512ae9547063ee491c20bd717fe59d9c12219a0b1050b439cdd" "eb0a314ac9f75a2bf6ed53563b5d28b563eeba938f8433f6d1db781a47da1366" "70403e220d6d7100bae7775b3334eddeb340ba9c37f4b39c189c2c29d458543b" "557c283f4f9d461f897b8cac5329f1f39fac785aa684b78949ff329c33f947ec" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "be4025b1954e4ac2a6d584ccfa7141334ddd78423399447b96b6fa582f206194" "fa942713c74b5ad27893e72ed8dccf791c9d39e5e7336e52d76e7125bfa51d4c" default)))
  '(darkokai-distinct-fringe-background nil)
  '(darkokai-high-contrast-mode-line nil)
  '(darkokai-mode-line-padding 1)
  '(dash-at-point-mode-alist
-   '((actionscript-mode . "actionscript")
+   (quote
+    ((actionscript-mode . "actionscript")
      (arduino-mode . "arduino")
      (c++-mode . "cpp,net,boost,qt,cvcpp,cocos2dx,c,manpages")
      (c-mode . "c,glib,gl2,gl3,gl4,manpages")
@@ -60,28 +62,31 @@
      (twig-mode . "twig")
      (vim-mode . "vim")
      (yaml-mode . "chef,ansible")
-     (web-mode . "javascript,html,css,react,nodejs")))
+     (web-mode . "javascript,html,css,react,nodejs"))))
  '(eshell-visual-commands
-   '("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop"))
- '(exec-path-from-shell-arguments '("-l"))
+   (quote
+    ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
+ '(exec-path-from-shell-arguments (quote ("-l")))
  '(fci-rule-color "#424748")
  '(flycheck-javascript-flow-args nil)
  '(gc-cons-threshold 16777216)
- '(highlight-changes-colors '("#ff8eff" "#ab7eff"))
+ '(highlight-changes-colors (quote ("#ff8eff" "#ab7eff")))
  '(highlight-symbol-idle-delay 0.2)
  '(highlight-tail-colors
-   '(("#424748" . 0)
+   (quote
+    (("#424748" . 0)
      ("#63de5d" . 20)
      ("#4BBEAE" . 30)
      ("#1DB4D0" . 50)
      ("#9A8F21" . 60)
      ("#A75B00" . 70)
      ("#F309DF" . 85)
-     ("#424748" . 100)))
+     ("#424748" . 100))))
  '(initial-frame-alist
-   '((menu-bar-lines . 0)
+   (quote
+    ((menu-bar-lines . 0)
      (tool-bar-lines . 0)
-     (fullscreen . maximized)))
+     (fullscreen . maximized))))
  '(js-switch-indent-offset 2)
  '(js2-bounce-indent-p nil)
  '(js2-indent-switch-body t)
@@ -102,7 +107,8 @@
  '(js3-square-indent-offset 2)
  '(magit-diff-use-overlays nil)
  '(package-selected-packages
-   '(dotenv-mode ranger auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core magit-popup prettier-js tide rjsx-mode company-flow magit-gitflow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ bubbleberry-theme 2048-game))
+   (quote
+    (spaceline-all-the-icons all-the-icons abbrev-mode python-mode abbrev spaceline-config diminish dotenv-mode ranger auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core magit-popup prettier-js tide rjsx-mode company-flow magit-gitflow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode magit json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -110,7 +116,8 @@
  '(paradox-execute-asynchronously t)
  '(paradox-github-token "")
  '(popwin:special-display-config
-   '(("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)
+   (quote
+    (("^\\*helm.*\\*$" :regexp t :height 0.3 :position bottom)
      ("*Miniedit Help*" :noselect t)
      (help-mode)
      (completion-list-mode :noselect t)
@@ -130,15 +137,16 @@
      ("*slime-xref*")
      (sldb-mode :stick t)
      (slime-repl-mode)
-     (slime-connection-list-mode)))
+     (slime-connection-list-mode))))
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
- '(tramp-default-method "ssh")
+ '(tramp-default-method "ssh" nil (tramp))
  '(tramp-default-proxies-alist nil nil (tramp))
  '(tramp-save-ad-hoc-proxies t nil (tramp))
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
-   '((20 . "#ff0066")
+   (quote
+    ((20 . "#ff0066")
      (40 . "#CF4F1F")
      (60 . "#C26C0F")
      (80 . "#E6DB74")
@@ -155,7 +163,7 @@
      (300 . "#299BA6")
      (320 . "#2896B5")
      (340 . "#2790C3")
-     (360 . "#06d8ff")))
+     (360 . "#06d8ff"))))
  '(vc-annotate-very-old-color nil)
  '(weechat-color-list
    (unspecified "#242728" "#424748" "#F70057" "#ff0066" "#86C30D" "#63de5d" "#BEB244" "#E6DB74" "#40CAE4" "#06d8ff" "#FF61FF" "#ff8eff" "#00b2ac" "#53f2dc" "#f8fbfc" "#ffffff"))

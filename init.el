@@ -21,16 +21,17 @@
 (column-number-mode 0)
 (global-linum-mode 0)
 
-(setq mac-right-option-modifier nil
-      inhibit-startup-message t
-      inhibit-splash-screen t
-      pop-up-frames nil
-      visible-bell 'top-bottom
-      ring-bell-function 'ignore
-      transient-mark-mode t
-      show-paren-mode 1
-      make-backup-files nil
-      auto-save-default nil)
+(setq
+ ;; mac-right-option-modifier nil
+ inhibit-startup-message t
+ inhibit-splash-screen t
+ pop-up-frames nil
+ visible-bell 'top-bottom
+ ring-bell-function 'ignore
+ transient-mark-mode t
+ show-paren-mode 1
+ make-backup-files nil
+ auto-save-default nil)
 
 (defvar my-emacs-dir "~/.emacs.d")
 
@@ -115,6 +116,7 @@
         which-key-side-window-max-height 0.25))
 
 (use-package zoom
+  :ensure t
   :init
   (zoom-mode)
   :config
@@ -123,6 +125,7 @@
         zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
 
 (use-package wolfram
+  :ensure t
   :config
   (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
 
@@ -132,6 +135,7 @@
   (paradox-enable))
 
 (use-package copy-as-format
+  :ensure t
   :bind (("C-c w g" . copy-as-format-gitlab)
          ("C-c w s" . copy-as-format-slack)))
 
@@ -147,26 +151,29 @@
   ("C-c d" . dash-at-point)
   ("C-c e" . dash-at-point-with-docset))
 
-(use-package eyebrowse
-  :init
-  (eyebrowse-mode t))
-
 (use-package move-text
+  :ensure t
   :config
   (move-text-default-bindings))
 
 (use-package fancy-battery
+  :ensure t
   :config
   (add-hook 'after-init-hook 'fancy-battery-mode))
 
 (use-package anzu
+  :ensure t
   :init
   (global-anzu-mode +1)
   :bind
   ("M-%" . anzu-query-replace)
   ("C-M-%" . anzu-query-replace-regexp))
 
-(use-package spaceline-config
+(use-package all-the-icons
+  :ensure t)
+
+(use-package spaceline
+  :ensure t
   :init
   (defvar powerline-default-separator)
   (setq powerline-default-separator 'wave)
@@ -187,13 +194,13 @@
         spaceline-window-numbers-unicode t
         spaceline-highlight-face-func 'spaceline-highlight-face-default))
 
-;; adds colors to matching color names or hex colors
-(use-package rainbow-mode
-  :hook (prog-mode . rainbow-mode))
-
-(use-package helm-spotify-plus
-  :bind
-  ("C-c s s" . 'helm-spotify-plus))
+(use-package spaceline-all-the-icons
+  :ensure t
+  :after spaceline
+  :config
+  (spaceline-all-the-icons-theme)
+  (spaceline-all-the-icons--setup-neotree)
+  (spaceline-all-the-icons--setup-package-updates))
 
 ;; magical git client
 (use-package magit
@@ -212,11 +219,13 @@
       (quietly-read-abbrev-file)))
 
 (use-package yasnippet
+  :ensure t
   :config
   (yas-reload-all)
   :hook (prog-mode . yas-minor-mode))
 
 (use-package company
+  :ensure t
   :init
   (global-company-mode)
   :bind
@@ -247,6 +256,7 @@
   (keyfreq-autosave-mode 1))
 
 (use-package yaml-mode
+  :ensure t
   :mode "\\.yaml")
 
 (use-package go-mode
@@ -263,6 +273,7 @@
               (local-set-key (kbd "M-.") 'godef-jump))))
 
 (use-package json-mode
+  :ensure t
   :mode "\\.json$"
   :interpreter "json"
   :config
@@ -287,6 +298,7 @@
   :mode "\\.scss")
 
 (use-package python-mode
+  :ensure t
   :mode "\\.py"
   :interpreter "py"
   :config
@@ -327,15 +339,23 @@
   :ensure t)
 
 (use-package multiple-cursors
+  :ensure t
   :bind
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this))
 
 (use-package editorconfig
+  :ensure t
   :init
   (editorconfig-mode 1))
 
+(use-package projectile
+  :ensure t
+  :init
+  (projectile-mode))
+
 (use-package helm
+  :ensure t
   :init
   (helm-mode 1)
   :bind
@@ -343,6 +363,8 @@
   ("M-y"     . helm-show-kill-ring)
   ("C-x b"   . helm-mini)
   ("C-x C-f" . helm-find-files)
+  ("C-c p" .  projectile-command-map)
+
   :config
   (defvar helm-M-x-fuzzy-match)
   (defvar flycheck-mode-map)
@@ -351,7 +373,6 @@
         helm-split-window-preferred-function 'ignore
         helm-M-x-fuzzy-match t)
 
-  (helm-projectile-on)
   (eval-after-load 'flycheck
     '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
 
@@ -360,10 +381,12 @@
   :after 'helm)
 
 (use-package helm-descbinds
+  :ensure t
   :init
   (helm-descbinds-mode))
 
 (use-package popwin
+  :ensure t
   :config
   (popwin-mode 1)
   (push '("^\\*helm.*\\*$"   :height 0.3 :regexp t :position bottom) popwin:special-display-config)
@@ -372,13 +395,11 @@
   (push '("*magit-edit-log*" :noselect t :height 15 :width 80) popwin:special-display-config))
 
 (use-package markdown-mode
+  :ensure t
   :mode "\\.md")
 
-(use-package projectile
-  :init
-  (projectile-mode))
-
 (use-package diminish
+  :ensure t
   :config
   (diminish 'yas-minor-mode)
   (diminish 'rainbow-mode)
@@ -394,6 +415,7 @@
   :ensure t)
 
 (use-package flycheck
+  :ensure t
   :hook
   (after-init . global-flycheck-mode)
   :config
