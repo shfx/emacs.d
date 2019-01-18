@@ -53,8 +53,12 @@
 (eval-when-compile
   (require 'use-package))
 
+(use-package darkokai-theme
+  :ensure t
+  :init
+  :config (load-theme 'darkokai t))
+
 ;; theme
-(load-theme 'darkokai t)
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 
