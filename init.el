@@ -93,6 +93,9 @@
   (exec-path-from-shell-initialize)
   (exec-path-from-shell-copy-env "GOPATH"))
 
+(use-package better-defaults
+  :ensure t)
+
 (use-package auto-minor-mode
   :ensure t)
 
@@ -175,16 +178,16 @@
 (use-package spaceline
   :ensure t
   :init
-  (defvar powerline-default-separator)
+  (spaceline-emacs-theme)
+  ;; (defvar powerline-default-separator)
   (setq powerline-default-separator 'wave)
-  (defadvice vc-mode-line (after strip-backend () activate)
-    (when (stringp vc-mode)
-      (let ((gitlogo (replace-regexp-in-string "^ Git." "  " vc-mode)))
-        (setq vc-mode gitlogo))))
+  ;; (defadvice vc-mode-line (after strip-backend () activate)
+  ;;   (when (stringp vc-mode)
+  ;;     (let ((gitlogo (replace-regexp-in-string "^ git." "  " vc-mode)))
+  ;;       (setq vc-mode gitlogo))))
 
   :config
   (spaceline-compile)
-  (spaceline-emacs-theme)
   (spaceline-helm-mode)
   (spaceline-info-mode)
   (setq spaceline-minor-modes-p nil
@@ -207,6 +210,7 @@
   :ensure t
   :init
   (use-package magit-gitflow
+    :ensure t
     :hook (magit-mode . turn-on-magit-gitflow))
   :config
   (setq magit-process-finish-apply-ansi-colors t)
