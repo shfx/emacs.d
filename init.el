@@ -62,11 +62,12 @@
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 
-(defun on-after-init ()
-  (unless (display-graphic-p (selected-frame))
-    (set-face-background 'default "unspecified-bg" (selected-frame))))
+;;;; Disabled for a moment
 
-(add-hook 'window-setup-hook 'on-after-init)
+;; (defun on-after-init ()
+;;   (unless (display-graphic-p (selected-frame))
+;;     (set-face-background 'default "unspecified-bg" (selected-frame))))
+;; (add-hook 'window-setup-hook 'on-after-init)
 
 ;; defaults for ls
 (when (eq system-type 'darwin)
@@ -131,6 +132,19 @@
         zoom-ignored-major-modes '(ranger-mode)
         zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
 
+(use-package atomic-chrome
+  :ensure t)
+
+(use-package helpful
+  :ensure t
+  :bind (("C-h f"  . helpful-callable)
+         ("C-h v"  . helpful-variable)
+         ("C-h k"  . helpful-key)))
+
+(use-package nlinum-hl
+  :ensure t
+  :config (setq nlinum-highlight-current-line t))
+
 (use-package wolfram
   :ensure t
   :config
@@ -145,7 +159,6 @@
   :ensure t
   :bind (("C-c w g" . copy-as-format-gitlab)
          ("C-c w s" . copy-as-format-slack)))
-
 
 (use-package string-inflection
   :ensure t
@@ -201,13 +214,13 @@
         spaceline-window-numbers-unicode t
         spaceline-highlight-face-func 'spaceline-highlight-face-default))
 
-(use-package spaceline-all-the-icons
-  :ensure t
-  :after spaceline
-  :config
-  (spaceline-all-the-icons-theme)
-  (spaceline-all-the-icons--setup-neotree)
-  (spaceline-all-the-icons--setup-package-updates))
+;; (use-package spaceline-all-the-icons
+;;   :ensure t
+;;   :after spaceline
+;;   :config
+;;   (spaceline-all-the-icons-theme)
+;;   (spaceline-all-the-icons--setup-neotree)
+;;   (spaceline-all-the-icons--setup-package-updates))
 
 ;; magical git client
 (use-package magit
@@ -244,6 +257,7 @@
         company-tooltip-limit 15
         company-minimum-prefix-length 1
         company-tooltip-flip-when-above t
+        company-tooltip-align-annotations t
         company-backends '()))
 
 (use-package keyfreq
@@ -291,16 +305,6 @@
   :ensure t
   :mode "Cask")
 
-;; (use-package elm-mode
-;;   :mode "\\.elm"
-;;   :config
-;;   (add-hook 'flycheck-mode-hook 'flycheck-elm-setup)
-;;   (add-hook 'elm-mode-hook
-;;             (lambda ()
-;;               (elm-oracle-setup-completion)
-;;               (add-to-list (make-local-variable 'company-backends)
-;;                            '(company-elm :width company-yasnippet :separate)))))
-
 (use-package scss-mode
   :ensure t
   :mode "\\.scss")
@@ -316,22 +320,9 @@
               (add-to-list (make-local-variable 'company-backends)
                            '(company-jedi :width company-yasnippet :separate)))))
 
-(use-package web-mode
-  :ensure t
-  :mode ( "\\.html$"
-          "\\.js$"
-          "\\.php$" )
-  :config
-  (setq web-mode-content-types-alist
-        '(("jsx" . "\\.js[x]?\\'")))
-  (add-hook 'web-mode-hook
-            (lambda ()
-              (add-to-list (make-local-variable 'company-backends)
-                           '(company-flow :width company-yasnippet :separate)))))
-
-(use-package flow-minor-mode
-  :ensure t
-  :minor ("\\.js$" . flow-minor-mode))
+;; (use-package flow-minor-mode
+;;   :ensure t
+;;   :minor ("\\.js$" . flow-minor-mode))
 
 (defun enable-minor-mode (my-pair)
   "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
@@ -406,11 +397,11 @@
   :ensure t
   :mode "\\.md")
 
+;; TODO: move diminish to use-package config
 (use-package diminish
   :ensure t
   :config
   (diminish 'yas-minor-mode)
-  (diminish 'rainbow-mode)
   (diminish 'anzu-mode)
   (diminish 'auto-revert-mode)
   (diminish 'flycheck-mode)
@@ -424,8 +415,7 @@
 
 (use-package flycheck
   :ensure t
-  :hook
-  (after-init . global-flycheck-mode)
+  :hook (after-init . global-flycheck-mode)
   :config
   (flycheck-add-mode 'javascript-eslint 'web-mode)
   (flycheck-add-mode 'javascript-flow 'web-mode)
@@ -436,11 +426,57 @@
                   emacs-lisp-checkdoc
                   json-jsonlist)))
 
+;; Enable flow-mode for .js files
+(defun setup-flow-mode ()
+  (interactive)
+  (message "Setting flow mode...")
+  (add-to-list (make-local-variable 'company-backends)
+               '(company-flow :width company-yasnippet :separate)))
+
+;; Enable tide-mode for .ts and .tsx files
+(defun setup-tide-mode ()
+  (interactive)
+  (message "Setting tide mode...")
+  (tide-setup)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (flycheck-add-mode 'javascript-eslint 'web-mode)
+  (if (string-equal "tsx" (file-name-extension buffer-file-name))
+      (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+    (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
+
+(use-package tide
+  :ensure t
+  :mode "\\.ts$"
+  :after (flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
+
+(use-package web-mode
+  :ensure t
+  :after (tide)
+  :mode ("\\.html$"
+         "\\.js$"
+         "\\.php$"
+         "\\.tsx$")
+  :hook (( web-mode . (lambda ()
+                        (when (string-equal "js" (file-name-extension buffer-file-name))
+                          (setup-flow-mode))))
+
+         (web-mode . (lambda ()
+                       (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                           (setup-tide-mode)))))
+  :config
+  (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
+
 (load (concat my-emacs-dir "/keys.el"))
 
 (add-hook 'before-save-hook 'my-delete-trailing-whitespace)
 
 (defun my-delete-trailing-whitespace ()
+  "Deleting trailing whitespaces."
   (when (derived-mode-p 'prog-mode)
     (delete-trailing-whitespace)))
 
