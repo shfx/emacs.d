@@ -375,6 +375,11 @@
   (eval-after-load 'flycheck
     '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
 
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on))
+
 (use-package helm-flycheck
   :ensure t
   :after 'helm)
