@@ -31,7 +31,8 @@
  transient-mark-mode t
  show-paren-mode 1
  make-backup-files nil
- auto-save-default nil)
+ auto-save-default nil
+ vc-handled-backends nil)
 
 (defvar my-emacs-dir "~/.emacs.d")
 
@@ -230,7 +231,9 @@
     :ensure t
     :hook (magit-mode . turn-on-magit-gitflow))
   :config
-  (setq magit-process-finish-apply-ansi-colors t)
+  (setq magit-process-finish-apply-ansi-colors t
+        magit-refresh-status-buffer nil
+        auto-revert-buffer-list-filter 'magit-auto-revert-repository-buffers-p)
   (global-set-key (kbd "C-x g") 'magit-status))
 
 (use-package abbrev
@@ -305,6 +308,14 @@
   :ensure t
   :mode "Cask")
 
+(use-package css-mode
+  :ensure t
+  :mode "\\.css"
+  :config
+  :hook (css-mode . (lambda ()
+              (add-to-list (make-local-variable 'company-backends)
+                           '(company-css :width company-yasnippet :separate)))))
+
 (use-package scss-mode
   :ensure t
   :mode "\\.scss")
@@ -357,12 +368,13 @@
   :ensure t
   :init
   (helm-mode 1)
+
   :bind
   ("M-x"     . helm-M-x)
   ("M-y"     . helm-show-kill-ring)
   ("C-x b"   . helm-mini)
   ("C-x C-f" . helm-find-files)
-  ("C-c p" .  projectile-command-map)
+  ("C-c p"   .  projectile-command-map)
 
   :config
   (defvar helm-M-x-fuzzy-match)
@@ -377,6 +389,9 @@
 
 (use-package helm-projectile
   :ensure t
+  :bind
+  ("<f5>" . helm-projectile)
+
   :config
   (helm-projectile-on))
 

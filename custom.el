@@ -140,6 +140,7 @@
      (slime-connection-list-mode))))
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
+ '(projectile-enable-caching t)
  '(tramp-default-method "ssh" nil (tramp))
  '(tramp-default-proxies-alist nil nil (tramp))
  '(tramp-save-ad-hoc-proxies t nil (tramp))
