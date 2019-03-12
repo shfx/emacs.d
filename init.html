@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2019-02-26 Tue 12:58 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Testing title</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Marcin W" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2019 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Testing title</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orgecf1708">1. Emacs Initial config</a>
+<ul>
+<li><a href="#org430ebc5">1.1. Initialiation defaults</a>
+<ul>
+<li><a href="#orgb02bc3f">1.1.1. Setting default coding system</a></li>
+<li><a href="#org000d44a">1.1.2. Setting default display and editing options</a></li>
+<li><a href="#org9ac8c96">1.1.3. Set the titlebar to the color of the theme</a></li>
+<li><a href="#orgdefb47a">1.1.4. Setting title format</a></li>
+<li><a href="#org60f0fac">1.1.5. Seting up package system and bootstrapping use-package</a></li>
+<li><a href="#orgda900db">1.1.6. System specyfic defaults</a></li>
+</ul>
+</li>
+<li><a href="#orgac205fa">1.2. Packages</a>
+<ul>
+<li><a href="#org2b2f627">1.2.1. Mac Only - initialize emacs with proper PATH</a></li>
+<li><a href="#org2af5269">1.2.2. Load theme</a></li>
+<li><a href="#org0cca340">1.2.3. Better defaults</a></li>
+<li><a href="#orgcc4965d">1.2.4. Org Mode</a></li>
+<li><a href="#org2ac0a08">1.2.5. Htmlize for org-mode</a></li>
+<li><a href="#org92758e0">1.2.6. PDF Tools, exporting to pdf, etc</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgecf1708" class="outline-2">
+<h2 id="orgecf1708"><span class="section-number-2">1</span> Emacs Initial config</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org430ebc5" class="outline-3">
+<h3 id="org430ebc5"><span class="section-number-3">1.1</span> Initialiation defaults</h3>
+<div class="outline-text-3" id="text-1-1">
+</div>
+<div id="outline-container-orgb02bc3f" class="outline-4">
+<h4 id="orgb02bc3f"><span class="section-number-4">1.1.1</span> Setting default coding system</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(set-language-environment <span style="color: #e2c770;">"UTF-8"</span>)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org000d44a" class="outline-4">
+<h4 id="org000d44a"><span class="section-number-4">1.1.2</span> Setting default display and editing options</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(set-default 'truncate-lines t)
+(global-hl-line-mode 0)
+(set-window-margins nil 2 2)
+(electric-pair-mode 1)
+(line-number-mode 0)
+(column-number-mode 0)
+(global-linum-mode 0)
+(<span style="color: #fb2874;">setq</span> inhibit-splash-screen t
+      inhibit-startup-message t
+      pop-up-frames nil
+      visible-bell 'top-bottom
+      ring-bell-function 'ignore
+      transient-mark-mode t
+      show-paren-mode 1
+      make-backup-files nil
+      auto-save-default nil)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org9ac8c96" class="outline-4">
+<h4 id="org9ac8c96"><span class="section-number-4">1.1.3</span> Set the titlebar to the color of the theme</h4>
+<div class="outline-text-4" id="text-1-1-3">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">when</span> (memq window-system '(mac ns))
+  (add-to-list 'default-frame-alist '(ns-appearance . light))
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgdefb47a" class="outline-4">
+<h4 id="orgdefb47a"><span class="section-number-4">1.1.4</span> Setting title format</h4>
+<div class="outline-text-4" id="text-1-1-4">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">setq</span> frame-title-format
+  '(<span style="color: #e2c770;">"Emacs - "</span> (buffer-file-name <span style="color: #e2c770;">"%f"</span>
+  ' (dired-directory dired-directory <span style="color: #e2c770;">"%b"</span>))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org60f0fac" class="outline-4">
+<h4 id="org60f0fac"><span class="section-number-4">1.1.5</span> Seting up package system and bootstrapping use-package</h4>
+<div class="outline-text-4" id="text-1-1-5">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">require</span> '<span style="color: #fd971f;">package</span>)
+
+(add-to-list 'package-archives '(<span style="color: #e2c770;">"melpa"</span> . <span style="color: #e2c770;">"http://melpa.org/packages/"</span>))
+(add-to-list 'package-archives '(<span style="color: #e2c770;">"org"</span> . <span style="color: #e2c770;">"https://orgmode.org/elpa/"</span>) t)
+
+(<span style="color: #fb2874;">when</span> (&lt; emacs-major-version 24)
+  (add-to-list 'package-archives
+               '(<span style="color: #e2c770;">"gnu"</span> . <span style="color: #e2c770;">"http://elpa.gnu.org/packages/"</span>)))
+
+(package-initialize)
+
+(<span style="color: #fb2874;">unless</span> (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgda900db" class="outline-4">
+<h4 id="orgda900db"><span class="section-number-4">1.1.6</span> System specyfic defaults</h4>
+<div class="outline-text-4" id="text-1-1-6">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">when</span> (eq system-type 'darwin)
+  (<span style="color: #fb2874;">defvar</span> <span style="color: #fd971f;">ls-lisp-use-insert-directory-program</span>)
+  (<span style="color: #fb2874;">defvar</span> <span style="color: #fd971f;">powerline-image-apple-rgb</span>)
+  (<span style="color: #fb2874;">setq</span> ns-use-srgb-colorspace t)
+  (<span style="color: #fb2874;">setq</span> powerline-image-apple-rgb t)
+  (<span style="color: #fb2874;">require</span> '<span style="color: #fd971f;">ls-lisp</span>)
+  (<span style="color: #fb2874;">setq</span> ls-lisp-use-insert-directory-program nil))
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgac205fa" class="outline-3">
+<h3 id="orgac205fa"><span class="section-number-3">1.2</span> Packages</h3>
+<div class="outline-text-3" id="text-1-2">
+</div>
+<div id="outline-container-org2b2f627" class="outline-4">
+<h4 id="org2b2f627"><span class="section-number-4">1.2.1</span> Mac Only - initialize emacs with proper PATH</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">exec-path-from-shell</span>
+  <span style="color: #fd971f;">:if</span> (memq window-system '(mac ns))
+  <span style="color: #fd971f;">:ensure</span> t
+  <span style="color: #fd971f;">:config</span>
+  (exec-path-from-shell-initialize)
+  (exec-path-from-shell-copy-env <span style="color: #e2c770;">"GOPATH"</span>))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2af5269" class="outline-4">
+<h4 id="org2af5269"><span class="section-number-4">1.2.2</span> Load theme</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">doom-themes</span>
+  <span style="color: #fd971f;">:ensure</span> t
+  <span style="color: #fd971f;">:init</span>
+  (load-theme 'doom-molokai t))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0cca340" class="outline-4">
+<h4 id="org0cca340"><span class="section-number-4">1.2.3</span> Better defaults</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">better-defaults</span>
+  <span style="color: #fd971f;">:ensure</span> t)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgcc4965d" class="outline-4">
+<h4 id="orgcc4965d"><span class="section-number-4">1.2.4</span> Org Mode</h4>
+<div class="outline-text-4" id="text-1-2-4">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">org</span>
+  <span style="color: #fd971f;">:ensure</span> org-plus-contrib)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2ac0a08" class="outline-4">
+<h4 id="org2ac0a08"><span class="section-number-4">1.2.5</span> Htmlize for org-mode</h4>
+<div class="outline-text-4" id="text-1-2-5">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">htmlize</span>
+  <span style="color: #fd971f;">:ensure</span> t)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org92758e0" class="outline-4">
+<h4 id="org92758e0"><span class="section-number-4">1.2.6</span> PDF Tools, exporting to pdf, etc</h4>
+<div class="outline-text-4" id="text-1-2-6">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #fb2874;">use-package</span> <span style="color: #fd971f;">pdf-tools</span>
+  <span style="color: #fd971f;">:ensure</span> t
+  <span style="color: #fd971f;">:config</span>
+  (pdf-loader-install))
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Marcin W</p>
+<p class="date">Created: 2019-02-26 Tue 12:58</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

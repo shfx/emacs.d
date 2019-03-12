@@ -44,20 +44,20 @@
 
 (add-to-list 'package-archives
              '("melpa" . "http://melpa.org/packages/"))
+(add-to-list 'package-archives
+             '("org" . "https://orgmode.org/elpa/") t)
+
 (when (< emacs-major-version 24)
   (add-to-list 'package-archives
                '("gnu" . "http://elpa.gnu.org/packages/")))
 
-
 (package-initialize)
 
-(eval-when-compile
-  (require 'use-package))
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-(use-package darkokai-theme
-  :ensure t
-  :init
-  :config (load-theme 'darkokai t))
+(load-theme 'doom-molokai t)
 
 ;; theme
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
@@ -227,9 +227,6 @@
 (use-package magit
   :ensure t
   :init
-  (use-package magit-gitflow
-    :ensure t
-    :hook (magit-mode . turn-on-magit-gitflow))
   :config
   (setq magit-process-finish-apply-ansi-colors t
         magit-refresh-status-buffer nil

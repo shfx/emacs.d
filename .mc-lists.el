@@ -38,9 +38,12 @@
 (setq mc/cmds-to-run-once
       '(
         backward-kill-sentence
+        beginning-of-buffer
+        compile-goto-error
         completion-at-point
         compose-mail
         electric-pair-delete-pair
+        end-of-buffer
         eval-print-last-sexp
         find-file
         flycheck-error-list-set-filter

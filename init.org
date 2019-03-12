@@ -1,0 +1,134 @@
+#+TITLE: Testing title
+
+* Emacs Initial config
+
+** Initialiation defaults
+
+*** Setting default coding system
+
+#+BEGIN_SRC emacs-lisp
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+#+END_SRC
+
+*** Setting default display and editing options
+
+#+BEGIN_SRC emacs-lisp
+  (set-default 'truncate-lines t)
+  (global-hl-line-mode 0)
+  (set-window-margins nil 2 2)
+  (electric-pair-mode 1)
+  (line-number-mode 0)
+  (column-number-mode 0)
+  (global-linum-mode 0)
+  (setq inhibit-splash-screen t
+        inhibit-startup-message t
+        pop-up-frames nil
+        visible-bell 'top-bottom
+        ring-bell-function 'ignore
+        transient-mark-mode t
+        show-paren-mode 1
+        make-backup-files nil
+        auto-save-default nil)
+#+END_SRC
+
+*** Set the titlebar to the color of the theme
+
+#+BEGIN_SRC emacs-lisp
+  (when (memq window-system '(mac ns))
+    (add-to-list 'default-frame-alist '(ns-appearance . light))
+    (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
+#+END_SRC
+
+*** Setting title format
+
+#+BEGIN_SRC emacs-lisp
+  (setq frame-title-format
+    '("Emacs - " (buffer-file-name "%f"
+    ' (dired-directory dired-directory "%b"))))
+#+END_SRC
+
+*** Seting up package system and bootstrapping use-package
+
+#+BEGIN_SRC emacs-lisp
+  (require 'package)
+
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+  (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+
+  (when (< emacs-major-version 24)
+    (add-to-list 'package-archives
+                 '("gnu" . "http://elpa.gnu.org/packages/")))
+
+  (package-initialize)
+
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+#+END_SRC
+
+*** System specyfic defaults 
+
+#+BEGIN_SRC emacs-lisp
+  (when (eq system-type 'darwin)
+    (defvar ls-lisp-use-insert-directory-program)
+    (defvar powerline-image-apple-rgb)
+    (setq ns-use-srgb-colorspace t)
+    (setq powerline-image-apple-rgb t)
+    (require 'ls-lisp)
+    (setq ls-lisp-use-insert-directory-program nil))
+#+END_SRC
+
+** Packages
+
+*** Mac Only - initialize emacs with proper PATH
+
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :if (memq window-system '(mac ns))
+    :ensure t
+    :config
+    (exec-path-from-shell-initialize)
+    (exec-path-from-shell-copy-env "GOPATH"))
+#+END_SRC
+
+*** Load theme
+
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :ensure t
+    :init
+    (load-theme 'doom-molokai t))
+#+END_SRC
+
+*** Better defaults
+
+#+BEGIN_SRC emacs-lisp
+  (use-package better-defaults
+    :ensure t)
+#+END_SRC
+
+*** Org Mode
+
+#+BEGIN_SRC emacs-lisp
+  (use-package org
+    :ensure org-plus-contrib)
+#+END_SRC
+
+*** Htmlize for org-mode
+
+#+BEGIN_SRC emacs-lisp
+  (use-package htmlize
+    :ensure t)
+#+END_SRC
+
+*** PDF Tools, exporting to pdf, etc
+
+#+BEGIN_SRC emacs-lisp
+  (use-package pdf-tools
+    :ensure t
+    :config 
+    (pdf-loader-install))
+#+END_SRC
