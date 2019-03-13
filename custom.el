@@ -5,6 +5,8 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
+ '(browse-url-chrome-program
+   "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome")
  '(company-transformers (quote (company-sort-by-backend-importance)))
  '(compilation-message-face (quote default))
  '(custom-enabled-themes (quote (dracula)))
@@ -109,6 +111,8 @@
  '(js3-paren-indent-offset 2)
  '(js3-square-indent-offset 2)
  '(magit-diff-use-overlays nil)
+ '(ns-right-alternate-modifier (quote none))
+ '(org-indent-indentation-per-level 1)
  '(package-selected-packages
    (quote
     (org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons all-the-icons abbrev-mode python-mode abbrev spaceline-config diminish dotenv-mode ranger auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
@@ -178,7 +182,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 130 :width normal :foundry "nil" :family "Office Code Pro D"))))
+ '(default ((t (:inherit nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 130 :width normal :foundry "nil" :family "Monaco"))))
  '(bold ((t (:weight extra-bold))))
  '(web-mode-function-call-face ((t (:foreground "#E6DB74"))))
  '(web-mode-function-name-face ((t (:foreground "#63de5d"))))

@@ -23,6 +23,7 @@
 
 (setq
  ;; mac-right-option-modifier nil
+ confirm-kill-emacs 'y-or-n-p
  inhibit-startup-message t
  inhibit-splash-screen t
  pop-up-frames nil
@@ -57,8 +58,6 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(load-theme 'doom-molokai t)
-
 ;; theme
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
@@ -91,6 +90,11 @@
                (projectile-project-root) (concat (projectile-project-name) "/")
                (convert-standard-filename buffer-file-name))))
           (buffer-name))))
+
+(use-package doom-themes
+  :ensure t
+  :init
+  (load-theme 'doom-molokai))
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -142,24 +146,10 @@
          ("C-h v"  . helpful-variable)
          ("C-h k"  . helpful-key)))
 
-(use-package nlinum-hl
-  :ensure t
-  :config (setq nlinum-highlight-current-line t))
-
-(use-package wolfram
-  :ensure t
-  :config
-  (setq wolfram-alpha-app-id "ATU3W3-E6Y9897JPA"))
-
 (use-package paradox
   :ensure t
   :config
   (paradox-enable))
-
-(use-package copy-as-format
-  :ensure t
-  :bind (("C-c w g" . copy-as-format-gitlab)
-         ("C-c w s" . copy-as-format-slack)))
 
 (use-package string-inflection
   :ensure t
@@ -190,9 +180,6 @@
   ("M-%" . anzu-query-replace)
   ("C-M-%" . anzu-query-replace-regexp))
 
-(use-package all-the-icons
-  :ensure t)
-
 (use-package spaceline
   :ensure t
   :init
@@ -214,14 +201,6 @@
         spaceline-workspace-numbers-unicode t
         spaceline-window-numbers-unicode t
         spaceline-highlight-face-func 'spaceline-highlight-face-default))
-
-;; (use-package spaceline-all-the-icons
-;;   :ensure t
-;;   :after spaceline
-;;   :config
-;;   (spaceline-all-the-icons-theme)
-;;   (spaceline-all-the-icons--setup-neotree)
-;;   (spaceline-all-the-icons--setup-package-updates))
 
 ;; magical git client
 (use-package magit
@@ -301,10 +280,6 @@
   :config
   (setq js-indent-level 2))
 
-(use-package cask-mode
-  :ensure t
-  :mode "Cask")
-
 (use-package css-mode
   :ensure t
   :mode "\\.css"
@@ -331,12 +306,6 @@
 ;; (use-package flow-minor-mode
 ;;   :ensure t
 ;;   :minor ("\\.js$" . flow-minor-mode))
-
-(defun enable-minor-mode (my-pair)
-  "Enable minor mode if filename match the regexp.  MY-PAIR is a cons cell (regexp . minor-mode)."
-  (if (buffer-file-name)
-      (if (string-match (car my-pair) buffer-file-name)
-      (funcall (cdr my-pair)))))
 
 (use-package prettier-js
   :ensure t
