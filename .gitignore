@@ -9,3 +9,4 @@ eshell
 tramp
 *.cache
 /network-security.data
+/config.el

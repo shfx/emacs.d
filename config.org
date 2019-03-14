@@ -57,20 +57,6 @@
 *** Seting up package system and bootstrapping use-package
 
 #+BEGIN_SRC emacs-lisp
-  (require 'package)
-
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-  (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
-
-  (when (< emacs-major-version 24)
-    (add-to-list 'package-archives
-                 '("gnu" . "http://elpa.gnu.org/packages/")))
-
-  (package-initialize)
-
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
 #+END_SRC
 
 *** System specyfic defaults 
@@ -83,6 +69,27 @@
     (setq powerline-image-apple-rgb t)
     (require 'ls-lisp)
     (setq ls-lisp-use-insert-directory-program nil))
+#+END_SRC
+
+*** Eshell
+
+#+BEGIN_SRC emacs-lisp
+  (use-package eshell
+    :ensure t
+    :config
+    (setq
+     helm-show-completion-display-function #'helm-show-completion-default-display-function
+     eshell-prompt-function (lambda ()
+                              (concat (getenv "USER") "@"
+                                      (if (= (user-uid) 0) " # " " $ "))))
+    (add-hook 'eshell-mode-hook
+              (lambda ()
+
+                (eshell-cmpl-initialize)
+                (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
+                (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)
+                (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all)
+                )))
 #+END_SRC
 
 ** Packages
@@ -302,6 +309,14 @@
           company-backends '()))
 #+END_SRC
 
+*** Flyspell popup
+
+#+BEGIN_SRC emacs-lisp
+  (use-package flyspell-popup
+    :ensure t
+    :bind ("C-;" . flyspell-popup-correct))
+#+END_SRC
+
 *** Key statistics
 
 #+BEGIN_SRC emacs-lisp
@@ -337,7 +352,7 @@
 #+BEGIN_SRC emacs-lisp
   (use-package prettier-js
     :ensure t
-    :minor ("\\.js" . prettier-js-mode))
+    :minor ("\\.js$" . prettier-js-mode))
 #+END_SRC
 
 *** File types
@@ -347,12 +362,16 @@
 #+BEGIN_SRC emacs-lisp
   (use-package org
     :ensure org-plus-contrib
+    :bind
+    (("C-c l" . org-store-link)
+     ("C-c a" . org-agenda)
+     ("C-c c" . org-capture))
     :config
     (setq 
      org-startup-indented t
-     org-indent-indentation-per-level 1))
+     org-default-notes-file (concat org-directory "/notes.org"))
+     org-indent-indentation-per-level 1)
 #+END_SRC
-
 
 ***** Htmlize for org-mode
 
@@ -429,8 +448,190 @@
     (use-package company-jedi)
     (add-hook 'python-mode-hook
               (lambda ()
-                (add-to-list (make-local-variable 'company-backends)
+               (add-to-list (make-local-variable 'company-backends)
                              '(company-jedi :width company-yasnippet :separate)))))
 #+END_SRC
+ 
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package flow-minor-mode
+  ;;   :ensure t
+  ;;   :minor ("\\.js$" . flow-minor-mode))
 
-**** 
+  (use-package auto-minor-mode
+    :ensure t)
+
+  (use-package prettier-js
+    ;; :minor ("\\.js" . prettier-js-mode)
+    :ensure t)
+
+  (use-package indium
+    :ensure t)
+
+  (use-package multiple-cursors
+    :ensure t
+    :bind
+    ("C->" . mc/mark-next-like-this)
+    ("C-<" . mc/mark-previous-like-this))
+
+  (use-package editorconfig
+    :ensure t
+    :init
+    (editorconfig-mode 1))
+
+  (use-package projectile
+    :ensure t
+    :init
+    (projectile-mode))
+
+  (use-package helm
+    :ensure t
+    :init
+    (helm-mode 1)
+
+    :bind
+    ("M-x"     . helm-M-x)
+    ("M-y"     . helm-show-kill-ring)
+    ("C-x b"   . helm-mini)
+    ("C-x C-f" . helm-find-files)
+    ("C-c p"   .  projectile-command-map)
+
+    :config
+    (defvar helm-M-x-fuzzy-match)
+    (defvar flycheck-mode-map)
+
+    (setq helm-display-header-line nil
+          helm-split-window-preferred-function 'ignore
+          helm-M-x-fuzzy-match t)
+
+    (eval-after-load 'flycheck
+      '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
+
+  (use-package helm-projectile
+    :ensure t
+    :bind
+    ("<f5>" . helm-projectile)
+
+    :config
+    (helm-projectile-on))
+
+  (use-package helm-flycheck
+    :ensure t
+    :after 'helm)
+
+  (use-package helm-descbinds
+    :ensure t
+    :init
+    (helm-descbinds-mode))
+
+  (use-package popwin
+    :ensure t
+    :config
+    (popwin-mode 1)
+    (push '("^\\*helm.*\\*$"   :height 0.3 :regexp t :position bottom) popwin:special-display-config)
+    (push '("*magit-commit*"   :noselect t :height 40 :width 80 :stick t) popwin:special-display-config)
+    (push '("*magit-diff*"     :noselect t :height 40 :width 80) popwin:special-display-config)
+    (push '("*magit-edit-log*" :noselect t :height 15 :width 80) popwin:special-display-config))
+
+  (use-package markdown-mode
+    :ensure t
+    :mode "\\.md")
+
+  ;; TODO: move diminish to use-package config
+  (use-package diminish
+    :ensure t
+    :config
+    (diminish 'yas-minor-mode)
+    (diminish 'anzu-mode)
+    (diminish 'auto-revert-mode)
+    (diminish 'flycheck-mode)
+    (diminish 'company-mode)
+    ;; (diminish 'golden-ratio-mode)
+    (diminish 'helm-mode)
+    (diminish 'editorconfig-mode))
+
+  (use-package flycheck-flow
+    :ensure t)
+
+  (use-package flycheck
+    :ensure t
+    :hook (after-init . global-flycheck-mode)
+    :config
+    (flycheck-add-mode 'javascript-eslint 'web-mode)
+    (flycheck-add-mode 'javascript-flow 'web-mode)
+    (setq-default flycheck-disabled-checkers
+                  '(javascript-jscs
+                    javascript-jshint
+                    handkebars
+                    emacs-lisp-checkdoc
+                    json-jsonlist)))
+
+  ;; Enable flow-mode for .js files
+  (defun setup-flow-mode ()
+    (interactive)
+    (message "Setting flow mode...")
+    (add-to-list (make-local-variable 'company-backends)
+                 '(company-flow :width company-yasnippet :separate)))
+
+  ;; Enable tide-mode for .ts and .tsx files
+  (defun setup-tide-mode ()
+    (interactive)
+    (message "Setting tide mode...")
+    (tide-setup)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    (flycheck-add-mode 'javascript-eslint 'web-mode)
+    (if (string-equal "tsx" (file-name-extension buffer-file-name))
+        (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+      (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
+
+  (use-package tide
+    :ensure t
+    :mode "\\.ts$"
+    :after (flycheck)
+    :hook ((typescript-mode . tide-setup)
+           (typescript-mode . tide-hl-identifier-mode)
+           (before-save . tide-format-before-save)))
+
+  (use-package web-mode
+    :ensure t
+    :after (tide)
+    :mode ("\\.html$"
+           "\\.js$"
+           "\\.php$"
+           "\\.tsx$")
+    :hook (( web-mode . (lambda ()
+                          (when (string-equal "js" (file-name-extension buffer-file-name))
+                            (setup-flow-mode))))
+
+           (web-mode . (lambda ()
+                         (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                           (setup-tide-mode)))))
+    :config
+    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
+
+  (load (concat my-emacs-dir "/keys.el"))
+
+  (add-hook 'before-save-hook 'my-delete-trailing-whitespace)
+
+  (defun my-delete-trailing-whitespace ()
+    "Deleting trailing whitespaces."
+    (when (derived-mode-p 'prog-mode)
+      (delete-trailing-whitespace)))
+
+  (setq initial-frame-alist
+        '((menu-bar-lines . 0)
+          (tool-bar-lines . 0)))
+
+  (setq-default indent-tabs-mode nil)
+  (setq-default c-basic-offset 2)
+  (setq-default tab-width 2)
+  (fset 'yes-or-no-p 'y-or-n-p)
+
+  (message ".emacs loaded successfully.")
+  (put 'downcase-region 'disabled nil)
+  (put 'upcase-region 'disabled nil)
+  (put 'dired-find-alternate-file 'disabled nil)
+
+#+END_SRC
+
