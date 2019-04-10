@@ -1,4 +1,5 @@
-(require 'package)
+(package-initialize)
+
 
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
@@ -7,7 +8,6 @@
   (add-to-list 'package-archives
                '("gnu" . "http://elpa.gnu.org/packages/")))
 
-(package-initialize)
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
@@ -18,6 +18,10 @@
 (setq custom-file (concat my-emacs-dir "/custom.el"))
 
 (load custom-file)
+
+(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(add-to-list 'default-frame-alist '(ns-appearance . dark))
+(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 
 (use-package org
   :ensure org-plus-contrib

@@ -2,7 +2,17 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("Twitch sidebar"
+(("org-capture-last-stored"
+ (filename . "~/Dropbox/Orgfiles/todo.org")
+ (front-context-string . "** TODO Kupic pr")
+ (rear-context-string . "klazan\n\n* To Do\n")
+ (position . 342))
+("zshrc"
+ (filename . "~/.zshrc")
+ (front-context-string . "# If you come fr")
+ (rear-context-string)
+ (position . 1))
+("Twitch sidebar"
  (filename . "~/Projects/work/desktop/common/extensions/resources/twitch_sidebar/")
  (front-context-string . ".\n  drwxr-xr-x 2")
  (rear-context-string . "352 03-06 15:04 ")

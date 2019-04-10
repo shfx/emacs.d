@@ -18,7 +18,7 @@
 
 #+BEGIN_SRC emacs-lisp
   (set-default 'truncate-lines t)
-  (global-hl-line-mode 1)
+  (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
   (electric-pair-mode 1)
   (line-number-mode 0)
@@ -33,30 +33,36 @@
         show-paren-mode 1
         make-backup-files nil
         auto-save-default nil
-        vc-handled-backends nil)
+        vc-handled-backends nil
+        ns-use-proxy-icon nil
+        frame-title-format "Emacs"
+        auto-save-visited-file-name t
+        linum-format " %2d")
 
-(global-unset-key (kbd "C-x C-c"))
+  (global-unset-key (kbd "C-x C-c"))
+  (global-unset-key (kbd "s-w"))
+  (windmove-default-keybindings 'super)
+
+  ;; font sizes
+  (global-set-key (kbd "s-=")
+                  (lambda ()
+                    (interactive)
+                    (let ((old-face-attribute (face-attribute 'default :height)))
+                      (set-face-attribute 'default nil :height (+ old-face-attribute 10)))))
+
+  (global-set-key (kbd "s--")
+                  (lambda ()
+                    (interactive)
+                    (let ((old-face-attribute (face-attribute 'default :height)))
+                      (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
 #+END_SRC
 
-*** Set the titlebar to the color of the theme
-
-#+BEGIN_SRC emacs-lisp
-  (when (memq window-system '(mac ns))
-    (add-to-list 'default-frame-alist '(ns-appearance . light))
-    (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t)))
-#+END_SRC
-
-*** TODO Setting title format
+*** TODO COMMENT Setting title format
 
 #+BEGIN_SRC emacs-lisp
   (setq frame-title-format
     '("Emacs - " (buffer-file-name "%f"
     ' (dired-directory dired-directory "%b"))))
-#+END_SRC
-
-*** Seting up package system and bootstrapping use-package
-
-#+BEGIN_SRC emacs-lisp
 #+END_SRC
 
 *** System specyfic defaults 
@@ -254,7 +260,6 @@
           spaceline-workspace-numbers-unicode t
           spaceline-window-numbers-unicode t
           spaceline-highlight-face-func 'spaceline-highlight-face-default))
-
 #+END_SRC
 
 *** Magit - best git client evet
@@ -351,9 +356,138 @@
 
 #+BEGIN_SRC emacs-lisp
   (use-package prettier-js
-    :ensure t
-    :minor ("\\.js$" . prettier-js-mode))
+    :ensure t)
 #+END_SRC
+
+*** Symbol Overlay
+
+#+BEGIN_SRC emacs-lisp
+  (use-package symbol-overlay
+    :ensure t
+    :bind
+    ("M-i" . symbol-overlay-put)
+    ("M-n" . symbol-overlay-switch-forward)
+    ("M-p" . symbol-overlay-switch-backward)
+    ("<f7>" . symbol-overlay-mode)
+    ("<f8>" . symbol-overlay-remove-all))
+#+END_SRC
+
+*** Dired
+
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons
+    :ensure all-the-icons-dired
+    :config
+    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+
+  (use-package diredfl
+    :ensure t)
+
+  (use-package neotree
+    :ensure all-the-icons
+    :config
+    (setq neo-theme 'icons
+          neo-smart-open t))
+#+END_SRC
+
+*** Tern JS
+
+#+BEGIN_SRC elisp
+  (use-package tern
+    :ensure company-tern
+    :diminish tern-mode
+    :config
+    (setq tern-command (append tern-command '("--no-port-file")))
+    :init
+      (add-hook 'rjsx-mode-hook 'tern-mode))
+#+END_SRC
+
+*** Parrot
+
+#+BEGIN_SRC elisp
+  (use-package parrot
+    :config
+    (setq
+     parrot-rotate-dict
+     '(
+       (:rot ("alpha" "beta") :caps t :lower nil)
+       ;; => rotations are "Alpha" "Beta"
+
+       (:rot ("snek" "snake" "stawp"))
+       ;; => rotations are "snek" "snake" "stawp"
+
+       (:rot ("yes" "no") :caps t :upcase t)
+       ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
+
+       (:rot ("&" "|"))
+       ;; => rotations are "&" "|"
+
+       ;; default dictionary starts here ('v')
+       (:rot ("begin" "end") :caps t :upcase t)
+       (:rot ("enable" "disable") :caps t :upcase t)
+       (:rot ("enter" "exit") :caps t :upcase t)
+       (:rot ("forward" "backward") :caps t :upcase t)
+       (:rot ("front" "rear" "back") :caps t :upcase t)
+       (:rot ("get" "set") :caps t :upcase t)
+       (:rot ("high" "low") :caps t :upcase t)
+       (:rot ("in" "out") :caps t :upcase t)
+       (:rot ("left" "right") :caps t :upcase t)
+       (:rot ("min" "max") :caps t :upcase t)
+       (:rot ("on" "off") :caps t :upcase t)
+       (:rot ("prev" "next"))
+       (:rot ("start" "stop") :caps t :upcase t)
+       (:rot ("true" "false") :caps t :upcase t)
+       (:rot ("&&" "||"))
+       (:rot ("==" "!="))
+       (:rot ("." "->"))
+       (:rot ("if" "else" "elif"))
+       (:rot ("ifdef" "ifndef"))
+       (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
+       (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
+       (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
+       (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
+       ))
+    (parrot-mode))
+#+END_SRC
+
+*** ReasonML
+
+#+BEGIN_SRC elisp
+  (use-package reason-mode
+    :ensure merlin
+    :config
+    (defun shell-cmd (cmd)
+      "Returns the stdout output of a shell command or nil if the command returned
+     an error"
+      (car (ignore-errors (apply 'process-lines (split-string cmd)))))
+
+    (defun reason-cmd-where (cmd)
+      (let ((where (shell-cmd cmd)))
+        (if (not (string-equal "unknown flag ----where" where))
+            where)))
+
+    (let* ((refmt-bin (or (reason-cmd-where "refmt ----where")
+                          (shell-cmd "which refmt")
+                          (shell-cmd "which bsrefmt")))
+           (merlin-bin (or (reason-cmd-where "ocamlmerlin ----where")
+                           (shell-cmd "which ocamlmerlin")))
+           (merlin-base-dir (when merlin-bin
+                              (replace-regexp-in-string "bin/ocamlmerlin$" "" merlin-bin))))
+      ;; Add merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
+      (when merlin-bin
+        (add-to-list 'load-path (concat merlin-base-dir "share/emacs/site-lisp/"))
+        (setq merlin-command merlin-bin))
+
+      (when refmt-bin
+        (setq refmt-command refmt-bin)))
+
+    (add-hook 'reason-mode-hook (lambda ()
+                                  (add-hook 'before-save-hook 'refmt-before-save)
+                                  (merlin-mode)))
+
+    (setq merlin-ac-setup t))
+#+END_SRC
+
 
 *** File types
 
@@ -367,10 +501,34 @@
      ("C-c a" . org-agenda)
      ("C-c c" . org-capture))
     :config
-    (setq 
-     org-startup-indented t
-     org-default-notes-file (concat org-directory "/notes.org"))
-     org-indent-indentation-per-level 1)
+    (setq org-startup-indented t
+          org-indent-indentation-per-level 1
+          org-default-notes-file (concat org-directory "/notes.org")
+
+          org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"
+                                 "~/Dropbox/orgfiles/i.org")
+
+          org-capture-templates '(("a" "Appointment" entry (file  "~/Dropbox/Orgfiles/gcal.org" )
+                                   "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+                                  ("l" "Link" entry (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
+                                   "* %? %^L %^g \n%T" :prepend t)
+                                  ("b" "Blog idea" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
+                                   "* %?\n%T" :prepend t)
+                                  ("t" "To Do Item" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "To Do")
+                                   "* TODO %?\n%u" :prepend t)
+                                  ("n" "Note" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Note space")
+                                   "* %?\n%u" :prepend t)
+                                  ("j" "Journal" entry (file+datetree "~/Dropbox/Orgfiles/journal.org")
+                                   "* %?\nEntered on %U\n  %i\n  %a")
+                                  ("s" "Screencast" entry (file "~/Dropbox/Orgfiles/screencastnotes.org")
+                                   "* %?\n%i\n"))))
+
+  (use-package org-gcal
+    :ensure t
+    :config
+    (setq org-gcal-client-id "oauth 2.0 client ID"
+          org-gcal-client-secret "client secret"
+          org-gcal-file-alist '(("zamansky@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
 #+END_SRC
 
 ***** Htmlize for org-mode
@@ -394,7 +552,7 @@
   (use-package go-mode
     :ensure t
     :mode "\\.go"
-    :interpreter "go"
+
     :config
     (require 'go-mode-autoloads)
     (add-hook 'go-mode-hook
@@ -437,6 +595,54 @@
     :mode "\\.scss")
 #+END_SRC
 
+**** JS
+
+#+BEGIN_SRC elisp
+  ;; Enable tern-mode for .js files
+  ;; Enable tide-mode for .ts and .tsx files
+  (defun setup-tide-mode ()
+    (message "Setting tide mode...")
+    (tide-setup)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (prettier-js-mode)
+    (tide-hl-identifier-mode +1)
+    (flycheck-add-mode 'javascript-eslint 'web-mode)
+    (if (string-equal "tsx" (file-name-extension buffer-file-name))
+        (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+      (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
+
+  (use-package tide
+    :ensure t
+    :mode "\\.ts$"
+    :after (flycheck)
+    :hook ((typescript-mode . tide-setup)
+           (typescript-mode . tide-hl-identifier-mode)
+           (before-save . tide-format-before-save)))
+
+  (use-package js2-mode
+    :ensure t
+    :mode ("\\.js$" "\\.mjs$")
+    :hook (js2-mode . (lambda ()
+                        (when (string-equal "js" (file-name-extension buffer-file-name))
+                          (setup-tide-mode)))))
+
+  (use-package web-mode
+    :ensure t
+    :after (tide)
+    :mode ("\\.html$"
+           ;; "\\.js$"
+           ;; "\\.mjs$"
+           "\\.php$"
+           "\\.tsx$")
+    :hook (web-mode . (lambda ()
+                         (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                           (setup-tide-mode))))
+    :config
+    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'") ("js" . "\\.mjs?\\'"))))
+#+END_SRC
+
+
 **** Py
 
 #+BEGIN_SRC emacs-lisp
@@ -451,17 +657,14 @@
                (add-to-list (make-local-variable 'company-backends)
                              '(company-jedi :width company-yasnippet :separate)))))
 #+END_SRC
- 
+
+
 #+BEGIN_SRC emacs-lisp
   ;; (use-package flow-minor-mode
   ;;   :ensure t
   ;;   :minor ("\\.js$" . flow-minor-mode))
 
   (use-package auto-minor-mode
-    :ensure t)
-
-  (use-package prettier-js
-    ;; :minor ("\\.js" . prettier-js-mode)
     :ensure t)
 
   (use-package indium
@@ -564,51 +767,6 @@
                     handkebars
                     emacs-lisp-checkdoc
                     json-jsonlist)))
-
-  ;; Enable flow-mode for .js files
-  (defun setup-flow-mode ()
-    (interactive)
-    (message "Setting flow mode...")
-    (add-to-list (make-local-variable 'company-backends)
-                 '(company-flow :width company-yasnippet :separate)))
-
-  ;; Enable tide-mode for .ts and .tsx files
-  (defun setup-tide-mode ()
-    (interactive)
-    (message "Setting tide mode...")
-    (tide-setup)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
-    (if (string-equal "tsx" (file-name-extension buffer-file-name))
-        (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-      (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
-
-  (use-package tide
-    :ensure t
-    :mode "\\.ts$"
-    :after (flycheck)
-    :hook ((typescript-mode . tide-setup)
-           (typescript-mode . tide-hl-identifier-mode)
-           (before-save . tide-format-before-save)))
-
-  (use-package web-mode
-    :ensure t
-    :after (tide)
-    :mode ("\\.html$"
-           "\\.js$"
-           "\\.php$"
-           "\\.tsx$")
-    :hook (( web-mode . (lambda ()
-                          (when (string-equal "js" (file-name-extension buffer-file-name))
-                            (setup-flow-mode))))
-
-           (web-mode . (lambda ()
-                         (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                           (setup-tide-mode)))))
-    :config
-    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'"))))
 
   (load (concat my-emacs-dir "/keys.el"))
 
