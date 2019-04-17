@@ -26,6 +26,8 @@
                ("--autosquash" "--interactive")
                ("--autostash" "--interactive")
                ("--interactive"))
+ (magit-remote
+  ("-f"))
  (magit-reset nil)
  (magit-run nil)
  (magit-stash nil)

@@ -446,24 +446,23 @@
 ** Dired
 
 #+BEGIN_SRC emacs-lisp
-  (use-package all-the-icons-dired
-    :ensure t)
-
-  (use-package all-the-icons
-    :ensure t
-    :after (all-the-icons-dired)
+  (use-package dired
     :config
-    (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+    (setq insert-directory-program "/usr/local/opt/coreutils/libexec/gnubin/gls")
+    (setq dired-listing-switches "-alXv"))
 
   (use-package diredfl
-    :ensure t)
-
-  (use-package neotree
     :ensure t
-    :after (all-the-icons)
+    :init
+    (diredfl-global-mode 1))
+
+  (use-package ranger
+    :ensure t
+    :init
     :config
-    (setq neo-theme 'icons
-          neo-smart-open t))
+    (setq ranger-modify-header nil
+          ranger-cleanup-on-disable t
+          ranger-show-hidden nil))
 #+END_SRC
 
 ** Tern JS
