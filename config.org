@@ -1,10 +1,8 @@
 #+TITLE: Testing title
 
-* Emacs Initial config
+* Initialiation defaults
 
-** Initialiation defaults
-
-*** Setting default coding system
+** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
   (set-language-environment "UTF-8")
@@ -14,7 +12,7 @@
   (prefer-coding-system 'utf-8)
 #+END_SRC
 
-*** Setting default display and editing options
+** Setting default display and editing options
 
 #+BEGIN_SRC emacs-lisp
   (set-default 'truncate-lines t)
@@ -37,7 +35,8 @@
         ns-use-proxy-icon nil
         frame-title-format "Emacs"
         auto-save-visited-file-name t
-        linum-format " %2d")
+        linum-format " %2d"
+        ns-right-alternate-modifier nil)
 
   (global-unset-key (kbd "C-x C-c"))
   (global-unset-key (kbd "s-w"))
@@ -57,7 +56,7 @@
                       (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
 #+END_SRC
 
-*** TODO COMMENT Setting title format
+** Setting title format
 
 #+BEGIN_SRC emacs-lisp
   (setq frame-title-format
@@ -65,7 +64,7 @@
     ' (dired-directory dired-directory "%b"))))
 #+END_SRC
 
-*** System specyfic defaults 
+** System specyfic defaults 
 
 #+BEGIN_SRC emacs-lisp
   (when (eq system-type 'darwin)
@@ -77,7 +76,7 @@
     (setq ls-lisp-use-insert-directory-program nil))
 #+END_SRC
 
-*** Eshell
+** Eshell
 
 #+BEGIN_SRC emacs-lisp
   (use-package eshell
@@ -98,16 +97,98 @@
                 )))
 #+END_SRC
 
-** Packages
+* Packages
 
-*** Auto minor-mode
+** Auto minor-mode
 
 #+BEGIN_SRC emacs-lisp
   (use-package auto-minor-mode
     :ensure t)
 #+END_SRC
 
-*** Mac Only - initialize emacs with proper PATH
+** Eyebrowser
+
+#+BEGIN_SRC emacs-lisp
+  (use-package eyebrowse
+    :ensure t
+    :init
+    (eyebrowse-mode t))
+#+END_SRC
+
+** Projectile
+
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :ensure t
+    :init
+    (projectile-mode))
+
+#+END_SRC
+
+** Helm
+
+#+BEGIN_SRC emacs-lisp
+  (use-package helm
+    :ensure t
+    :init
+    (helm-mode 1)
+
+    :bind
+    ("M-x"     . helm-M-x)
+    ("M-y"     . helm-show-kill-ring)
+    ("C-x b"   . helm-mini)
+    ("C-x C-f" . helm-find-files)
+    ("C-c p"   .  projectile-command-map)
+
+    :config
+    (defvar helm-M-x-fuzzy-match)
+    (defvar flycheck-mode-map)
+
+    (setq helm-display-header-line nil
+          helm-split-window-preferred-function 'ignore
+          helm-M-x-fuzzy-match t)
+
+    (eval-after-load 'flycheck
+      '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
+
+  (use-package helm-projectile
+    :ensure t
+    :after (helm)
+    :bind
+    ("<f5>" . helm-projectile)
+
+    :config
+    (helm-projectile-on))
+
+  (use-package helm-flycheck
+    :ensure t
+    :after (helm))
+
+  (use-package helm-descbinds
+    :ensure t
+    :after (helm)
+    :init
+    (helm-descbinds-mode))
+#+END_SRC
+
+** Idium - JS debugging tool
+
+#+BEGIN_SRC emacs-lisp
+  (use-package indium
+    :ensure t)
+#+END_SRC
+
+** Multiple Cursors
+
+#+BEGIN_SRC emacs-lisp
+  (use-package multiple-cursors
+    :ensure t
+    :bind
+    ("C->" . mc/mark-next-like-this)
+    ("C-<" . mc/mark-previous-like-this))
+#+END_SRC
+
+** Mac Only - initialize emacs with proper PATH
 
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
@@ -118,7 +199,7 @@
     (exec-path-from-shell-copy-env "GOPATH"))
 #+END_SRC
 
-*** Load theme
+** Load theme
 
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
@@ -127,14 +208,14 @@
     (load-theme 'doom-molokai t))
 #+END_SRC
 
-*** Better defaults
+** Better defaults
 
 #+BEGIN_SRC emacs-lisp
   (use-package better-defaults
     :ensure t)
 #+END_SRC
 
-*** Fixing line highlighting when showing line numbers
+** Fixing line highlighting when showing line numbers
 
 #+BEGIN_SRC emacs-lisp
   (use-package nlinum-hl
@@ -142,7 +223,7 @@
     :config (setq nlinum-highlight-current-line t))
 #+END_SRC
 
-*** Key suffixes popup
+** Key suffixes popup
 
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
@@ -151,12 +232,12 @@
     (which-key-mode)
     :config
     (setq which-key-popup-type 'side-window
-          which-key-side-window-location 'right
+          which-key-side-window-location 'bottom
           which-key-side-window-max-width 0.33
           which-key-side-window-max-height 0.25))
 #+END_SRC
 
-*** Zooming on active windows
+** COMMENT Zooming on active windows
 
 #+BEGIN_SRC emacs-lisp
   (use-package zoom
@@ -169,14 +250,14 @@
           zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
 #+END_SRC
 
-*** Editing forms in chrome
+** Editing forms in chrome
 
 #+BEGIN_SRC emacs-lisp
   (use-package atomic-chrome
     :ensure t)
 #+END_SRC
 
-*** Better help dialogs
+** Better help dialogs
 
 #+BEGIN_SRC emacs-lisp
   (use-package helpful
@@ -186,7 +267,7 @@
            ("C-h k"  . helpful-key)))
 #+END_SRC
 
-*** Better list-package mode
+** Better list-package mode
 
 #+BEGIN_SRC emacs-lisp
   (use-package paradox
@@ -196,7 +277,7 @@
 
 #+END_SRC
 
-*** Cycling between different var notations
+** Cycling between different var notations
 
 #+BEGIN_SRC emacs-lisp
   (use-package string-inflection
@@ -205,7 +286,7 @@
     ("C-c C-u" . string-inflection-all-cycle))
 #+END_SRC
 
-*** Open dash at point
+** Open dash at point
 
 #+BEGIN_SRC emacs-lisp
   (use-package dash-at-point
@@ -215,7 +296,7 @@
     ("C-c e" . dash-at-point-with-docset))
 #+END_SRC
 
-*** Move lines using alt + arrows
+** Move lines using alt + arrows
 
 #+BEGIN_SRC emacs-lisp
   (use-package move-text
@@ -224,7 +305,7 @@
     (move-text-default-bindings))
 #+END_SRC
 
-*** Anzu - current match / all matches in modeline
+** Anzu - current match / all matches in modeline
 
 #+BEGIN_SRC emacs-lisp
   (use-package anzu
@@ -236,7 +317,7 @@
     ("C-M-%" . anzu-query-replace-regexp))
 #+END_SRC
 
-*** Spaceline
+** Spaceline
 
 #+BEGIN_SRC emacs-lisp
   (use-package spaceline
@@ -262,7 +343,7 @@
           spaceline-highlight-face-func 'spaceline-highlight-face-default))
 #+END_SRC
 
-*** Magit - best git client evet
+** Magit - best git client ever
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
@@ -270,12 +351,11 @@
     :init
     :config
     (setq magit-process-finish-apply-ansi-colors t
-          magit-refresh-status-buffer nil
-          auto-revert-buffer-list-filter 'magit-auto-revert-repository-buffers-p)
+          magit-refresh-status-buffer nil)
     (global-set-key (kbd "C-x g") 'magit-status))
 #+END_SRC
 
-*** Abbrev 
+** Abbrev
 
 #+BEGIN_SRC emacs-lisp
   (use-package abbrev
@@ -285,7 +365,7 @@
         (quietly-read-abbrev-file)))
 #+END_SRC
 
-*** Snippets
+** Snippets
 
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
@@ -295,7 +375,7 @@
     :hook (prog-mode . yas-minor-mode))
 #+END_SRC
 
-*** Auto completion
+** Auto completion
 
 #+BEGIN_SRC emacs-lisp
   (use-package company
@@ -314,7 +394,7 @@
           company-backends '()))
 #+END_SRC
 
-*** Flyspell popup
+** Flyspell popup
 
 #+BEGIN_SRC emacs-lisp
   (use-package flyspell-popup
@@ -322,7 +402,7 @@
     :bind ("C-;" . flyspell-popup-correct))
 #+END_SRC
 
-*** Key statistics
+** Key statistics
 
 #+BEGIN_SRC emacs-lisp
   (use-package keyfreq
@@ -343,23 +423,14 @@
     (keyfreq-autosave-mode 1))
 #+END_SRC
 
-*** PDF Tools, exporting to pdf, etc
-
-#+BEGIN_SRC emacs-lisp
-  (use-package pdf-tools
-    :ensure t
-    :config 
-    (pdf-loader-install))
-#+END_SRC
-
-*** Prettier
+** Prettier
 
 #+BEGIN_SRC emacs-lisp
   (use-package prettier-js
     :ensure t)
 #+END_SRC
 
-*** Symbol Overlay
+** Symbol Overlay
 
 #+BEGIN_SRC emacs-lisp
   (use-package symbol-overlay
@@ -372,11 +443,15 @@
     ("<f8>" . symbol-overlay-remove-all))
 #+END_SRC
 
-*** Dired
+** Dired
 
 #+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons-dired
+    :ensure t)
+
   (use-package all-the-icons
-    :ensure all-the-icons-dired
+    :ensure t
+    :after (all-the-icons-dired)
     :config
     (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
 
@@ -384,15 +459,16 @@
     :ensure t)
 
   (use-package neotree
-    :ensure all-the-icons
+    :ensure t
+    :after (all-the-icons)
     :config
     (setq neo-theme 'icons
           neo-smart-open t))
 #+END_SRC
 
-*** Tern JS
+** Tern JS
 
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   (use-package tern
     :ensure company-tern
     :diminish tern-mode
@@ -402,59 +478,11 @@
       (add-hook 'rjsx-mode-hook 'tern-mode))
 #+END_SRC
 
-*** Parrot
+** ReasonML
 
-#+BEGIN_SRC elisp
-  (use-package parrot
-    :config
-    (setq
-     parrot-rotate-dict
-     '(
-       (:rot ("alpha" "beta") :caps t :lower nil)
-       ;; => rotations are "Alpha" "Beta"
-
-       (:rot ("snek" "snake" "stawp"))
-       ;; => rotations are "snek" "snake" "stawp"
-
-       (:rot ("yes" "no") :caps t :upcase t)
-       ;; => rotations are "yes" "no", "Yes" "No", "YES" "NO"
-
-       (:rot ("&" "|"))
-       ;; => rotations are "&" "|"
-
-       ;; default dictionary starts here ('v')
-       (:rot ("begin" "end") :caps t :upcase t)
-       (:rot ("enable" "disable") :caps t :upcase t)
-       (:rot ("enter" "exit") :caps t :upcase t)
-       (:rot ("forward" "backward") :caps t :upcase t)
-       (:rot ("front" "rear" "back") :caps t :upcase t)
-       (:rot ("get" "set") :caps t :upcase t)
-       (:rot ("high" "low") :caps t :upcase t)
-       (:rot ("in" "out") :caps t :upcase t)
-       (:rot ("left" "right") :caps t :upcase t)
-       (:rot ("min" "max") :caps t :upcase t)
-       (:rot ("on" "off") :caps t :upcase t)
-       (:rot ("prev" "next"))
-       (:rot ("start" "stop") :caps t :upcase t)
-       (:rot ("true" "false") :caps t :upcase t)
-       (:rot ("&&" "||"))
-       (:rot ("==" "!="))
-       (:rot ("." "->"))
-       (:rot ("if" "else" "elif"))
-       (:rot ("ifdef" "ifndef"))
-       (:rot ("int8_t" "int16_t" "int32_t" "int64_t"))
-       (:rot ("uint8_t" "uint16_t" "uint32_t" "uint64_t"))
-       (:rot ("1" "2" "3" "4" "5" "6" "7" "8" "9" "10"))
-       (:rot ("1st" "2nd" "3rd" "4th" "5th" "6th" "7th" "8th" "9th" "10th"))
-       ))
-    (parrot-mode))
-#+END_SRC
-
-*** ReasonML
-
-#+BEGIN_SRC elisp
+#+BEGIN_SRC emacs-lisp
   (use-package reason-mode
-    :ensure merlin
+    :ensure t
     :config
     (defun shell-cmd (cmd)
       "Returns the stdout output of a shell command or nil if the command returned
@@ -488,10 +516,9 @@
     (setq merlin-ac-setup t))
 #+END_SRC
 
+** File types
 
-*** File types
-
-**** Orgfiles
+*** Orgfiles
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
@@ -531,14 +558,14 @@
           org-gcal-file-alist '(("zamansky@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
 #+END_SRC
 
-***** Htmlize for org-mode
+**** Htmlize for org-mode
 
 #+BEGIN_SRC emacs-lisp
   (use-package htmlize
     :ensure t)
 #+END_SRC
 
-**** YAML
+*** YAML
 
 #+BEGIN_SRC emacs-lisp
   (use-package yaml-mode
@@ -546,7 +573,7 @@
     :mode "\\.yaml")
 #+END_SRC
 
-**** GO
+*** GO
 
 #+BEGIN_SRC emacs-lisp
   (use-package go-mode
@@ -563,7 +590,7 @@
                 (local-set-key (kbd "M-.") 'godef-jump))))
 #+END_SRC
 
-**** JSON
+*** JSON
 
 #+BEGIN_SRC emacs-lisp
   (use-package json-mode
@@ -575,7 +602,7 @@
 
 #+END_SRC
 
-**** CSS
+*** CSS
 
 #+BEGIN_SRC emacs-lisp
   (use-package css-mode
@@ -587,7 +614,7 @@
                              '(company-css :width company-yasnippet :separate)))))
 #+END_SRC
 
-**** SCSS
+*** SCSS
 
 #+BEGIN_SRC emacs-lisp
   (use-package scss-mode
@@ -595,11 +622,17 @@
     :mode "\\.scss")
 #+END_SRC
 
-**** JS
+*** JS
 
-#+BEGIN_SRC elisp
-  ;; Enable tern-mode for .js files
+#+BEGIN_SRC emacs-lisp
   ;; Enable tide-mode for .ts and .tsx files
+  (use-package typescript-mode
+    :ensure t
+    :mode "\\.ts$"
+    :afetr (prettier-js)
+    :hook ((typescript-mode . tide-setup)
+           (before-save . tide-format-before-save)))
+
   (defun setup-tide-mode ()
     (message "Setting tide mode...")
     (tide-setup)
@@ -608,17 +641,14 @@
     (prettier-js-mode)
     (tide-hl-identifier-mode +1)
     (flycheck-add-mode 'javascript-eslint 'web-mode)
+    (flycheck-add-mode 'javascript-eslint 'typescript-mode)
     (if (string-equal "tsx" (file-name-extension buffer-file-name))
         (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
       (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
 
   (use-package tide
     :ensure t
-    :mode "\\.ts$"
-    :after (flycheck)
-    :hook ((typescript-mode . tide-setup)
-           (typescript-mode . tide-hl-identifier-mode)
-           (before-save . tide-format-before-save)))
+    :after (flycheck typescript-mode))
 
   (use-package js2-mode
     :ensure t
@@ -631,19 +661,16 @@
     :ensure t
     :after (tide)
     :mode ("\\.html$"
-           ;; "\\.js$"
-           ;; "\\.mjs$"
            "\\.php$"
            "\\.tsx$")
     :hook (web-mode . (lambda ()
                          (when (string-equal "tsx" (file-name-extension buffer-file-name))
                            (setup-tide-mode))))
     :config
-    (setq web-mode-content-types-alist '(("jsx" . "\\.js[x]?\\'") ("js" . "\\.mjs?\\'"))))
+    (setq web-mode-content-types-alist '(("jsx" . "\\.tsx\\'") ("jsx" . "\\.js[x]?\\'") ("js" . "\\.mjs?\\'"))))
 #+END_SRC
 
-
-**** Py
+*** Py
 
 #+BEGIN_SRC emacs-lisp
   (use-package python-mode
@@ -658,73 +685,13 @@
                              '(company-jedi :width company-yasnippet :separate)))))
 #+END_SRC
 
+* Other
 
 #+BEGIN_SRC emacs-lisp
-  ;; (use-package flow-minor-mode
-  ;;   :ensure t
-  ;;   :minor ("\\.js$" . flow-minor-mode))
-
-  (use-package auto-minor-mode
-    :ensure t)
-
-  (use-package indium
-    :ensure t)
-
-  (use-package multiple-cursors
-    :ensure t
-    :bind
-    ("C->" . mc/mark-next-like-this)
-    ("C-<" . mc/mark-previous-like-this))
-
   (use-package editorconfig
     :ensure t
     :init
     (editorconfig-mode 1))
-
-  (use-package projectile
-    :ensure t
-    :init
-    (projectile-mode))
-
-  (use-package helm
-    :ensure t
-    :init
-    (helm-mode 1)
-
-    :bind
-    ("M-x"     . helm-M-x)
-    ("M-y"     . helm-show-kill-ring)
-    ("C-x b"   . helm-mini)
-    ("C-x C-f" . helm-find-files)
-    ("C-c p"   .  projectile-command-map)
-
-    :config
-    (defvar helm-M-x-fuzzy-match)
-    (defvar flycheck-mode-map)
-
-    (setq helm-display-header-line nil
-          helm-split-window-preferred-function 'ignore
-          helm-M-x-fuzzy-match t)
-
-    (eval-after-load 'flycheck
-      '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
-
-  (use-package helm-projectile
-    :ensure t
-    :bind
-    ("<f5>" . helm-projectile)
-
-    :config
-    (helm-projectile-on))
-
-  (use-package helm-flycheck
-    :ensure t
-    :after 'helm)
-
-  (use-package helm-descbinds
-    :ensure t
-    :init
-    (helm-descbinds-mode))
 
   (use-package popwin
     :ensure t
@@ -792,4 +759,3 @@
   (put 'dired-find-alternate-file 'disabled nil)
 
 #+END_SRC
-
