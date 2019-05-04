@@ -61,7 +61,7 @@
 #+BEGIN_SRC emacs-lisp
   (setq frame-title-format
     '("Emacs - " (buffer-file-name "%f"
-    ' (dired-directory dired-directory "%b"))))
+    '(dired-directory dired-directory "%b"))))
 #+END_SRC
 
 ** System specyfic defaults 
@@ -138,7 +138,7 @@
     ("M-y"     . helm-show-kill-ring)
     ("C-x b"   . helm-mini)
     ("C-x C-f" . helm-find-files)
-    ("C-c p"   .  projectile-command-map)
+    ("C-c p"   . projectile-command-map)
 
     :config
     (defvar helm-M-x-fuzzy-match)
@@ -459,6 +459,7 @@
   (use-package ranger
     :ensure t
     :init
+    (ranger-override-dired-mode t)
     :config
     (setq ranger-modify-header nil
           ranger-cleanup-on-disable t
@@ -627,8 +628,9 @@
   ;; Enable tide-mode for .ts and .tsx files
   (use-package typescript-mode
     :ensure t
-    :mode "\\.ts$"
-    :afetr (prettier-js)
+    :mode ("\\.ts$"
+           "\\.js$")
+    :after (prettier-js)
     :hook ((typescript-mode . tide-setup)
            (before-save . tide-format-before-save)))
 
@@ -638,6 +640,7 @@
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (eldoc-mode +1)
     (prettier-js-mode)
+    (company-mode +1)
     (tide-hl-identifier-mode +1)
     (flycheck-add-mode 'javascript-eslint 'web-mode)
     (flycheck-add-mode 'javascript-eslint 'typescript-mode)
@@ -649,13 +652,6 @@
     :ensure t
     :after (flycheck typescript-mode))
 
-  (use-package js2-mode
-    :ensure t
-    :mode ("\\.js$" "\\.mjs$")
-    :hook (js2-mode . (lambda ()
-                        (when (string-equal "js" (file-name-extension buffer-file-name))
-                          (setup-tide-mode)))))
-
   (use-package web-mode
     :ensure t
     :after (tide)
@@ -666,7 +662,7 @@
                          (when (string-equal "tsx" (file-name-extension buffer-file-name))
                            (setup-tide-mode))))
     :config
-    (setq web-mode-content-types-alist '(("jsx" . "\\.tsx\\'") ("jsx" . "\\.js[x]?\\'") ("js" . "\\.mjs?\\'"))))
+    (setq web-mode-content-types-alist '(("jsx" . "\\.tsx\\'") ("jsx" . "\\.js[x]?\\'"))))
 #+END_SRC
 
 *** Py
