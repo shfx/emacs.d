@@ -21,9 +21,11 @@
         kill-region
         markdown-exdent-or-delete
         markdown-outdent-or-delete
+        move-text-up
         nxml-electric-slash
         org-end-of-line
         org-force-self-insert
+        org-self-insert-command
         scroll-right
         string-inflection-all-cycle
         tern-find-definition
@@ -49,6 +51,7 @@
         flycheck-error-list-set-filter
         helm-projectile
         isearch-abort
+        isearch-delete-char
         isearch-printing-char
         js2-down-mouse-3
         js2-mode-show-node

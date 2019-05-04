@@ -642,7 +642,6 @@
     (prettier-js-mode)
     (company-mode +1)
     (tide-hl-identifier-mode +1)
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
     (flycheck-add-mode 'javascript-eslint 'typescript-mode)
     (if (string-equal "tsx" (file-name-extension buffer-file-name))
         (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
@@ -655,29 +654,41 @@
   (use-package web-mode
     :ensure t
     :after (tide)
-    :mode ("\\.html$"
-           "\\.php$"
-           "\\.tsx$")
+    :mode ("\\.html\\'"
+           "\\.php\\'"
+           "\\.tsx\\'")
     :hook (web-mode . (lambda ()
                          (when (string-equal "tsx" (file-name-extension buffer-file-name))
                            (setup-tide-mode))))
     :config
-    (setq web-mode-content-types-alist '(("jsx" . "\\.tsx\\'") ("jsx" . "\\.js[x]?\\'"))))
+    (setq web-mode-content-types-alist
+          '(("jsx" . "\\.tsx\\'")
+            ("jsx" . "\\.js[x]?\\'")
+            ("js" . "\\.mjs?\\'")
+            ("html" . "\\.html\\'"))))
 #+END_SRC
 
 *** Py
 
 #+BEGIN_SRC emacs-lisp
+  (use-package elpy
+    :ensure t
+    :config
+    (elpy-enable))
+
+  (use-package py-autopep8
+    :ensure t
+    :hook (elpy-mode py-autopep8-enable-on-save))
+
   (use-package python-mode
     :ensure t
     :mode "\\.py"
     :interpreter "py"
     :config
-    (use-package company-jedi)
-    (add-hook 'python-mode-hook
-              (lambda ()
-               (add-to-list (make-local-variable 'company-backends)
-                             '(company-jedi :width company-yasnippet :separate)))))
+    (setq python-shell-interpreter "ipython"
+          python-shell-interpreter-args "-i --simple-prompt")
+
+  )
 #+END_SRC
 
 * Other

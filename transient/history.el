@@ -4,6 +4,7 @@
  (magit-cherry-pick
   ("--ff"))
  (magit-commit nil
+               ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
                ("--reset-author"))
  (magit-diff nil
              ("--no-ext-diff" "--stat"))
@@ -20,7 +21,8 @@
  (magit-merge nil)
  (magit-pull nil
              ("--rebase"))
- (magit-push nil)
+ (magit-push nil
+             ("--force-with-lease"))
  (magit-rebase nil
                ("--autosquash")
                ("--autosquash" "--interactive")
@@ -31,4 +33,5 @@
  (magit-reset nil)
  (magit-run nil)
  (magit-stash nil)
- (magit-submodule nil))
+ (magit-submodule nil)
+ (magit:--author "Marcin Wiśniowski <shfx@shfx.pl>"))

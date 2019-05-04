@@ -13,7 +13,8 @@
 
 (load custom-file)
 
-(add-to-list 'initial-frame-alist '(fullscreen . maximized))
+(custom-set-variables
+ '(initial-frame-alist (quote ((fullscreen . maximized)))))
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
 

@@ -61,6 +61,9 @@
      (vim-mode . "vim")
      (yaml-mode . "chef,ansible")
      (web-mode . "javascript,html,css,react,nodejs"))))
+ '(elpy-modules
+   (quote
+    (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-autodoc elpy-module-sane-defaults)))
  '(enable-recursive-minibuffers nil)
  '(eshell-visual-commands
    (quote
@@ -69,6 +72,8 @@
  '(fci-rule-color "#424748")
  '(flycheck-javascript-flow-args nil)
  '(gc-cons-threshold 16777216)
+ '(global-eldoc-mode t)
+ '(global-nlinum-mode t)
  '(highlight-changes-colors (quote ("#ff8eff" "#ab7eff")))
  '(highlight-symbol-idle-delay 0.2)
  '(highlight-tail-colors
@@ -81,11 +86,7 @@
      ("#A75B00" . 70)
      ("#F309DF" . 85)
      ("#424748" . 100))))
- '(initial-frame-alist
-   (quote
-    ((menu-bar-lines . 0)
-     (tool-bar-lines . 0)
-     (fullscreen . maximized))))
+ '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(jdee-db-active-breakpoint-face-colors (cons "#1B2229" "#fd971f"))
  '(jdee-db-requested-breakpoint-face-colors (cons "#1B2229" "#b6e63e"))
  '(jdee-db-spec-breakpoint-face-colors (cons "#1B2229" "#525254"))
@@ -112,12 +113,14 @@
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
  '(minibuffer-prompt-properties (quote (read-only t face minibuffer-prompt)))
  '(neo-theme (quote icons))
+ '(nlinum-use-right-margin t)
+ '(nlinum-widen nil)
  '(ns-right-alternate-modifier (quote none))
  '(org-agenda-files nil)
  '(org-indent-indentation-per-level 1)
  '(package-selected-packages
    (quote
-    (restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config diminish dotenv-mode ranger auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config diminish dotenv-mode ranger auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -151,9 +154,10 @@
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
  '(projectile-enable-caching t)
- '(tramp-default-method "ssh" nil (tramp))
- '(tramp-default-proxies-alist nil nil (tramp))
- '(tramp-save-ad-hoc-proxies t nil (tramp))
+ '(python-shell-interpreter "python3")
+ '(tramp-default-method "ssh")
+ '(tramp-default-proxies-alist nil)
+ '(tramp-save-ad-hoc-proxies t)
  '(typescript-enabled-frameworks (quote (typescript)))
  '(typescript-indent-level 2)
  '(vc-annotate-background nil)
