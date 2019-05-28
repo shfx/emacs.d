@@ -1,6 +1,10 @@
-#+TITLE: Testing title
+#+TITLE: ~.emacs.d~
 
-Install Emacs with homebrew
+* Synopsis
+
+Emacs configuration files written with the help of [[https://orgmode.org/][org-mode]] and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]]
+
+* Install Emacs with ~homebrew~
 
 #+BEGIN_SRC shell
   brew cask install emacs
@@ -268,7 +272,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (use-package doom-themes
     :ensure t
     :init
-    (load-theme 'doom-molokai t))
+    (load-theme 'doom-one t))
 #+END_SRC
 
 ** Better defaults
@@ -379,7 +383,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     ("C-M-%" . anzu-query-replace-regexp))
 #+END_SRC
 
-** Spaceline
+** COMMENT Spaceline
 
 #+BEGIN_SRC emacs-lisp
   (use-package spaceline
@@ -404,6 +408,15 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
           spaceline-window-numbers-unicode t
           spaceline-highlight-face-func 'spaceline-highlight-face-default))
 #+END_SRC
+
+** Modeline
+
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :hook (after-init . doom-modeline-mode))
+#+END_SRC
+
 
 ** Magit - best git client ever
 

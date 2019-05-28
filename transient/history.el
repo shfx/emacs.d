@@ -21,8 +21,7 @@
  (magit-pull nil
              ("--rebase"))
  (magit-push
-  ("--force-with-lease")
-  nil)
+  ("--force-with-lease"))
  (magit-rebase nil
                ("--autosquash")
                ("--autosquash" "--interactive")

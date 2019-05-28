@@ -14,7 +14,7 @@
  (position . 140))
 ("org-capture-last-stored"
  (filename . "~/Dropbox/Orgfiles/todo.org")
- (front-context-string . "** TODO Add comm")
+ (front-context-string . "** TODO Customiz")
  (rear-context-string . "ayouts\n\n* To Do\n")
  (position . 149))
 ("zshrc"

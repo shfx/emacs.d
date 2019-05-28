@@ -10,3 +10,4 @@ tramp
 *.cache
 /network-security.data
 /README.el
+/README.html
