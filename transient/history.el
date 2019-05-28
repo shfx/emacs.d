@@ -1,13 +1,16 @@
 ((magit-blame
   ("-w"))
  (magit-branch nil)
- (magit-cherry-pick
-  ("--ff"))
- (magit-commit nil
-               ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
-               ("--reset-author"))
- (magit-diff nil
-             ("--no-ext-diff" "--stat"))
+ (magit-cherry-pick nil
+                    ("--ff"))
+ (magit-commit
+  ("--no-verify")
+  nil
+  ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
+  ("--reset-author"))
+ (magit-diff
+  ("--no-ext-diff" "--stat")
+  nil)
  (magit-dispatch nil)
  (magit-fetch nil
               ("--prune"))
@@ -28,8 +31,6 @@
                ("--autosquash" "--interactive")
                ("--autostash" "--interactive")
                ("--interactive"))
- (magit-remote
-  ("-f"))
  (magit-reset nil)
  (magit-run nil)
  (magit-stash nil)

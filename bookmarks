@@ -2,16 +2,21 @@
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("projects"
+(("copy this"
+ (filename . "~/Projects/work/desktop/common/resources/shared/toolkit/search_box/search.css")
+ (front-context-string . "\n  background-po")
+ (rear-context-string . "rch_loupe.svg); ")
+ (position . 5453))
+("projects"
  (filename . "~/Projects/")
  (front-context-string . ".\n  lrwxr-xr-x  ")
  (rear-context-string . "480 04-25 19:57 ")
  (position . 140))
 ("org-capture-last-stored"
  (filename . "~/Dropbox/Orgfiles/todo.org")
- (front-context-string . "** TODO Interfac")
- (rear-context-string . "klazan\n\n* To Do\n")
- (position . 327))
+ (front-context-string . "** TODO Add comm")
+ (rear-context-string . "ayouts\n\n* To Do\n")
+ (position . 149))
 ("zshrc"
  (filename . "~/.zshrc")
  (front-context-string . "# If you come fr")

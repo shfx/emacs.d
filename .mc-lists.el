@@ -26,10 +26,12 @@
         org-end-of-line
         org-force-self-insert
         org-self-insert-command
+        org-yank
         scroll-right
         string-inflection-all-cycle
         tern-find-definition
         tern-get-docs
+        typescript-insert-and-indent
         upcase-region
         wdired-finish-edit
         yaml-electric-backspace
