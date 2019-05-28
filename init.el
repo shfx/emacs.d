@@ -40,4 +40,4 @@
   :defer nil
   :ensure t)
 
-(org-babel-load-file "~/.emacs.d/config.org")
+(org-babel-load-file "~/.emacs.d/README.org")

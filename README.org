@@ -511,6 +511,10 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 ** Dired
 
+I've tried ~[[https://github.com/ralesi/ranger.el][ranger-mode~]] with it's simplier ~[[https://github.com/ralesi/ranger.el#minimal-ranger-mode-deer][deer-mode~]] and I must say, nothing beets good old [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]].
+
+With some additions of course, like [[https://github.com/purcell/diredfl][~diredfl~]] for colors and [[https://gitlab.com/xuhdev/dired-quick-sort][~dired-quick-sort~]] for better sorting with native ~gnu ls~
+
 #+BEGIN_SRC emacs-lisp
   (use-package dired
     :config
@@ -521,6 +525,14 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     :ensure t
     :init
     (diredfl-global-mode 1))
+
+  (use-package dired-quick-sort
+    :ensure t
+    :custom
+    ((ls-lisp-use-insert-directory-program t)
+     (insert-directory-program "/usr/local/bin/gls"))
+    :config
+    (dired-quick-sort-setup))
 #+END_SRC
 
 ** Tern JS
