@@ -617,9 +617,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (setq org-gcal-client-id "oauth 2.0 client ID"
           org-gcal-client-secret "client secret"
           org-gcal-file-alist '(("zamansky@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
-
-  (use-package org-protocol 
-    :ensure t)
 #+END_SRC
 
 **** Htmlize for org-mode
