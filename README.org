@@ -101,16 +101,17 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
                       (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
 #+END_SRC
 
-** Default trash behaviour
+** Default trash behavior
 
 #+BEGIN_SRC emacs-lisp
   (use-package osx-trash
     :ensure t
     :if (eq system-type 'darwin)
+    :init
+    (osx-trash-setup)
     :config
     (setq delete-by-moving-to-trash t))
 #+END_SRC
-
 
 ** Setting title format
 
@@ -414,6 +415,14 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
     :ensure t
+    :custom
+    ((doom-modeline-icon t)
+     (doom-modeline-major-mode-icon t)
+     (doom-modeline-major-mode-color-icon t)
+     (doom-modeline-buffer-state-icon t)
+     (doom-modeline-buffer-modification-icon t)
+     (doom-modeline-minor-modes nil)
+     (doom-modeline-checker-simple-format t))
     :hook (after-init . doom-modeline-mode))
 #+END_SRC
 
@@ -609,6 +618,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (("C-c l" . org-store-link)
      ("C-c a" . org-agenda)
      ("C-c c" . org-capture))
+    :custom
+    ((org-tags-column 0))
     :config
     (setq org-startup-indented t
           org-indent-indentation-per-level 1

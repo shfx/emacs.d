@@ -18,10 +18,12 @@
   ("-n256" "--graph" "--decorate")
   ("-n256" "--decorate"))
  (magit-merge nil)
- (magit-pull nil
-             ("--rebase"))
+ (magit-pull
+  ("--rebase")
+  nil)
  (magit-push
-  ("--force-with-lease"))
+  ("--force-with-lease")
+  nil)
  (magit-rebase nil
                ("--autosquash")
                ("--autosquash" "--interactive")
