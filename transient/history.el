@@ -7,6 +7,15 @@
                ("--reset-author"))
  (magit-diff nil
              ("--no-ext-diff" "--stat"))
+ (magit-cherry-pick nil
+                    ("--ff"))
+ (magit-commit nil
+               ("--no-verify")
+               ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
+               ("--reset-author"))
+ (magit-diff
+  ("--no-ext-diff" "--stat")
+  nil)
  (magit-dispatch nil)
  (magit-fetch nil
               ("--prune"))
