@@ -1,14 +1,7 @@
 ((magit-blame
   ("-w"))
  (magit-branch nil)
- (magit-cherry-pick
-  ("--ff"))
- (magit-commit nil
-               ("--reset-author"))
- (magit-diff nil
-             ("--no-ext-diff" "--stat"))
- (magit-cherry-pick nil
-                    ("--ff"))
+ (magit-cherry-pick nil)
  (magit-commit nil
                ("--no-verify")
                ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
@@ -21,27 +14,25 @@
               ("--prune"))
  (magit-gitignore nil)
  (magit-log
+  ("-n256" "--author=Marcin Wisniowski <mwisniowski@opera.com>" "--graph" "--decorate")
+  ("-n256" "--author=Marcin Wisniowski <mwisniowski@opera.com>" "--graph" "--color" "--decorate")
   ("-n256" "--graph" "--decorate")
   ("-n256" "--graph" "--color" "--decorate"))
  (magit-log-refresh
   ("-n256" "--graph" "--decorate")
   ("-n256" "--decorate"))
  (magit-merge nil)
- (magit-pull
-  ("--rebase")
-  nil)
- (magit-push
-  ("--force-with-lease")
-  nil)
+ (magit-pull nil
+             ("--rebase"))
+ (magit-push nil
+             ("--force-with-lease"))
  (magit-rebase nil
                ("--autosquash")
                ("--autosquash" "--interactive")
                ("--autostash" "--interactive")
                ("--interactive"))
- (magit-remote
-  ("-f"))
  (magit-reset nil)
  (magit-run nil)
  (magit-stash nil)
  (magit-submodule nil)
- (magit-worktree nil))
+ (magit:--author "Marcin Wisniowski <mwisniowski@opera.com>" "Marcin Wiśniowski <shfx@shfx.pl>"))

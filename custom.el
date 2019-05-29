@@ -118,6 +118,7 @@
  '(js3-square-indent-offset 2)
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
+ '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
  '(minibuffer-prompt-properties (quote (read-only t face minibuffer-prompt)))
@@ -129,7 +130,7 @@
  '(org-indent-indentation-per-level 1)
  '(package-selected-packages
    (quote
-    (helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config diminish dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -164,7 +165,7 @@
  '(pos-tip-foreground-color "#242728")
  '(projectile-enable-caching t)
  '(python-shell-interpreter "python3")
- '(tramp-default-method "ssh" nil (tramp))
+ '(tramp-default-method "ssh")
  '(tramp-default-proxies-alist nil nil (tramp))
  '(tramp-save-ad-hoc-proxies t nil (tramp))
  '(typescript-enabled-frameworks (quote (typescript)))

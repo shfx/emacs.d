@@ -156,6 +156,55 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     :hook (eshell-mode . esh-autosuggest-mode))
 #+END_SRC
 
+** Shackle
+
+[[https://github.com/wasamasa/shackle][This mode]] helps you manage sizing and position of the newly opened buffers
+
+#+BEGIN_SRC emacs-lisp
+  (use-package shackle
+    :ensure t
+    :custom
+    ((helm-display-function #'pop-to-buffer)
+     (shackle-rules 
+      '(("*helm-ag*"              :select t   :align right :size 0.5)
+        ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
+        ("*helm org inbuffer*"    :select t   :align right :size 0.4)
+        ("*eshell*"               :select t   :other t)
+        (magit-popup-mode         :select t   :align right :size 0.4)
+        (magit-status-mode        :select t   :inhibit-window-quit t :other t)
+        (magit-log-mode           :select t   :inhibit-window-quit t: :same t)
+        (flycheck-error-list-mode :select nil :align below :size 0.25)
+        (compilation-mode         :select nil :align below :size 0.25)
+        (messages-buffer-mode     :select t   :align below :size 0.25)
+        (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+        (ert-results-mode         :select t   :align below :size 0.5)
+        (calendar-mode            :select t   :align below :size 0.25)
+        (racer-help-mode          :select t   :align right :size 0.5)
+        (help-mode                :select t   :align right :size 0.5)
+        (helpful-mode             :select t   :align right :size 0.5)
+        (" *Deletions*"           :select t   :align below :size 0.25)
+        (" *Marked Files*"        :select t   :align below :size 0.25)
+        ("*Org Select*"           :select t   :align below :size 0.33)
+        ("*Org Note*"             :select t   :align below :size 0.33)
+        ("*Org Links*"            :select t   :align below :size 0.2)
+        (" *Org todo*"            :select t   :align below :size 0.2)
+        ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+        ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
+        ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t))))
+    :config
+    (shackle-mode t))
+#+END_SRC
+
+** Editor Config
+
+#+BEGIN_SRC emacs-lisp
+  (use-package editorconfig
+    :ensure t
+    :init
+    (editorconfig-mode 1))
+#+END_SRC
+
+
 * Packages
 
 ** Expand region
@@ -433,10 +482,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (use-package magit
     :ensure t
     :init
+    :bind ("C-x g" . magit-status)
+    :custom
+    ((vc-handled-backends nil)
+     (magit-process-finish-apply-ansi-colors t)
+     (magit-refresh-status-buffer nil))
     :config
-    (setq magit-process-finish-apply-ansi-colors t
-          magit-refresh-status-buffer nil)
-    (global-set-key (kbd "C-x g") 'magit-status))
+    (remove-hook 'magit-refs-sections-hook 'magit-insert-tags))
 #+END_SRC
 
 ** Abbrev
@@ -608,6 +660,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+END_SRC
 
 ** File types
+
+*** Markdown
+
+#+BEGIN_SRC emacs-lisp
+  (use-package markdown-mode
+    :ensure t
+    :mode "\\.md")
+#+END_SRC
 
 *** Orgfiles
 
@@ -789,53 +849,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 * Other
 
 #+BEGIN_SRC emacs-lisp
-  (use-package editorconfig
-    :ensure t
-    :init
-    (editorconfig-mode 1))
-
-  (use-package popwin
-    :ensure t
-    :config
-    (popwin-mode 1)
-    (push '("^\\*helm.*\\*$"   :height 0.3 :regexp t :position bottom) popwin:special-display-config)
-    (push '("*magit-commit*"   :noselect t :height 40 :width 80 :stick t) popwin:special-display-config)
-    (push '("*magit-diff*"     :noselect t :height 40 :width 80) popwin:special-display-config)
-    (push '("*magit-edit-log*" :noselect t :height 15 :width 80) popwin:special-display-config))
-
-  (use-package markdown-mode
-    :ensure t
-    :mode "\\.md")
-
-  ;; TODO: move diminish to use-package config
-  (use-package diminish
-    :ensure t
-    :config
-    (diminish 'yas-minor-mode)
-    (diminish 'anzu-mode)
-    (diminish 'auto-revert-mode)
-    (diminish 'flycheck-mode)
-    (diminish 'company-mode)
-    ;; (diminish 'golden-ratio-mode)
-    (diminish 'helm-mode)
-    (diminish 'editorconfig-mode))
-
-  (use-package flycheck-flow
-    :ensure t)
-
-  (use-package flycheck
-    :ensure t
-    :hook (after-init . global-flycheck-mode)
-    :config
-    (flycheck-add-mode 'javascript-eslint 'web-mode)
-    (flycheck-add-mode 'javascript-flow 'web-mode)
-    (setq-default flycheck-disabled-checkers
-                  '(javascript-jscs
-                    javascript-jshint
-                    handkebars
-                    emacs-lisp-checkdoc
-                    json-jsonlist)))
-
   (load (concat my-emacs-dir "/keys.el"))
 
   (add-hook 'before-save-hook 'my-delete-trailing-whitespace)

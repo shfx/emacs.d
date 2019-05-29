@@ -14,7 +14,7 @@
  (position . 140))
 ("org-capture-last-stored"
  (filename . "~/Dropbox/Orgfiles/todo.org")
- (front-context-string . "** TODO Test evi")
+ (front-context-string . "** TODO https://")
  (rear-context-string . "ayouts\n\n* To Do\n")
  (position . 149))
 ("zshrc"
