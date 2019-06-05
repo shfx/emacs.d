@@ -42,7 +42,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   curl -fsSL https://raw.github.com/zachcurry/emacs-anywhere/master/install | bash
 #+END_SRC
 
-
 * Initialiation defaults
 
 ** Setting default coding system
@@ -204,7 +203,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (editorconfig-mode 1))
 #+END_SRC
 
-
 * Packages
 
 ** Expand region
@@ -288,6 +286,18 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (helm-descbinds-mode))
 #+END_SRC
 
+** Ivy / Swiper
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ivy
+    :config
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (setq enable-recursive-minibuffers t)
+    :ensure t)
+#+END_SRC
+
+
 ** Idium - JS debugging tool
 
 #+BEGIN_SRC emacs-lisp
@@ -322,7 +332,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (use-package doom-themes
     :ensure t
     :init
-    (load-theme 'doom-one t))
+    (load-theme 'doom-molokai t))
 #+END_SRC
 
 ** Better defaults
@@ -679,29 +689,30 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
      ("C-c a" . org-agenda)
      ("C-c c" . org-capture))
     :custom
-    ((org-tags-column 0))
+    ((org-tags-column  0)
+     (org-ellipsis " ...")
+     (org-startup-indented t)
+     (org-indent-indentation-per-level 1)
+     (org-default-notes-file (concat org-directory "/notes.org"))
+     (org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"
+                             "~/Dropbox/orgfiles/i.org"))
+     (org-capture-templates '(("a" "Appointment" entry (file  "~/Dropbox/Orgfiles/gcal.org" )
+                               "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+                              ("l" "Link" entry (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
+                               "* %? %^L %^g \n%T" :prepend t)
+                              ("b" "Blog idea" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
+                               "* %?\n%T" :prepend t)
+                              ("t" "Todo Item" entry
+                               (file+headline "~/Dropbox/Orgfiles/todo.org" "Todo")
+                               "* TODO %?\n:PROPERTIES:\n:CREATED: %u\n:END:" :prepend t :empty-lines 1)
+                              ("n" "Note" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Note space")
+                               "* %?\n%u" :prepend t)
+                              ("j" "Journal" entry (file+datetree "~/Dropbox/Orgfiles/journal.org")
+                               "* %?\nEntered on %U\n  %i\n  %a")
+                              ("s" "Screencast" entry (file "~/Dropbox/Orgfiles/screencastnotes.org")
+                               "* %?\n%i\n"))))
     :config
-    (setq org-startup-indented t
-          org-indent-indentation-per-level 1
-          org-default-notes-file (concat org-directory "/notes.org")
-
-          org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"
-                                 "~/Dropbox/orgfiles/i.org")
-
-          org-capture-templates '(("a" "Appointment" entry (file  "~/Dropbox/Orgfiles/gcal.org" )
-                                   "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
-                                  ("l" "Link" entry (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
-                                   "* %? %^L %^g \n%T" :prepend t)
-                                  ("b" "Blog idea" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
-                                   "* %?\n%T" :prepend t)
-                                  ("t" "To Do Item" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "To Do")
-                                   "* TODO %?\n%u" :prepend t)
-                                  ("n" "Note" entry (file+headline "~/Dropbox/Orgfiles/todo.org" "Note space")
-                                   "* %?\n%u" :prepend t)
-                                  ("j" "Journal" entry (file+datetree "~/Dropbox/Orgfiles/journal.org")
-                                   "* %?\nEntered on %U\n  %i\n  %a")
-                                  ("s" "Screencast" entry (file "~/Dropbox/Orgfiles/screencastnotes.org")
-                                   "* %?\n%i\n"))))
+    (print "Org-mode loaded"))
 
   (use-package org-bullets
     :hook (org-mode . (lambda () (org-bullets-mode 1)))
@@ -713,6 +724,53 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (setq org-gcal-client-id "oauth 2.0 client ID"
           org-gcal-client-secret "client secret"
           org-gcal-file-alist '(("zamansky@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+
+  (use-package org-super-agenda
+    :init
+    :custom
+    (org-super-agenda-groups
+     ;; Each group has an implicit boolean OR operator between its selectors.
+     '((:name "Today"        ; Optionally specify section name
+              :time-grid t   ; Items that appear on the time grid
+              :todo "TODAY") ; Items that have this TODO keyword
+       (:name "Important"
+              ;; Single arguments given alone
+              :tag "bills"
+              :priority "A")
+       ;; Set order of multiple groups at once
+       (:order-multi (2 (:name "Shopping in town"
+                               ;; Boolean AND group matches items that match all subgroups
+                               :and (:tag "shopping" :tag "@town"))
+                        (:name "Food-related"
+                               ;; Multiple args given in list with implicit OR
+                               :tag ("food" "dinner"))
+                        (:name "Personal"
+                               :habit t
+                               :tag "personal")
+                        (:name "Space-related (non-moon-or-planet-related)"
+                               ;; Regexps match case-insensitively on the entire entry
+                               :and (:regexp ("space" "NASA")
+                                             ;; Boolean NOT also has implicit OR between selectors
+                                             :not (:regexp "moon" :tag "planet")))))
+       ;; Groups supply their own section names when none are given
+       (:todo "WAITING" :order 8)  ; Set order of this section
+       (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+              ;; Show this group at the end of the agenda (since it has the
+              ;; highest number). If you specified this group last, items
+              ;; with these todo keywords that e.g. have priority A would be
+              ;; displayed in that group instead, because items are grouped
+              ;; out in the order the groups are listed.
+              :order 9)
+       (:priority<= "B"
+                    ;; Show this section after "Today" and "Important", because
+                    ;; their order is unspecified, defaulting to 0. Sections
+                    ;; are displayed lowest-number-first.
+                    :order 1)
+       ;; After the last group, the agenda will display items that didn't
+       ;; match any of these groups, with the default order position of 99
+       ))
+    (org-super-agenda-mode)
+    :ensure t)
 #+END_SRC
 
 **** Htmlize for org-mode
@@ -797,14 +855,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (prettier-js-mode)
     (company-mode +1)
     (tide-hl-identifier-mode +1)
-    (flycheck-add-mode 'javascript-eslint 'typescript-mode)
-    (if (string-equal "tsx" (file-name-extension buffer-file-name))
-        (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-      (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
+    (flycheck-add-mode 'javascript-eslint 'typescript-mode))
 
   (use-package tide
     :ensure t
-    :after (flycheck typescript-mode))
+    :after (flycheck typescript-mode)
+    :config
+    (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
+    (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append)))
 
   (use-package web-mode
     :ensure t
