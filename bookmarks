@@ -22,6 +22,9 @@
  (front-context-string . "** TODO CMD+P Li")
  (rear-context-string . "\n\n* Todo [0/0]\n\n")
  (position . 175))
+ (front-context-string . "** TODO https://")
+ (rear-context-string . " switch\n* To Do\n")
+ (position . 2314))
 ("zshrc"
  (filename . "~/.zshrc")
  (front-context-string . "# If you come fr")

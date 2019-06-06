@@ -11,3 +11,6 @@ tramp
 /network-security.data
 /README.el
 /README.html
+/.emacs.desktop
+/.emacs.desktop.lock
+/history
