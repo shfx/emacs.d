@@ -64,6 +64,20 @@
      (vim-mode . "vim")
      (yaml-mode . "chef,ansible")
      (web-mode . "javascript,html,css,react,nodejs"))))
+ '(dashboard-banner-logo-title "Siemanko" t)
+ '(dashboard-center-content t)
+ '(dashboard-items
+   (quote
+    ((recents . 5)
+     (bookmarks . 5)
+     (projects . 5)
+     (agenda . 5)
+     (registers . 5))) t)
+ '(dashboard-set-file-icons t)
+ '(dashboard-set-heading-icons t)
+ '(dashboard-set-navigator t)
+ '(dashboard-show-shortcuts nil)
+ '(dashboard-startup-banner [VALUE] t)
  '(doom-modeline-buffer-modification-icon t t)
  '(doom-modeline-buffer-state-icon t t)
  '(doom-modeline-checker-simple-format t t)
@@ -75,6 +89,8 @@
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-autodoc elpy-module-sane-defaults)))
  '(enable-recursive-minibuffers nil)
+ '(eshell-highlight-prompt nil t)
+ '(eshell-prompt-function (quote epe-theme-lambda) t)
  '(eshell-visual-commands
    (quote
     ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
@@ -133,14 +149,82 @@
  '(nlinum-use-right-margin t)
  '(nlinum-widen nil)
  '(ns-right-alternate-modifier (quote none))
+ '(ns-use-proxy-icon nil t)
  '(org-agenda-files
    (quote
     ("~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/i.org")))
+ '(org-capture-templates
+   (quote
+    (("a" "Appointment" entry
+      (file "~/Dropbox/Orgfiles/gcal.org")
+      "* %?
+
+%^T
+
+:PROPERTIES:
+
+:END:
+
+")
+     ("l" "Link" entry
+      (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
+      "* %? %^L %^g
+%T" :prepend t)
+     ("b" "Blog idea" entry
+      (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
+      "* %?
+%T" :prepend t)
+     ("t" "Todo Item" entry
+      (file+headline "~/Dropbox/Orgfiles/todo.org" "Todo")
+      "* TODO %?
+:PROPERTIES:
+:CREATED: %u
+:END:" :prepend t :empty-lines 1)
+     ("n" "Note" entry
+      (file+headline "~/Dropbox/Orgfiles/todo.org" "Note space")
+      "* %?
+%u" :prepend t)
+     ("j" "Journal" entry
+      (file+datetree "~/Dropbox/Orgfiles/journal.org")
+      "* %?
+Entered on %U
+  %i
+  %a")
+     ("s" "Screencast" entry
+      (file "~/Dropbox/Orgfiles/screencastnotes.org")
+      "* %?
+%i
+"))) t)
+ '(org-default-notes-file "~/org/notes.org")
+ '(org-ellipsis " ...")
  '(org-indent-indentation-per-level 1)
+ '(org-startup-indented t)
+ '(org-super-agenda-groups
+   (quote
+    ((:name "Today" :time-grid t :todo "TODAY")
+     (:name "Important" :tag "bills" :priority "A")
+     (:order-multi
+      (2
+       (:name "Shopping in town" :and
+              (:tag "shopping" :tag "@town"))
+       (:name "Food-related" :tag
+              ("food" "dinner"))
+       (:name "Personal" :habit t :tag "personal")
+       (:name "Space-related (non-moon-or-planet-related)" :and
+              (:regexp
+               ("space" "NASA")
+               :not
+               (:regexp "moon" :tag "planet")))))
+     (:todo "WAITING" :order 8)
+     (:todo
+      ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+      :order 9)
+     (:priority<= "B" :order 1))))
+ '(org-super-agenda-mode nil)
  '(org-tags-column 0)
  '(package-selected-packages
    (quote
-    (counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (toc-org org-sticky-header eshell-up eshell-prompt-extras counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async popwin helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -173,7 +257,9 @@
      (slime-connection-list-mode))))
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
+ '(projectile-completion-system (quote ivy))
  '(projectile-enable-caching t)
+ '(projectile-switch-project-action (quote projectile-dired))
  '(python-shell-interpreter "python3")
  '(shackle-rules
    (quote

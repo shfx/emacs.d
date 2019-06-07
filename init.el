@@ -1,43 +1,30 @@
-(package-initialize)
+(let ((gc-cons-threshold most-positive-fixnum))
 
-(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+  (require 'package)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+  (setq-default
+   load-prefer-newer t
+   package-enable-at-startup nil)
 
-(defvar my-emacs-dir "~/.emacs.d")
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
-(setq custom-file (concat my-emacs-dir "/custom.el"))
+  (package-initialize)
 
-(load custom-file)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
 
-(custom-set-variables
- '(initial-frame-alist (quote ((fullscreen . maximized)))))
-(add-to-list 'default-frame-alist '(ns-appearance . dark))
-(add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (setq-default
+   use-package-always-defer t
+   use-package-always-ensure t)
 
-(use-package org
-  :ensure org-plus-contrib
-  :bind
-  (("C-c l" . org-store-link)
-   ("C-c a" . org-agenda)
-   ("C-c c" . org-capture))
-  :config
-  (setq
-   org-startup-indented t
-   org-indent-indentation-per-level 1
-   org-default-notes-file (concat org-directory "/notes.org")))
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 
-(use-package doom-themes
-  :ensure t
-  :init
-  (load-theme 'doom-molokai))
+  (load custom-file)
 
+  (use-package org
+    :ensure org-plus-contrib)
 
-(use-package auto-minor-mode
-  :defer nil
-  :ensure t)
-
-(org-babel-load-file "~/.emacs.d/README.org")
+  (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
+  (garbage-collect))

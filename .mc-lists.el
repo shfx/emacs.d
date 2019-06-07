@@ -10,6 +10,7 @@
         electric-newline-and-maybe-indent
         forward-sexp
         helm-M-x
+        helm-find-files
         helm-show-kill-ring
         indent-for-tab-command
         isearch-backward-regexp

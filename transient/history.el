@@ -1,7 +1,9 @@
 ((magit-blame
   ("-w"))
  (magit-branch nil)
- (magit-cherry-pick nil)
+ (magit-cherry-pick
+  ("--ff")
+  nil)
  (magit-commit nil
                ("--no-verify")
                ("--author=Marcin Wiśniowski <shfx@shfx.pl>")
@@ -35,4 +37,5 @@
  (magit-run nil)
  (magit-stash nil)
  (magit-submodule nil)
+ (magit-tag nil)
  (magit:--author "Marcin Wisniowski <mwisniowski@opera.com>" "Marcin Wiśniowski <shfx@shfx.pl>"))

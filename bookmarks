@@ -19,7 +19,7 @@
  (position . 140))
 ("org-capture-last-stored"
  (filename . "~/Dropbox/Orgfiles/todo.org")
- (front-context-string . "** TODO CMD+P Li")
+ (front-context-string . "** TODO Check br")
  (rear-context-string . "\n\n* Todo [0/0]\n\n")
  (position . 175))
  (front-context-string . "** TODO https://")
