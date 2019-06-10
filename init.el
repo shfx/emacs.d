@@ -16,7 +16,6 @@
     (package-install 'use-package))
 
   (setq-default
-   use-package-always-defer t
    use-package-always-ensure t)
 
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -24,6 +23,7 @@
   (load custom-file)
 
   (use-package org
+    :defer nil
     :ensure org-plus-contrib)
 
   (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))

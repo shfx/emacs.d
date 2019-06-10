@@ -12,7 +12,7 @@ Emacs configuration files written with the help of [[https://orgmode.org/][org-m
 
 Add this to file:~/Library/LaunchAgents/gnu.emacs.daemon.plist
 
-#+BEGIN_SRC text
+#+BEGIN_SRC xml
   <?xml version="1.0" encoding="UTF-8"?>
   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
   <plist version="1.0">
@@ -66,21 +66,29 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (global-linum-mode 0)
   (desktop-save-mode 1)
   (savehist-mode 1)
-  (setq inhibit-splash-screen t
-        inhibit-startup-message t
-        pop-up-frames nil
-        visible-bell 'top-bottom
-        ring-bell-function 'ignore
-        transient-mark-mode t
-        show-paren-mode 1
-        make-backup-files nil
-        auto-save-default nil
-        vc-handled-backends nil
-        ns-use-proxy-icon nil
-        frame-title-format "Emacs"
-        auto-save-visited-file-name t
-        linum-format " %2d"
-        ns-right-alternate-modifier nil)
+
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1)
+
+  (setq
+   inhibit-splash-screen t
+   inhibit-startup-message t
+   pop-up-frames nil
+   visible-bell 'top-bottom
+   ring-bell-function 'ignore
+   transient-mark-mode t
+   show-paren-mode 1
+   make-backup-files nil
+   auto-save-default nil
+   vc-handled-backends nil
+   ns-use-proxy-icon nil
+   frame-title-format "Emacs"
+   auto-save-visited-file-name t
+   linum-format " %2d"
+   ns-right-alternate-modifier nil)
+
+  (fset 'yes-or-no-p 'y-or-n-p)
 
   (global-unset-key (kbd "C-x C-c"))
   (global-unset-key (kbd "s-w"))
@@ -117,7 +125,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package osx-trash
-    :ensure t
     :if (eq system-type 'darwin)
     :init
     (osx-trash-setup)
@@ -149,7 +156,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package eshell
-    :ensure t
     :hook
     (eshell-mode . (lambda ()
                      (eshell-cmpl-initialize)
@@ -166,15 +172,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (use-package eshell-prompt-extras
     :custom
     ((eshell-highlight-prompt nil)
-     (eshell-prompt-function 'epe-theme-lambda))
-    :ensure t)
+     (eshell-prompt-function 'epe-theme-lambda)))
 
   (use-package aweshell
     :load-path "elisp/"
     :ensure nil)
 
   (use-package esh-autosuggest
-    :ensure t
     :hook (eshell-mode . esh-autosuggest-mode))
 #+END_SRC
 
@@ -184,7 +188,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package shackle
-    :ensure t
     :custom
     ((helm-display-function #'pop-to-buffer)
      (shackle-rules 
@@ -221,7 +224,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package editorconfig
-    :ensure t
     :init
     (editorconfig-mode 1))
 #+END_SRC
@@ -232,31 +234,33 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package expand-region
-    :bind ("C-=" . er/expand-region)
-    :ensure t)
+    :bind ("C-=" . er/expand-region))
 #+END_SRC
 
 ** Auto minor-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package auto-minor-mode
-    :ensure t)
+  (use-package auto-minor-mode)
 #+END_SRC
 
 ** Eyebrowser
 
 #+BEGIN_SRC emacs-lisp
   (use-package eyebrowse
-    :ensure t
     :init
     (eyebrowse-mode t))
 #+END_SRC
+
+** All the icons
+
+#+BEGIN_SRC emacs-lisp
+  (use-package all-the-icons)
+#+END_SRC 
 
 ** Projectile
 
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
-    :ensure t
     :custom
     ((projectile-enable-caching t)
      (ns-use-proxy-icon nil)
@@ -271,28 +275,38 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
-    :ensure t
     :custom
-    (dashboard-banner-logo-title "Siemanko")
-    (dashboard-center-content t)
-    (dashboard-show-shortcuts nil)
-    (dashboard-items '((recents  . 5)
-                          (bookmarks . 5)
-                          (projects . 5)
-                          (agenda . 5)
-                          (registers . 5)))
-    (dashboard-set-heading-icons t)
-    (dashboard-set-file-icons t)
-    (dashboard-set-navigator t)
+    ((dashboard-set-heading-icons t)
+     (dashboard-set-file-icons t)
+     (dashboard-banner-logo-title "Welcome to Emacs")
+     (dashboard-items
+      '((recents . 3)
+        ;; (bookmarks . 5)
+        (agenda . 5)
+        (projects . 5)
+        (registers . 5)))
+     (dashboard-startup-banner 'logo)
+     (dashboard-center-content t)
+     (dashboard-show-shortcuts nil)
+     (dashboard-navigator-buttons
+      `((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
+         "Homepage"
+         "Browse homepage"
+         (lambda (&rest _) (browse-url "homepage")))
+        ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) 'warning)
+        ("?" "Help" "?/h" #'show-help nil "<" ">"))))
     :config
     (dashboard-setup-startup-hook))
+
+  (use-package page-break-lines)
+
+  (use-package dashboard-hackernews)
 #+END_SRC
 
 ** Helm
 
 #+BEGIN_SRC emacs-lisp
   (use-package helm
-    :ensure t
     :init
     (helm-mode 1)
 
@@ -315,7 +329,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
       '(define-key flycheck-mode-map (kbd "C-c ! h") 'helm-flycheck)))
 
   (use-package helm-projectile
-    :ensure t
     :after (helm)
     :bind
     ("<f5>" . helm-projectile)
@@ -324,11 +337,9 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (helm-projectile-on))
 
   (use-package helm-flycheck
-    :ensure t
     :after (helm))
 
   (use-package helm-descbinds
-    :ensure t
     :after (helm)
     :init
     (helm-descbinds-mode))
@@ -340,22 +351,19 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (use-package ivy
     :config
     (setq ivy-use-virtual-buffers t)
-    (setq enable-recursive-minibuffers t)
-    :ensure t)
+    (setq enable-recursive-minibuffers t))
 #+END_SRC
 
 ** Idium - JS debugging tool
 
 #+BEGIN_SRC emacs-lisp
-  (use-package indium
-    :ensure t)
+  (use-package indium)
 #+END_SRC
 
 ** Multiple Cursors
 
 #+BEGIN_SRC emacs-lisp
   (use-package multiple-cursors
-    :ensure t
     :bind
     ("C->" . mc/mark-next-like-this)
     ("C-<" . mc/mark-previous-like-this))
@@ -366,7 +374,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
     :if (memq window-system '(mac ns x))
-    :ensure t
     :config
     (exec-path-from-shell-initialize)
     (exec-path-from-shell-copy-env "GOPATH"))
@@ -376,7 +383,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
-    :ensure t
     :init
     (load-theme 'doom-molokai t))
 #+END_SRC
@@ -384,15 +390,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 ** Better defaults
 
 #+BEGIN_SRC emacs-lisp
-  (use-package better-defaults
-    :ensure t)
+  (use-package better-defaults)
 #+END_SRC
 
 ** Fixing line highlighting when showing line numbers
 
 #+BEGIN_SRC emacs-lisp
   (use-package nlinum-hl
-    :ensure t
     :config (setq nlinum-highlight-current-line t))
 #+END_SRC
 
@@ -400,7 +404,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package which-key
-    :ensure t
     :init
     (which-key-mode)
     :config
@@ -414,7 +417,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package zoom
-    :ensure t
     :init
     (zoom-mode)
     :config
@@ -425,15 +427,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 ** Editing forms in chrome
 
 #+BEGIN_SRC emacs-lisp
-  (use-package atomic-chrome
-    :ensure t)
+  (use-package atomic-chrome)
 #+END_SRC
 
 ** Better help dialogs
 
 #+BEGIN_SRC emacs-lisp
   (use-package helpful
-    :ensure t
     :bind (("C-h f"  . helpful-callable)
            ("C-h v"  . helpful-variable)
            ("C-h k"  . helpful-key)))
@@ -443,7 +443,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package paradox
-    :ensure t
     :config
     (paradox-enable))
 
@@ -453,7 +452,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package string-inflection
-    :ensure t
     :bind
     ("C-c C-u" . string-inflection-all-cycle))
 #+END_SRC
@@ -462,7 +460,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package dash-at-point
-    :ensure t
     :bind
     ("C-c d" . dash-at-point)
     ("C-c e" . dash-at-point-with-docset))
@@ -472,7 +469,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package move-text
-    :ensure t
     :config
     (move-text-default-bindings))
 #+END_SRC
@@ -481,7 +477,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package anzu
-    :ensure t
     :init
     (global-anzu-mode +1)
     :bind
@@ -493,7 +488,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package doom-modeline
-    :ensure t
     :custom
     ((doom-modeline-icon t)
      (doom-modeline-major-mode-icon t)
@@ -509,7 +503,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package magit
-    :ensure t
     :init
     :bind ("C-x g" . magit-status)
     :custom
@@ -534,7 +527,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
-    :ensure t
     :config
     (yas-reload-all)
     :hook (prog-mode . yas-minor-mode))
@@ -544,7 +536,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package company
-    :ensure t
     :init
     (global-company-mode)
     :bind
@@ -559,7 +550,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
           company-backends '()))
 
   (use-package company-box
-    :ensure t
+    
     :hook (company-mode . company-box-mode))
 #+END_SRC
 
@@ -567,7 +558,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package flyspell-popup
-    :ensure t
     :bind ("C-;" . flyspell-popup-correct))
 #+END_SRC
 
@@ -575,7 +565,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package keyfreq
-    :ensure t
     :config
     (setq keyfreq-excluded-commands
           '(
@@ -595,15 +584,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 ** Prettier
 
 #+BEGIN_SRC emacs-lisp
-  (use-package prettier-js
-    :ensure t)
+  (use-package prettier-js)
 #+END_SRC
 
 ** Symbol Overlay
 
 #+BEGIN_SRC emacs-lisp
   (use-package symbol-overlay
-    :ensure t
     :bind
     ("M-i" . symbol-overlay-put)
     ("M-n" . symbol-overlay-switch-forward)
@@ -626,12 +613,10 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (setq dired-listing-switches "-alXv"))
 
   (use-package diredfl
-    :ensure t
     :init
     (diredfl-global-mode 1))
 
   (use-package dired-quick-sort
-    :ensure t
     :custom
     ((ls-lisp-use-insert-directory-program t)
      (insert-directory-program "/usr/local/bin/gls"))
@@ -655,7 +640,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package reason-mode
-    :ensure t
     :config
     (defun shell-cmd (cmd)
       "Returns the stdout output of a shell command or nil if the command returned
@@ -689,6 +673,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (setq merlin-ac-setup t))
 #+END_SRC
 
+** Flycheck
+
+#+BEGIN_SRC emacs-lisp
+#+END_SRC
+
+
 ** Flyspell
 
 #+BEGIN_SRC emacs-lisp
@@ -711,16 +701,17 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package org
-    :ensure nil
     :hook
-    (org-mode org-sticky-header-mode)
+    ((org-mode . org-sticky-header-mode)
+     (org-mode . toc-org-enable))
+  
     :bind
     (("C-c l" . org-store-link)
      ("C-c a" . org-agenda)
      ("C-c c" . org-capture))
+
     :custom
     ((org-startup-indented t)
-   
      (org-tags-column  0)
      (org-ellipsis " ...")
      (org-startup-indented t)
@@ -743,7 +734,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
                                "* %?\nEntered on %U\n  %i\n  %a")
                               ("s" "Screencast" entry (file "~/Dropbox/Orgfiles/screencastnotes.org")
                                "* %?\n%i\n"))))
-    :config
+    :init
     (print "Org-mode loaded"))
 #+END_SRC
 
@@ -817,15 +808,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 **** Htmlize for org-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package htmlize
-    :ensure t)
+  (use-package htmlize)
 #+END_SRC
 
 *** YAML
 
 #+BEGIN_SRC emacs-lisp
   (use-package yaml-mode
-    :ensure t
     :mode "\\.yaml")
 #+END_SRC
 
@@ -833,9 +822,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package go-mode
-    :ensure t
     :mode "\\.go"
-
     :config
     (require 'go-mode-autoloads)
     (add-hook 'go-mode-hook
@@ -850,7 +837,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package json-mode
-    :ensure t
     :mode "\\.json$"
     :interpreter "json"
     :config
@@ -862,7 +848,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package css-mode
-    :ensure t
     :mode "\\.css"
     :config
     :hook (css-mode . (lambda ()
@@ -874,7 +859,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package scss-mode
-    :ensure t
     :mode "\\.scss")
 #+END_SRC
 
@@ -883,7 +867,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
   ;; Enable tide-mode for .ts and .tsx files
   (use-package typescript-mode
-    :ensure t
     :mode ("\\.ts$"
            "\\.js$")
     :hook ((typescript-mode . setup-tide-mode)))
@@ -899,13 +882,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (flycheck-add-mode 'javascript-eslint 'typescript-mode))
 
   (use-package tide
-    :ensure t
+    
     :after (flycheck typescript-mode)
     :config
     (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
     (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append))
   (use-package web-mode
-    :ensure t
+    
     :after (tide)
     :mode ("\\.html\\'"
            "\\.php\\'"
@@ -925,16 +908,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
   (use-package elpy
-    :ensure t
     :config
     (elpy-enable))
 
   (use-package py-autopep8
-    :ensure t
     :hook (elpy-mode py-autopep8-enable-on-save))
 
   (use-package python-mode
-    :ensure t
     :mode "\\.py"
     :interpreter "py"
     :config
@@ -957,16 +937,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (when (derived-mode-p 'prog-mode)
       (delete-trailing-whitespace)))
 
-  (setq initial-frame-alist
-        '((menu-bar-lines . 0)
-          (tool-bar-lines . 0)))
-
-  (setq-default indent-tabs-mode nil)
-  (setq-default c-basic-offset 2)
-  (setq-default tab-width 2)
-  (fset 'yes-or-no-p 'y-or-n-p)
-
   (message ".emacs loaded successfully.")
+
   (put 'downcase-region 'disabled nil)
   (put 'upcase-region 'disabled nil)
   (put 'dired-find-alternate-file 'disabled nil)
