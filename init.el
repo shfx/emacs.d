@@ -22,9 +22,7 @@
 
   (load custom-file)
 
-  (use-package org
-    :defer nil
-    :ensure org-plus-contrib)
+  (use-package org :defer nil :ensure org-plus-contrib)
 
   (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
   (garbage-collect))

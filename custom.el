@@ -72,6 +72,27 @@
      (agenda . 5)
      (projects . 5)
      (registers . 5))) t)
+ '(dashboard-navigator-buttons
+   (quote
+    ((#("" 0 1
+        (rear-nonsticky t display
+                        (raise 0.0)
+                        font-lock-face
+                        (:family "github-octicons" :height 1.32)
+                        face
+                        (:family "github-octicons" :height 1.32)))
+      "Homepage" "Browse homepage"
+      (lambda
+        (&rest _)
+        (browse-url "homepage")))
+     ("★" "Star" "Show stars"
+      (lambda
+        (&rest _)
+        (show-stars))
+      (quote warning))
+     ("?" "Help" "?/h"
+      (function show-help)
+      nil "<" ">"))) t)
  '(dashboard-set-file-icons t)
  '(dashboard-set-heading-icons t)
  '(dashboard-show-shortcuts nil)
