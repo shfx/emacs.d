@@ -64,16 +64,19 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (set-window-margins nil 0 0)
   (electric-pair-mode 1)
   (line-number-mode 0)
-  (column-number-mode 0)
+  (column-number-mode 1)
   (global-linum-mode 0)
   (desktop-save-mode 1)
   (savehist-mode 1)
+  (delete-selection-mode 1)
+  (global-auto-revert-mode 1)
 
   (menu-bar-mode -1)
   (tool-bar-mode -1)
   (toggle-scroll-bar -1)
 
   (setq
+   desktop-save t
    inhibit-splash-screen t
    inhibit-startup-message t
    pop-up-frames nil
@@ -87,7 +90,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
    ns-use-proxy-icon nil
    frame-title-format "Emacs"
    auto-save-visited-file-name t
-   linum-format " %2d"
    ns-right-alternate-modifier nil)
 
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -109,8 +111,8 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
                     (let ((old-face-attribute (face-attribute 'default :height)))
                       (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
 
-  (custom-set-variables
-   '(initial-frame-alist (quote ((fullscreen . maximized)))))
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (toggle-frame-maximized)
 
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
@@ -120,7 +122,25 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package auto-minor-mode)
+#+END_SRC
 
+** Ensure system-package
+#+BEGIN_SRC emacs-lisp
+  (use-package system-packages)
+  (use-package use-package-ensure-system-package)
+
+  (defun string/ends-with (string suffix)
+    "Return t if STRING ends with SUFFIX."
+    (and (string-match (rx-to-string `(: ,suffix eos) t) string) t))
+
+  (defun tangle-init ()
+    "If the current buffer is 'emacs.org' the code-blocks are tangled, and the tangled file is compiled."
+    (when (string/ends-with (buffer-file-name) ".emacs.d/README.org")
+      (let ((prog-mode-hook nil))
+        (org-babel-tangle)
+        (byte-compile-file (concat user-emacs-directory "README.el")))))
+
+  (add-hook 'after-save-hook 'tangle-init)
 #+END_SRC
 
 ** Default trash behavior
@@ -134,7 +154,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (setq delete-by-moving-to-trash t))
 #+END_SRC
 
-** Setting title format
+** COMMENT Setting title format
 
 #+BEGIN_SRC emacs-lisp
   (setq frame-title-format
@@ -142,7 +162,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     '(dired-directory dired-directory "%b"))))
 #+END_SRC
 
-** System specyfic defaults 
+** System specyfic defaults
 
 #+BEGIN_SRC emacs-lisp
   (when (eq system-type 'darwin)
@@ -154,7 +174,23 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (setq ls-lisp-use-insert-directory-program nil))
 #+END_SRC
 
-** Eshell
+** Disabling suspend-frame binding
+
+Very annoying binding, lets get rid of it.
+
+#+BEGIN_SRC emacs-lisp
+  (global-unset-key (kbd "C-z"))
+#+END_SRC
+
+* Packages
+
+** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
+
+*Eshell* is a shell written entirely in Emacs-Lisp, and it replicates
+most of the features and commands from GNU CoreUtils and the
+Bourne-like shells. So by re-writing common commands like ls and cp in
+Emacs-Lisp, Eshell will function identically on any environment Emacs
+itself runs on.
 
 #+BEGIN_SRC emacs-lisp
   (use-package eshell
@@ -164,49 +200,93 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
                      (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
                      (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)
                      (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all)))
-    :config
-    (setq
-     helm-show-completion-display-function #'helm-show-completion-default-display-function
-     eshell-prompt-function (lambda ()
-                              (concat (getenv "USER") "@"
-                                      (if (= (user-uid) 0) " # " " $ ")))))
 
-  (use-package eshell-prompt-extras
     :custom
-    ((eshell-highlight-prompt nil)
-     (eshell-prompt-function 'epe-theme-lambda)))
-
-  (use-package aweshell
-    :load-path "elisp/"
-    :ensure nil)
+    ((helm-show-completion-display-function #'helm-show-completion-default-display-function)
+     (eshell-banner-message ""))
+    :config
+    (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter))
 
   (use-package esh-autosuggest
+    :after eshell
     :hook (eshell-mode . esh-autosuggest-mode))
+
+  (use-package xterm-color
+    :after eshell
+    :custom
+    (comint-output-filter-functions
+        (remove 'ansi-color-process-output comint-output-filter-functions))
+    (eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
+    :hook
+    (eshell-before-prompt .
+                          (lambda ()
+                            (setq xterm-color-preserve-properties t)))
+    :config
+    (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
+    (setenv "TERM" "xterm-256color"))
+
+  (use-package eshell-up
+    :after eshell)
+
+  (use-package shrink-path
+    :after eshell
+    :custom
+    ((eshell-prompt-regexp "^.*❯ ")
+     (eshell-prompt-function
+      (lambda nil
+        (let ((base/dir (shrink-path-prompt default-directory)))
+          (concat (propertize (car base/dir)
+                              'face 'font-lock-comment-face)
+                  (propertize (cdr base/dir)
+                              'face 'font-lock-constant-face)
+                  ;; (propertize (+eshell--current-git-branch)
+                  ;;             'face 'font-lock-function-name-face)
+                  (propertize " ❯" 'face 'eshell-prompt-face)
+                  ;; needed for the input text to not have prompt face
+                  (propertize " " 'face 'default)))))))
 #+END_SRC
 
-** Shackle
+#+RESULTS:
 
-[[https://github.com/wasamasa/shackle][This mode]] helps you manage sizing and position of the newly opened buffers
+** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
+
+Simple functionality to show/hide eshell/ansi-term (or almost any
+other buffer, see eshell-toggle-init-function description below) at
+the bottom of active window with directory of its buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package eshell-toggle
+    :after eshell
+    :custom
+    (eshell-toggle-size-fraction 3)
+    (eshell-toggle-use-projectile-root t)
+    (eshell-toggle-run-command nil)
+    :bind
+    ("s-`" . eshell-toggle))
+#+END_SRC
+
+** Shackle ([[https://github.com/wasamasa/shackle][link]])
+
+*Shackle* gives you the means to put an end to popped up buffers not
+behaving they way you'd like them to. By setting up simple rules you
+can for instance make Emacs always select help buffers for you or make
+everything reuse your currently selected window.
 
 #+BEGIN_SRC emacs-lisp
   (use-package shackle
     :custom
-    ((helm-display-function #'pop-to-buffer)
-     (shackle-rules 
+    ((shackle-rules
       '(("*helm-ag*"              :select t   :align right :size 0.5)
         ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
         ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-        ("*eshell*"               :select t   :other t)
-        (magit-popup-mode         :select t   :align right :size 0.4)
-        (magit-status-mode        :select t   :inhibit-window-quit t :other t)
+        ("*eshell*"               :select t   :inhibit-window-quit t :other t)
+        (magit-status-mode        :select t   :inhibit-window-quit t :align right)
         (magit-log-mode           :select t   :inhibit-window-quit t: :same t)
         (flycheck-error-list-mode :select nil :align below :size 0.25)
         (compilation-mode         :select nil :align below :size 0.25)
         (messages-buffer-mode     :select t   :align below :size 0.25)
         (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-        (ert-results-mode         :select t   :align below :size 0.5)
         (calendar-mode            :select t   :align below :size 0.25)
-        (racer-help-mode          :select t   :align right :size 0.5)
         (help-mode                :select t   :align right :size 0.5)
         (helpful-mode             :select t   :align right :size 0.5)
         (" *Deletions*"           :select t   :align below :size 0.25)
@@ -222,7 +302,15 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (shackle-mode t))
 #+END_SRC
 
-** Editor Config
+** Editor Config ([[https://github.com/editorconfig/editorconfig-emacs][link]])
+
+*EditorConfig* helps maintain consistent coding styles for multiple
+developers working on the same project across various editors and
+IDEs. The EditorConfig project consists of a file format for defining
+coding styles and a collection of text editor plugins that enable
+editors to read the file format and adhere to defined
+styles. EditorConfig files are easily readable and they work nicely
+with version control systems.
 
 #+BEGIN_SRC emacs-lisp
   (use-package editorconfig
@@ -230,13 +318,42 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (editorconfig-mode 1))
 #+END_SRC
 
-* Packages
+** Dimmer ([[https://github.com/gonewest818/dimmer.el][link]])
+
+This module provides a minor mode that indicates which buffer is
+currently active by dimming the faces in the other buffers.
+
+#+BEGIN_SRC emacs-lisp
+    (use-package dimmer
+      :custom
+      ((dimmer-fraction 0.35)
+       (dimmer-exclusion-predicates '(helm--alive-p window-minibuffer-p))
+       (dimmer-exclusion-regexp-list
+        '("^\\*[h|H]elm.*\\*" "^\\*Minibuf-[0-9]+\\*"
+          "^.\\*which-key\\*$" "^*Messages*" "*LV*")))
+      :config
+      (dimmer-mode))
+#+END_SRC
+
+** Posframe
+
+#+BEGIN_SRC emacs-lisp
+  (use-package posframe
+    :ensure t)
+#+END_SRC
+
 
 ** Expand region
 
 #+BEGIN_SRC emacs-lisp
   (use-package expand-region
     :bind ("C-=" . er/expand-region))
+#+END_SRC
+
+** Restart Emacs
+
+#+BEGIN_SRC emacs-lisp
+  (use-package restart-emacs)
 #+END_SRC
 
 ** Auto minor-mode
@@ -253,13 +370,22 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (eyebrowse-mode t))
 #+END_SRC
 
-** All the icons
+** All the icons ([[https://github.com/domtronn/all-the-icons.el][link]])
+
+A utility package to collect various Icon Fonts and propertize them
+within Emacs.
 
 #+BEGIN_SRC emacs-lisp
-  (use-package all-the-icons)
-#+END_SRC 
+  (use-package all-the-icons
+    :custom
+    (inhibit-compacting-font-caches t))
+#+END_SRC
 
-** Projectile
+** Projectile ([[https://github.com/bbatsov/projectile][link]])
+
+Projectile is a project interaction library for Emacs. Its goal is to
+provide a nice set of features operating on a project level without
+introducing external dependencies (when feasible)
 
 #+BEGIN_SRC emacs-lisp
   (use-package projectile
@@ -276,33 +402,35 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 ** Dashboard
 
 #+BEGIN_SRC emacs-lisp
-  (use-package dashboard
-    :custom
-    ((dashboard-set-heading-icons t)
-     (dashboard-set-file-icons t)
-     (dashboard-banner-logo-title "Welcome to Emacs")
-     (dashboard-items
-      '((recents . 3)
-        ;; (bookmarks . 5)
-        (agenda . 5)
-        (projects . 5)
-        (registers . 5)))
-     (dashboard-startup-banner 'logo)
-     (dashboard-center-content t)
-     (dashboard-show-shortcuts nil)
-     (dashboard-navigator-buttons
-      `((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
-         "Homepage"
-         "Browse homepage"
-         (lambda (&rest _) (browse-url "homepage")))
-        ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) 'warning)
-        ("?" "Help" "?/h" #'show-help nil "<" ">"))))
-    :config
-    (dashboard-setup-startup-hook))
+    (use-package dashboard
+      :custom
+      (
+       (initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+       (dashboard-set-heading-icons t)
+       (dashboard-set-file-icons t)
+       (dashboard-banner-logo-title "Welcome to Emacs")
+       (dashboard-items
+        '((recents . 3)
+          ;; (bookmarks . 5)
+          (agenda . 5)
+          (projects . 5)
+          (registers . 5)))
+       (dashboard-startup-banner 'logo)
+       (dashboard-center-content t)
+       (dashboard-show-shortcuts nil)
+       (dashboard-navigator-buttons
+        `((,(all-the-icons-octicon "mark-github" :height 1.1 :v-adjust 0.0)
+           "Homepage"
+           "Browse homepage"
+           (lambda (&rest _) (browse-url "homepage")))
+          ("★" "Star" "Show stars" (lambda (&rest _) (show-stars)) 'warning)
+          ("?" "Help" "?/h" #'show-help nil "<" ">"))))
+      :config
+      (dashboard-setup-startup-hook))
 
-  (use-package page-break-lines)
+    (use-package page-break-lines)
 
-  (use-package dashboard-hackernews)
+    (use-package dashboard-hackernews)
 #+END_SRC
 
 ** Helm
@@ -312,12 +440,17 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     :init
     (helm-mode 1)
 
-    :bind
-    ("M-x"     . helm-M-x)
-    ("M-y"     . helm-show-kill-ring)
-    ("C-x b"   . helm-mini)
-    ("C-x C-f" . helm-find-files)
-    ("C-c p"   . projectile-command-map)
+    :custom
+    (helm-ff-lynx-style-map t)
+
+    :bind (("M-x"     . helm-M-x)
+           ("M-y"     . helm-show-kill-ring)
+           ("C-x b"   . helm-mini)
+           ("C-x C-f" . helm-find-files)
+           ("C-c p"   . projectile-command-map)
+           :map helm-map
+           ("<left>" . helm-previous-source)
+           ("<right>" . helm-next-source))
 
     :config
     (defvar helm-M-x-fuzzy-match)
@@ -345,6 +478,9 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     :after (helm)
     :init
     (helm-descbinds-mode))
+
+  (use-package helm-org)
+  (use-package helm-org-rifle)
 #+END_SRC
 
 ** Ivy / Swiper
@@ -354,7 +490,57 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     :config
     (setq ivy-use-virtual-buffers t)
     (setq enable-recursive-minibuffers t))
+
+  (use-package swiper)
+
+  (use-package ivy-posframe
+    :custom
+    ;; (ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-window-center)))
+    ;; (ivy-posframe-display-functions-alist '((t . ivy-posframe-display)))
+    (ivy-posframe-display-functions-alist
+     '((swiper          . ivy-posframe-display)
+       (complete-symbol . ivy-posframe-display)
+       (counsel-M-x     . ivy-posframe-display)
+       (t               . ivy-posframe-display)))
+    :config
+    (ivy-posframe-mode 1))
 #+END_SRC
+
+** Hydra
+
+#+BEGIN_SRC emacs-lisp
+  (use-package hydra)
+  ()
+
+  (use-package buffer-move)
+
+  (defhydra hydra-window (:color pink :hint nil :timeout 20)
+    "
+           Move                    Resize                      Swap              Split
+  ╭─────────────────────────────────────────────────────────────────────────────────────────┐
+           ^_<up>_^                    ^_C-<up>_^                      ^_M-<up>_^            [_v_]ertical
+            ^^▲^^                         ^^▲^^                           ^^▲^^              [_h_]orizontal
+   _<left>_ ◀   ▶ _<right>_    _C-<left>_ ◀   ▶ _C-<right>_    _M-<left>_ ◀   ▶ _M-<right>_
+            ^^▼^^                         ^^▼^^                           ^^▼^^              ╭──────────┐
+          ^_<down>_^                  ^_C-<down>_^                    ^_M-<down>_^           quit : [_SPC_]
+  "
+    ("<left>" windmove-left)
+    ("<down>" windmove-down)
+    ("<up>" windmove-up)
+    ("<right>" windmove-right)
+    ("h" split-window-below)
+    ("v" split-window-right)
+    ("C-<up>" hydra-move-splitter-up)
+    ("C-<down>" hydra-move-splitter-down)
+    ("C-<left>" hydra-move-splitter-left)
+    ("C-<right>" hydra-move-splitter-right)
+    ("M-<up>" buf-move-up)
+    ("M-<down>" buf-move-down)
+    ("M-<left>" buf-move-left)
+    ("M-<right>" buf-move-right)
+    ("SPC" nil))
+#+END_SRC
+
 
 ** Idium - JS debugging tool
 
@@ -375,10 +561,10 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
-    :if (memq window-system '(mac ns x))
     :config
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "GOPATH"))
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)
+      (exec-path-from-shell-copy-env "GOPATH")))
 #+END_SRC
 
 ** Load theme
@@ -386,20 +572,23 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 #+BEGIN_SRC emacs-lisp
   (use-package doom-themes
     :init
-    (load-theme 'doom-molokai t))
+    (load-theme 'doom-molokai t)
+    :config
+      (doom-themes-org-config)
+      (doom-themes-visual-bell-config))
+
+  (use-package solaire-mode
+    :hook
+    ((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+    (minibuffer-setup . solaire-mode-in-minibuffer)
+    :config
+    (solaire-mode-swap-bg))
 #+END_SRC
 
 ** Better defaults
 
 #+BEGIN_SRC emacs-lisp
   (use-package better-defaults)
-#+END_SRC
-
-** Fixing line highlighting when showing line numbers
-
-#+BEGIN_SRC emacs-lisp
-  (use-package nlinum-hl
-    :config (setq nlinum-highlight-current-line t))
 #+END_SRC
 
 ** Key suffixes popup
@@ -413,17 +602,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
           which-key-side-window-location 'bottom
           which-key-side-window-max-width 0.33
           which-key-side-window-max-height 0.25))
-#+END_SRC
-
-** Zooming on active windows
-
-#+BEGIN_SRC emacs-lisp
-  (use-package zoom
-    :init
-    (zoom-mode)
-    :config
-    (setq zoom-size '(0.618 . 0.618)
-          zoom-ignored-buffer-name-regexps '("^\\*helm" "^\\*which-key*")))
 #+END_SRC
 
 ** Editing forms in chrome
@@ -515,23 +693,51 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
     (remove-hook 'magit-refs-sections-hook 'magit-insert-tags))
 #+END_SRC
 
-** COMMENT Abbrev
+** Magithub
+#+BEGIN_SRC emacs-lisp
+  (use-package magithub
+    :after magit
+    :config
+    (magithub-feature-autoinject t)
+    (setq magithub-clone-default-directory "~/Projects"))
+#+END_SRC
+
+** diff-hl
 
 #+BEGIN_SRC emacs-lisp
-  (use-package abbrev
-    :diminish abbrev-mode
+  (use-package diff-hl
     :config
-    (if (file-exists-p abbrev-file-name)
-        (quietly-read-abbrev-file)))
+    (global-diff-hl-mode))
+#+END_SRC
+
+** goto-line-preview
+
+#+BEGIN_SRC emacs-lisp
+  (use-package goto-line-preview
+    :bind ([remap goto-line] . goto-line-preview)
+    :config)
+#+END_SRC
+
+** unfill
+
+#+BEGIN_SRC emacs-lisp
+  (use-package unfill
+    :bind ([remap fill-paragraph] . unfill-toggle))
 #+END_SRC
 
 ** Snippets
 
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet
+    :hook ((prog-mode org-mode) . yas-minor-mode))
+
+  (use-package yasnippet-snippets
+    :after yasnippet
     :config
-    (yas-reload-all)
-    :hook (prog-mode . yas-minor-mode))
+    (yas-reload-all))
+
+  (use-package helm-c-yasnippet
+    :after yasnippet)
 #+END_SRC
 
 ** Auto completion
@@ -552,15 +758,24 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
           company-backends '()))
 
   (use-package company-box
-    
     :hook (company-mode . company-box-mode))
 #+END_SRC
 
-** Flyspell popup
+** command-log
+
+#+BEGIN_SRC emacs-lisp :hlines yes
+  (use-package command-log-mode)
+#+END_SRC
+
+** Packages autoupdate
 
 #+BEGIN_SRC emacs-lisp
-  (use-package flyspell-popup
-    :bind ("C-;" . flyspell-popup-correct))
+  (use-package auto-package-update
+    :custom
+    ((auto-package-update-delete-old-versions t)
+     (auto-package-update-hide-results t))
+    :config
+    (auto-package-update-maybe))
 #+END_SRC
 
 ** Key statistics
@@ -581,6 +796,52 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
     (keyfreq-mode 1)
     (keyfreq-autosave-mode 1))
+#+END_SRC
+
+** fast-scroll
+
+#+BEGIN_SRC emacs-lisp
+  (use-package fast-scroll
+    :commands (fast-scroll-config fast-scroll-advice-scroll-functions)
+    :load-path "elisp/fast-scroll"
+    :config
+    (fast-scroll-config)
+    (fast-scroll-advice-scroll-functions))
+#+END_SRC
+
+** Fira Code
+#+BEGIN_SRC emacs-lisp
+  (use-package fira-code
+    :commands (fira-code-mode)
+    :load-path "elisp/fira-code"
+    :hook
+    (prog-mode . fira-code-mode))
+#+END_SRC
+
+** rg - ripgrep frontend
+
+#+BEGIN_SRC emacs-lisp
+  (use-package rg
+    :ensure-system-package (rg)
+    :config
+    (rg-enable-default-bindings))
+#+END_SRC
+
+** linum-relative
+
+#+BEGIN_SRC emacs-lisp
+  (use-package linum-relative
+    :custom
+    (linum-relative-backend 'display-line-numbers-mode)
+    :hook
+    (prog-mode . linum-relative-mode))
+#+END_SRC
+
+** bang
+
+#+BEGIN_SRC emacs-lisp
+  (use-package bang
+    :bind ("M-!" . bang))
 #+END_SRC
 
 ** Prettier
@@ -626,68 +887,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (dired-quick-sort-setup))
 #+END_SRC
 
-** COMMENT Tern JS
-
-#+BEGIN_SRC emacs-lisp
-  (use-package tern
-    :ensure company-tern
-    :diminish tern-mode
-    :config
-    (setq tern-command (append tern-command '("--no-port-file")))
-    :init
-      (add-hook 'rjsx-mode-hook 'tern-mode))
-#+END_SRC
-
-** COMMENT ReasonML
-
-#+BEGIN_SRC emacs-lisp
-  (use-package reason-mode
-    :config
-    (defun shell-cmd (cmd)
-      "Returns the stdout output of a shell command or nil if the command returned
-     an error"
-      (car (ignore-errors (apply 'process-lines (split-string cmd)))))
-
-    (defun reason-cmd-where (cmd)
-      (let ((where (shell-cmd cmd)))
-        (if (not (string-equal "unknown flag ----where" where))
-            where)))
-
-    (let* ((refmt-bin (or (reason-cmd-where "refmt ----where")
-                          (shell-cmd "which refmt")
-                          (shell-cmd "which bsrefmt")))
-           (merlin-bin (or (reason-cmd-where "ocamlmerlin ----where")
-                           (shell-cmd "which ocamlmerlin")))
-           (merlin-base-dir (when merlin-bin
-                              (replace-regexp-in-string "bin/ocamlmerlin$" "" merlin-bin))))
-      ;; Add merlin.el to the emacs load path and tell emacs where to find ocamlmerlin
-      (when merlin-bin
-        (add-to-list 'load-path (concat merlin-base-dir "share/emacs/site-lisp/"))
-        (setq merlin-command merlin-bin))
-
-      (when refmt-bin
-        (setq refmt-command refmt-bin)))
-
-    (add-hook 'reason-mode-hook (lambda ()
-                                  (add-hook 'before-save-hook 'refmt-before-save)
-                                  (merlin-mode)))
-
-    (setq merlin-ac-setup t))
-#+END_SRC
-
 ** Flycheck
 
 #+BEGIN_SRC emacs-lisp
-#+END_SRC
-
-
-** Flyspell
-
-#+BEGIN_SRC emacs-lisp
-  (use-package flyspell-mode
-    :ensure nil
-    :hook
-    (prog-mode flyspell-prog-mode))
+  (use-package flycheck
+    :commands (flycheck-mode)
+    :config
+    (global-flycheck-mode))
 #+END_SRC
 
 ** File types
@@ -697,6 +903,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
   (use-package markdown-mode
     :mode "\\.md")
+
+  (use-package grip-mode)
 #+END_SRC
 
 *** Orgfiles
@@ -706,12 +914,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     :hook
     ((org-mode . org-sticky-header-mode)
      (org-mode . toc-org-enable))
-  
+
     :bind
     (("C-c l" . org-store-link)
      ("C-c a" . org-agenda)
      ("C-c c" . org-capture))
-
+    :config
+    (print "Org-mode loaded")
     :custom
     ((org-startup-indented t)
      (org-tags-column  0)
@@ -719,8 +928,13 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
      (org-startup-indented t)
      (org-indent-indentation-per-level 1)
      (org-default-notes-file (concat org-directory "/notes.org"))
+     (org-refile-targets '((org-agenda-files :maxlevel . 1)))
+     (org-refile-allow-creating-parent-nodes 'confirm)
      (org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"
-                             "~/Dropbox/orgfiles/i.org"))
+                             "~/Dropbox/orgfiles/i.org"
+                             "~/Dropbox/Orgfiles/links.org"
+                             "~/Dropbox/Orgfiles/todo.org"
+                             "~/Dropbox/Orgfiles/journal.org"))
      (org-capture-templates '(("a" "Appointment" entry (file  "~/Dropbox/Orgfiles/gcal.org" )
                                "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
                               ("l" "Link" entry (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
@@ -751,14 +965,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (use-package org-bullets
     :hook (org-mode . (lambda () (org-bullets-mode 1))))
 
-  (use-package org-gcal
-    :config
-    (setq org-gcal-client-id "oauth 2.0 client ID"
-          org-gcal-client-secret "client secret"
-          org-gcal-file-alist '(("zamansky@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
-
   (use-package toc-org
     :after org)
+
+  (use-package ob-restclient
+    :config
+    (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((restclient . t))))
 
   (use-package org-super-agenda
     :init
@@ -805,6 +1019,16 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
        ;; match any of these groups, with the default order position of 99
        ))
     (org-super-agenda-mode))
+
+  (defun make-orgcapture-frame ()
+    "Create a new frame and run org-capture."
+    (interactive)
+    (make-frame '((name . "remember") (width . 80) (height . 16)
+                  (top . 400) (left . 300)
+                  (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
+                  ))
+    (select-frame-by-name "remember")
+    (org-capture))
 #+END_SRC
 
 **** Htmlize for org-mode
@@ -826,7 +1050,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (use-package go-mode
     :mode "\\.go"
     :config
-    (require 'go-mode-autoloads)
     (add-hook 'go-mode-hook
               (lambda ()
                 (add-hook 'before-save-hook 'gofmt-before-save)
@@ -884,23 +1107,28 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (flycheck-add-mode 'javascript-eslint 'typescript-mode))
 
   (use-package tide
-    
+
     :after (flycheck typescript-mode)
     :config
     (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
     (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append))
+
   (use-package web-mode
-    
-    :after (tide)
     :mode ("\\.html\\'"
            "\\.php\\'"
-           "\\.tsx\\'")
-    :hook (web-mode . (lambda ()
-                         (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                           (setup-tide-mode))))
+           "\\.tsx\\'"
+           "\\.svelte\\'"
+           )
+    :hook
+    (web-mode . (lambda ()
+                  (when (string-equal "tsx" (file-name-extension buffer-file-name))
+                    (setup-tide-mode))))
+    (web-mode . (lambda ()
+                  (flycheck-add-mode 'javascript-eslint 'web-mode)))
     :config
     (setq web-mode-content-types-alist
-          '(("jsx" . "\\.tsx\\'")
+          '(("html" . "\\.svelte\\'")
+            ("jsx" . "\\.tsx\\'")
             ("jsx" . "\\.js[x]?\\'")
             ("js" . "\\.mjs?\\'")
             ("html" . "\\.html\\'"))))
@@ -931,8 +1159,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
   ;; TODO: Use general for keybindings
   (load (expand-file-name "keys.el" user-emacs-directory))
-
-  (add-hook 'before-save-hook 'my-delete-trailing-whitespace)
 
   (defun my-delete-trailing-whitespace ()
     "Deleting trailing whitespaces."

@@ -32,6 +32,7 @@
         string-inflection-all-cycle
         tern-find-definition
         tern-get-docs
+        typescript-insert-and-autoconvert-to-template
         typescript-insert-and-indent
         upcase-region
         wdired-finish-edit

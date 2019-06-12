@@ -1,0 +1,3 @@
+[submodule "elisp/fast-scroll"]
+	path = elisp/fast-scroll
+	url = https://github.com/ahungry/fast-scroll.git

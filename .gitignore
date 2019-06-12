@@ -15,3 +15,8 @@ tramp
 /.emacs.desktop.lock
 /history
 /hackernews
+/magithub
+/image-dired/.image-dired_temp
+/README.elc
+/README.md
+/.last-package-update-day

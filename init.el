@@ -1,5 +1,4 @@
 (let ((gc-cons-threshold most-positive-fixnum))
-
   (require 'package)
 
   (setq-default
@@ -10,16 +9,13 @@
   (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 
   (package-initialize)
+  (package-refresh-contents)
 
   (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
     (package-install 'use-package))
 
-  (setq-default
-   use-package-always-ensure t)
-
+  (setq-default use-package-always-ensure t)
   (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-
   (load custom-file)
 
   (use-package org :defer nil :ensure org-plus-contrib)

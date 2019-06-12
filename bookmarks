@@ -1,8 +1,13 @@
-;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8 -*- 
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("AB Test - Logo"
+(("org-refile-last-stored"
+ (filename . "~/Dropbox/Orgfiles/todo.org")
+ (front-context-string . "** DONE Configur")
+ (rear-context-string . "019-05-29 Wed]\n\n")
+ (position . 5496))
+("AB Test - Logo"
  (filename . "~/Projects/work/desktop/common/resources/shared/toolkit/search_box/search.css")
  (front-context-string . "svg);\n  backgrou")
  (rear-context-string . "test/logo-color.")
@@ -18,13 +23,10 @@
  (rear-context-string . "480 04-25 19:57 ")
  (position . 140))
 ("org-capture-last-stored"
- (filename . "~/Dropbox/Orgfiles/todo.org")
- (front-context-string . "** TODO Check br")
- (rear-context-string . "\n\n* Todo [0/0]\n\n")
- (position . 175))
- (front-context-string . "** TODO https://")
- (rear-context-string . " switch\n* To Do\n")
- (position . 2314))
+ (filename . "~/Dropbox/Orgfiles/journal.org")
+ (front-context-string . "*** 2019-08-07 W")
+ (rear-context-string . "2019-08 August\n\n")
+ (position . 29))
 ("zshrc"
  (filename . "~/.zshrc")
  (front-context-string . "# If you come fr")
