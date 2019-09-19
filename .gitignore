@@ -9,3 +9,14 @@ eshell
 tramp
 *.cache
 /network-security.data
+/README.el
+/README.html
+/.emacs.desktop
+/.emacs.desktop.lock
+/history
+/hackernews
+/magithub
+/image-dired/.image-dired_temp
+/README.elc
+/README.md
+/.last-package-update-day

@@ -10,6 +10,7 @@
         electric-newline-and-maybe-indent
         forward-sexp
         helm-M-x
+        helm-find-files
         helm-show-kill-ring
         indent-for-tab-command
         isearch-backward-regexp
@@ -21,13 +22,18 @@
         kill-region
         markdown-exdent-or-delete
         markdown-outdent-or-delete
+        move-text-up
         nxml-electric-slash
         org-end-of-line
         org-force-self-insert
+        org-self-insert-command
+        org-yank
         scroll-right
         string-inflection-all-cycle
         tern-find-definition
         tern-get-docs
+        typescript-insert-and-autoconvert-to-template
+        typescript-insert-and-indent
         upcase-region
         wdired-finish-edit
         yaml-electric-backspace
@@ -49,6 +55,7 @@
         flycheck-error-list-set-filter
         helm-projectile
         isearch-abort
+        isearch-delete-char
         isearch-printing-char
         js2-down-mouse-3
         js2-mode-show-node

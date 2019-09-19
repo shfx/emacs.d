@@ -1,8 +1,38 @@
-;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8-emacs -*- 
+;;;; Emacs Bookmark Format Version 1 ;;;; -*- coding: utf-8 -*- 
 ;;; This format is meant to be slightly human-readable;
 ;;; nevertheless, you probably don't want to edit it.
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
-(("Twitch sidebar"
+(("org-refile-last-stored"
+ (filename . "~/Dropbox/Orgfiles/todo.org")
+ (front-context-string . "** DONE Configur")
+ (rear-context-string . "019-05-29 Wed]\n\n")
+ (position . 5496))
+("AB Test - Logo"
+ (filename . "~/Projects/work/desktop/common/resources/shared/toolkit/search_box/search.css")
+ (front-context-string . "svg);\n  backgrou")
+ (rear-context-string . "test/logo-color.")
+ (position . 1992))
+("copy this"
+ (filename . "~/Projects/work/desktop/common/resources/shared/toolkit/search_box/search.css")
+ (front-context-string . "\n  background-po")
+ (rear-context-string . "rch_loupe.svg); ")
+ (position . 5453))
+("projects"
+ (filename . "~/Projects/")
+ (front-context-string . ".\n  lrwxr-xr-x  ")
+ (rear-context-string . "480 04-25 19:57 ")
+ (position . 140))
+("org-capture-last-stored"
+ (filename . "~/Dropbox/Orgfiles/journal.org")
+ (front-context-string . "*** 2019-08-07 W")
+ (rear-context-string . "2019-08 August\n\n")
+ (position . 29))
+("zshrc"
+ (filename . "~/.zshrc")
+ (front-context-string . "# If you come fr")
+ (rear-context-string)
+ (position . 1))
+("Twitch sidebar"
  (filename . "~/Projects/work/desktop/common/extensions/resources/twitch_sidebar/")
  (front-context-string . ".\n  drwxr-xr-x 2")
  (rear-context-string . "352 03-06 15:04 ")
