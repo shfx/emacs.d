@@ -1,3 +1,6 @@
 [submodule "elisp/fast-scroll"]
 	path = elisp/fast-scroll
 	url = https://github.com/ahungry/fast-scroll.git
+[submodule "elisp/fira-code"]
+	path = elisp/fira-code
+	url = https://github.com/johnw42/fira-code-emacs.git

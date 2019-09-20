@@ -77,6 +77,13 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
 
   (setq
    desktop-save t
+   desktop-dirname "~/.emacs.d/desktop/"
+   desktop-base-file-name "emacs.desktop"
+   desktop-base-lock-name "lock"
+   desktop-path (list desktop-dirname)
+   desktop-files-not-to-save "^$" ;reload tramp paths
+   desktop-load-locked-desktop nil
+   desktop-auto-save-timeout 30
    inhibit-splash-screen t
    inhibit-startup-message t
    pop-up-frames nil
@@ -97,6 +104,7 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (global-unset-key (kbd "C-x C-c"))
   (global-unset-key (kbd "s-w"))
   (windmove-default-keybindings 'super)
+  (winner-mode 1)
 
   ;; font sizes
   (global-set-key (kbd "s-=")
@@ -110,9 +118,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
                     (interactive)
                     (let ((old-face-attribute (face-attribute 'default :height)))
                       (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
-
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  (toggle-frame-maximized)
 
   (add-to-list 'default-frame-alist '(ns-appearance . dark))
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
@@ -132,15 +137,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
   (defun string/ends-with (string suffix)
     "Return t if STRING ends with SUFFIX."
     (and (string-match (rx-to-string `(: ,suffix eos) t) string) t))
-
-  (defun tangle-init ()
-    "If the current buffer is 'emacs.org' the code-blocks are tangled, and the tangled file is compiled."
-    (when (string/ends-with (buffer-file-name) ".emacs.d/README.org")
-      (let ((prog-mode-hook nil))
-        (org-babel-tangle)
-        (byte-compile-file (concat user-emacs-directory "README.el")))))
-
-  (add-hook 'after-save-hook 'tangle-init)
 #+END_SRC
 
 ** Default trash behavior
@@ -194,28 +190,41 @@ itself runs on.
 
 #+BEGIN_SRC emacs-lisp
   (use-package eshell
-    :hook
-    (eshell-mode . (lambda ()
-                     (eshell-cmpl-initialize)
-                     (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
-                     (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)
-                     (define-key eshell-mode-map (kbd "M-s f") 'helm-eshell-prompts-all)))
+    :after eshell-toggle
+    :bind (:map eshell-mode-map
+                ([remap eshell-pcomplete] . helm-esh-pcomplete)
+                ("M-r" . helm-eshell-history)
+                ("M-s f" . helm-eshell-prompts-all))
+    :hook ((eshell-mode . (lambda ()
+                            (eshell/alias "e" "find-file $1")
+                            (eshell/alias "ff" "find-file $1")
+                            (eshell/alias "emacs" "find-file $1")
+                            (eshell/alias "ee" "find-file-other-window $1")
 
+                            (eshell/alias "gd" "magit-diff-unstaged")
+                            (eshell/alias "gds" "magit-diff-staged")
+                            (eshell/alias "d" "dired $1"))))
     :custom
-    ((helm-show-completion-display-function #'helm-show-completion-default-display-function)
-     (eshell-banner-message ""))
+    (helm-show-completion-display-function #'helm-show-completion-default-display-function)
+    (eshell-banner-message "")
+    (eshell-scroll-to-bottom-on-input t)
     :config
-    (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter))
+    (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
+    (defun eshell/clear ()
+      "Clear the eshell buffer."
+      (let ((inhibit-read-only t))
+        (erase-buffer)
+        (eshell-send-input))))
 
   (use-package esh-autosuggest
     :after eshell
     :hook (eshell-mode . esh-autosuggest-mode))
 
   (use-package xterm-color
-    :after eshell
+    :after eshell-toggle
     :custom
     (comint-output-filter-functions
-        (remove 'ansi-color-process-output comint-output-filter-functions))
+     (remove 'ansi-color-process-output comint-output-filter-functions))
     (eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
     :hook
     (eshell-before-prompt .
@@ -246,8 +255,6 @@ itself runs on.
                   (propertize " " 'face 'default)))))))
 #+END_SRC
 
-#+RESULTS:
-
 ** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
 
 Simple functionality to show/hide eshell/ansi-term (or almost any
@@ -257,12 +264,18 @@ the bottom of active window with directory of its buffer.
 #+BEGIN_SRC emacs-lisp
   (use-package eshell-toggle
     :after eshell
-    :custom
-    (eshell-toggle-size-fraction 3)
-    (eshell-toggle-use-projectile-root t)
-    (eshell-toggle-run-command nil)
     :bind
-    ("s-`" . eshell-toggle))
+    ("s-`" . eshell-toggle)
+    :custom
+    (eshell-toggle-name-separator " ❯ ")
+    (eshell-toggle-size-fraction 3)
+    (eshell-toggle-use-projectile-root t))
+#+END_SRC
+
+** vterm
+
+#+BEGIN_SRC emacs-lisp
+  (use-package vterm)
 #+END_SRC
 
 ** Shackle ([[https://github.com/wasamasa/shackle][link]])
@@ -341,7 +354,6 @@ currently active by dimming the faces in the other buffers.
   (use-package posframe
     :ensure t)
 #+END_SRC
-
 
 ** Expand region
 
@@ -540,7 +552,6 @@ introducing external dependencies (when feasible)
     ("M-<right>" buf-move-right)
     ("SPC" nil))
 #+END_SRC
-
 
 ** Idium - JS debugging tool
 
@@ -827,14 +838,13 @@ introducing external dependencies (when feasible)
     (rg-enable-default-bindings))
 #+END_SRC
 
-** linum-relative
+** linum-mode
 
 #+BEGIN_SRC emacs-lisp
-  (use-package linum-relative
-    :custom
-    (linum-relative-backend 'display-line-numbers-mode)
+  (use-package linum-mode
+    :ensure nil
     :hook
-    (prog-mode . linum-relative-mode))
+    (prog-mode . linum-mode))
 #+END_SRC
 
 ** bang
@@ -896,6 +906,77 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
     (global-flycheck-mode))
 #+END_SRC
 
+** COMMENT Treemacs
+#+BEGIN_SRC emacs-lisp
+  (use-package treemacs
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+    :custom
+    ((treemacs-collapse-dirs                 (if treemacs-python-executable 3 0))
+     (treemacs-deferred-git-apply-delay      0.5)
+     (treemacs-display-in-side-window        t)
+     (treemacs-eldoc-display                 t)
+     (treemacs-file-event-delay              5000)
+     (treemacs-file-follow-delay             0.2)
+     (treemacs-follow-after-init             t)
+     (treemacs-git-command-pipe              "")
+     (treemacs-goto-tag-strategy             'refetch-index)
+     (treemacs-indentation                   2)
+     (treemacs-indentation-string            " ")
+     (treemacs-is-never-other-window         nil)
+     (treemacs-max-git-entries               5000)
+     (treemacs-missing-project-action        'ask)
+     (treemacs-no-png-images                 nil)
+     (treemacs-no-delete-other-windows       t)
+     (treemacs-project-follow-cleanup        nil)
+     (treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory))
+     (treemacs-position                      'left)
+     (treemacs-recenter-distance             0.1)
+     (treemacs-recenter-after-file-follow    nil)
+     (treemacs-recenter-after-tag-follow     nil)
+     (treemacs-recenter-after-project-jump   'always)
+     (treemacs-recenter-after-project-expand 'on-distance)
+     (treemacs-show-cursor                   nil)
+     (treemacs-show-hidden-files             t)
+     (treemacs-silent-filewatch              nil)
+     (treemacs-silent-refresh                nil)
+     (treemacs-sorting                       'alphabetic-desc)
+     (treemacs-space-between-root-nodes      t)
+     (treemacs-tag-follow-cleanup            t)
+     (treemacs-tag-follow-delay              1.5)
+     (treemacs-width                         35))
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+    :config
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode t)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
+    :bind
+    (:map global-map
+          ("M-0"       . treemacs-select-window)
+          ("C-x t 1"   . treemacs-delete-other-windows)
+          ("C-x t t"   . treemacs)
+          ("C-x t B"   . treemacs-bookmark)
+          ("C-x t C-t" . treemacs-find-file)
+          ("C-x t M-t" . treemacs-find-tag)))
+
+  (use-package treemacs-projectile
+    :after treemacs projectile)
+
+  (use-package treemacs-magit
+    :after treemacs magit)
+#+END_SRC
+
 ** File types
 
 *** Markdown
@@ -930,11 +1011,10 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
      (org-default-notes-file (concat org-directory "/notes.org"))
      (org-refile-targets '((org-agenda-files :maxlevel . 1)))
      (org-refile-allow-creating-parent-nodes 'confirm)
-     (org-agenda-files (list "~/Dropbox/orgfiles/gcal.org"
-                             "~/Dropbox/orgfiles/i.org"
-                             "~/Dropbox/Orgfiles/links.org"
-                             "~/Dropbox/Orgfiles/todo.org"
-                             "~/Dropbox/Orgfiles/journal.org"))
+     (org-agenda-files (list "~/.orgfiles/Inbox.org"
+                             "~/.orgfiles/links.org"
+                             "~/.orgfiles/todo.org"
+                             "~/.orgfiles/journal.org"))
      (org-capture-templates '(("a" "Appointment" entry (file  "~/Dropbox/Orgfiles/gcal.org" )
                                "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
                               ("l" "Link" entry (file+headline "~/Dropbox/Orgfiles/links.org" "Links")

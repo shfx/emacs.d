@@ -4,7 +4,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
-   ["#212526" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
+   ["#222323" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
  '(browse-url-chrome-program
    "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome")
  '(comint-output-filter-functions
@@ -116,7 +116,7 @@
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-autodoc elpy-module-sane-defaults)))
  '(enable-recursive-minibuffers nil)
- '(eshell-banner-message "")
+ '(eshell-banner-message "" t)
  '(eshell-highlight-prompt nil)
  '(eshell-output-filter-functions
    (quote
@@ -140,11 +140,11 @@
                     (quote eshell-prompt-face))
         (propertize " "
                     (quote face)
-                    (quote default))))))
- '(eshell-prompt-regexp "^.*❯ ")
- '(eshell-toggle-run-command nil)
- '(eshell-toggle-size-fraction 3)
- '(eshell-toggle-use-projectile-root t)
+                    (quote default))))) t)
+ '(eshell-prompt-regexp "^.*❯ " t)
+ '(eshell-toggle-run-command nil t)
+ '(eshell-toggle-size-fraction 3 t)
+ '(eshell-toggle-use-projectile-root t t)
  '(eshell-visual-commands
    (quote
     ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
@@ -157,7 +157,7 @@
  '(global-nlinum-mode nil)
  '(helm-display-function (quote pop-to-buffer))
  '(helm-ff-lynx-style-map t)
- '(helm-show-completion-display-function (quote helm-show-completion-default-display-function))
+ '(helm-show-completion-display-function (quote helm-show-completion-default-display-function) t)
  '(highlight-changes-colors (quote ("#ff8eff" "#ab7eff")))
  '(highlight-symbol-idle-delay 0.2)
  '(highlight-tail-colors
@@ -216,7 +216,7 @@
  '(ns-use-proxy-icon nil t)
  '(org-agenda-files
    (quote
-    ("~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/i.org" "~/Dropbox/Orgfiles/links.org" "~/Dropbox/Orgfiles/todo.org" "~/Dropbox/Orgfiles/journal.org")))
+    ("~/.orgfiles/gcal.org" "~/.orgfiles/links.org" "~/.orgfiles/todo.org" "~/.orgfiles/journal.org")))
  '(org-capture-templates
    (quote
     (("a" "Appointment" entry
@@ -232,7 +232,7 @@
 ")
      ("l" "Link" entry
       (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
-      "* %? %^L %^g 
+      "* %? %^L %^g
 %T" :prepend t)
      ("b" "Blog idea" entry
       (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
