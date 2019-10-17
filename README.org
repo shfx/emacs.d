@@ -1,4 +1,6 @@
 #+TITLE: ~.emacs.d~
+#+STARTUP: showall
+#+STARTUP: inlineimages
 
 * Synopsis
 
@@ -96,7 +98,6 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
    vc-handled-backends nil
    ns-use-proxy-icon nil
    frame-title-format "Emacs"
-   auto-save-visited-file-name t
    ns-right-alternate-modifier nil)
 
   (fset 'yes-or-no-p 'y-or-n-p)
@@ -205,16 +206,39 @@ itself runs on.
                             (eshell/alias "gds" "magit-diff-staged")
                             (eshell/alias "d" "dired $1"))))
     :custom
-    (helm-show-completion-display-function #'helm-show-completion-default-display-function)
-    (eshell-banner-message "")
-    (eshell-scroll-to-bottom-on-input t)
+    ((helm-show-completion-display-function #'helm-show-completion-default-display-function)
+     (eshell-banner-message "")
+     (eshell-scroll-to-bottom-on-input 'all)
+     (eshell-error-if-no-glob t)
+     (eshell-hist-ignoredups t)
+     (eshell-save-history-on-exit t)
+     (eshell-prefer-lisp-functions nil)
+     (eshell-destroy-buffer-when-process-dies t))
+
     :config
     (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
-    (defun eshell/clear ()
-      "Clear the eshell buffer."
-      (let ((inhibit-read-only t))
-        (erase-buffer)
-        (eshell-send-input))))
+    (setenv "PAGER" "cat")
+    (setenv "PATH"
+            (concat
+             "/usr/local/bin:/usr/local/sbin:"
+             (getenv "PATH")))
+    (eshell/alias "e" "find-file $1")
+    (eshell/alias "ff" "find-file $1")
+    (eshell/alias "emacs" "find-file $1")
+    (eshell/alias "ee" "find-file-other-window $1")
+
+    (eshell/alias "gd" "magit-diff-unstaged")
+    (eshell/alias "gds" "magit-diff-staged")
+    (eshell/alias "d" "dired $1")
+
+    ;; The 'ls' executable requires the Gnu version on the Mac
+    (let ((ls (if (file-exists-p "/usr/local/bin/gls")
+                  "/usr/local/bin/gls"
+                "/bin/ls")))
+      (eshell/alias "ll" (concat ls " -AlohG --color=always")))
+    (defun eshell/gst (&rest args)
+      (magit-status (pop args) nil)
+      (eshell/echo)))
 
   (use-package esh-autosuggest
     :after eshell
@@ -1039,6 +1063,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (use-package org-sticky-header
     :config
     (setq-default
+     org-sticky-header-always-show-header nil
+     org-sticky-header-heading-star "●"
      org-sticky-header-full-path 'full
      org-sticky-header-outline-path-separator " / "))
 
