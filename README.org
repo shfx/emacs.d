@@ -98,7 +98,10 @@ Install emacs-anywhere https://github.com/zachcurry/emacs-anywhere
    vc-handled-backends nil
    ns-use-proxy-icon nil
    frame-title-format "Emacs"
-   ns-right-alternate-modifier nil)
+   ns-right-alternate-modifier nil
+   show-trailing-whitespace t)
+
+
 
   (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -222,15 +225,6 @@ itself runs on.
             (concat
              "/usr/local/bin:/usr/local/sbin:"
              (getenv "PATH")))
-    (eshell/alias "e" "find-file $1")
-    (eshell/alias "ff" "find-file $1")
-    (eshell/alias "emacs" "find-file $1")
-    (eshell/alias "ee" "find-file-other-window $1")
-
-    (eshell/alias "gd" "magit-diff-unstaged")
-    (eshell/alias "gds" "magit-diff-staged")
-    (eshell/alias "d" "dired $1")
-
     ;; The 'ls' executable requires the Gnu version on the Mac
     (let ((ls (if (file-exists-p "/usr/local/bin/gls")
                   "/usr/local/bin/gls"

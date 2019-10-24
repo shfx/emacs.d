@@ -116,7 +116,7 @@
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-autodoc elpy-module-sane-defaults)))
  '(enable-recursive-minibuffers nil)
- '(eshell-banner-message "" t)
+ '(eshell-banner-message "")
  '(eshell-highlight-prompt nil)
  '(eshell-output-filter-functions
    (quote
@@ -140,11 +140,11 @@
                     (quote eshell-prompt-face))
         (propertize " "
                     (quote face)
-                    (quote default))))) t)
- '(eshell-prompt-regexp "^.*❯ " t)
- '(eshell-toggle-run-command nil t)
- '(eshell-toggle-size-fraction 3 t)
- '(eshell-toggle-use-projectile-root t t)
+                    (quote default))))))
+ '(eshell-prompt-regexp "^.*❯ ")
+ '(eshell-toggle-run-command nil)
+ '(eshell-toggle-size-fraction 3)
+ '(eshell-toggle-use-projectile-root t)
  '(eshell-visual-commands
    (quote
     ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
@@ -157,7 +157,7 @@
  '(global-nlinum-mode nil)
  '(helm-display-function (quote pop-to-buffer))
  '(helm-ff-lynx-style-map t)
- '(helm-show-completion-display-function (quote helm-show-completion-default-display-function) t)
+ '(helm-show-completion-display-function (quote helm-show-completion-default-display-function))
  '(highlight-changes-colors (quote ("#ff8eff" "#ab7eff")))
  '(highlight-symbol-idle-delay 0.2)
  '(highlight-tail-colors
@@ -204,7 +204,7 @@
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
  '(magit-process-finish-apply-ansi-colors t t)
- '(magit-refresh-status-buffer nil t)
+ '(magit-refresh-status-buffer nil)
  '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
@@ -216,7 +216,7 @@
  '(ns-use-proxy-icon nil t)
  '(org-agenda-files
    (quote
-    ("~/.orgfiles/gcal.org" "~/.orgfiles/links.org" "~/.orgfiles/todo.org" "~/.orgfiles/journal.org")))
+    ("~/.orgfiles/Inbox.org" "~/.orgfiles/links.org" "~/.orgfiles/todo.org" "~/.orgfiles/journal.org")))
  '(org-capture-templates
    (quote
     (("a" "Appointment" entry
@@ -232,7 +232,7 @@
 ")
      ("l" "Link" entry
       (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
-      "* %? %^L %^g
+      "* %? %^L %^g 
 %T" :prepend t)
      ("b" "Blog idea" entry
       (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
@@ -258,7 +258,7 @@ Entered on %U
       (file "~/Dropbox/Orgfiles/screencastnotes.org")
       "* %?
 %i
-"))) t)
+"))))
  '(org-default-notes-file "~/org/notes.org")
  '(org-ellipsis " ...")
  '(org-indent-indentation-per-level 1)
@@ -328,6 +328,7 @@ Entered on %U
      ("*Man.*" :select t :align below :size 0.5 :regexp t)
      ("*helm.*" :select t :align below :size 0.33 :regexp t)
      ("*Org Src.*" :select t :align right :size 0.5 :regexp t))))
+ '(show-trailing-whitespace t)
  '(tramp-default-method "ssh")
  '(tramp-default-proxies-alist nil)
  '(tramp-save-ad-hoc-proxies t)
