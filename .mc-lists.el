@@ -24,6 +24,7 @@
         markdown-outdent-or-delete
         move-text-up
         nxml-electric-slash
+        org-cycle
         org-end-of-line
         org-force-self-insert
         org-self-insert-command
@@ -36,6 +37,7 @@
         typescript-insert-and-indent
         upcase-region
         wdired-finish-edit
+        wgrep-finish-edit
         yaml-electric-backspace
         yaml-electric-dash-and-dot
         yas-expand
@@ -53,6 +55,7 @@
         eval-print-last-sexp
         find-file
         flycheck-error-list-set-filter
+        helm-confirm-and-exit-minibuffer
         helm-projectile
         isearch-abort
         isearch-delete-char

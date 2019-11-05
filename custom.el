@@ -3,8 +3,11 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(add-hook (quote org-mode-hook) t)
  '(ansi-color-names-vector
-   ["#222323" "#ff4b4b" "#b4fa70" "#fce94f" "#729fcf" "#e090d7" "#8cc4ff" "#eeeeec"])
+   ["#222323" "#e74c3c" "#b6e63e" "#e2c770" "#268bd2" "#fb2874" "#66d9ef" "#d6d6d4"])
+ '(auto-package-update-delete-old-versions t)
+ '(auto-package-update-hide-results t)
  '(browse-url-chrome-program
    "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome")
  '(comint-output-filter-functions
@@ -78,12 +81,13 @@
  '(dashboard-navigator-buttons
    (quote
     ((#("" 0 1
-        (rear-nonsticky t display
-                        (raise 0.0)
-                        font-lock-face
-                        (:family "github-octicons" :height 1.32)
-                        face
-                        (:family "github-octicons" :height 1.32)))
+        (face
+         (:family "github-octicons" :height 1.32)
+         font-lock-face
+         (:family "github-octicons" :height 1.32)
+         display
+         (raise 0.0)
+         rear-nonsticky t))
       "Homepage" "Browse homepage"
       (lambda
         (&rest _)
@@ -100,11 +104,15 @@
  '(dashboard-set-heading-icons t)
  '(dashboard-show-shortcuts nil)
  '(dashboard-startup-banner (quote logo) t)
- '(dimmer-exclusion-predicates (quote (helm--alive-p window-minibuffer-p)) t)
+ '(dimmer-buffer-exclusion-regexps
+   (quote
+    ("^\\*[h|H]elm.*\\*" "^\\*Minibuf-[0-9]+\\*" "^.\\*which-key\\*$" "^*Messages*" "*LV*")))
+ '(dimmer-exclusion-predicates (quote (helm--alive-p window-minibuffer-p)))
  '(dimmer-exclusion-regexp-list
    (quote
-    ("^\\*[h|H]elm.*\\*" "^\\*Minibuf-[0-9]+\\*" "^.\\*which-key\\*$" "^*Messages*" "*LV*")) t)
+    ("^\\*[h|H]elm.*\\*" "^\\*Minibuf-[0-9]+\\*" "^.\\*which-key\\*$" "^*Messages*" "*LV*")))
  '(dimmer-fraction 0.35)
+ '(dimmer-prevent-dimming-predicates (quote (helm--alive-p window-minibuffer-p)))
  '(doom-modeline-buffer-modification-icon t)
  '(doom-modeline-buffer-state-icon t)
  '(doom-modeline-checker-simple-format t)
@@ -112,15 +120,21 @@
  '(doom-modeline-major-mode-color-icon t)
  '(doom-modeline-major-mode-icon t)
  '(doom-modeline-minor-modes nil)
+ '(doom-themes-enable-bold nil)
+ '(doom-themes-enable-italic nil)
  '(elpy-modules
    (quote
     (elpy-module-company elpy-module-eldoc elpy-module-flymake elpy-module-pyvenv elpy-module-highlight-indentation elpy-module-yasnippet elpy-module-django elpy-module-autodoc elpy-module-sane-defaults)))
- '(enable-recursive-minibuffers nil)
+ '(enable-recursive-minibuffers t)
  '(eshell-banner-message "")
+ '(eshell-destroy-buffer-when-process-dies t)
+ '(eshell-error-if-no-glob t)
  '(eshell-highlight-prompt nil)
+ '(eshell-hist-ignoredups t)
  '(eshell-output-filter-functions
    (quote
     (eshell-postoutput-scroll-to-bottom eshell-handle-control-codes eshell-watch-for-password-prompt)))
+ '(eshell-prefer-lisp-functions nil)
  '(eshell-prompt-function
    (lambda nil
      (let
@@ -142,22 +156,29 @@
                     (quote face)
                     (quote default))))))
  '(eshell-prompt-regexp "^.*❯ ")
+ '(eshell-save-history-on-exit t)
+ '(eshell-scroll-to-bottom-on-input (quote all))
+ '(eshell-toggle-name-separator " ❯ ")
  '(eshell-toggle-run-command nil)
  '(eshell-toggle-size-fraction 3)
  '(eshell-toggle-use-projectile-root t)
  '(eshell-visual-commands
    (quote
     ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
- '(exec-path-from-shell-arguments (quote ("-l")))
- '(fci-rule-color "#424748")
+ '(exec-path-from-shell-arguments nil)
+ '(fci-rule-color "#555556")
  '(flycheck-javascript-flow-args nil)
  '(gc-cons-threshold 16777216)
+ '(git-gutter:update-interval 2)
  '(global-eldoc-mode t)
  '(global-flycheck-mode nil)
  '(global-nlinum-mode nil)
+ '(helm-M-x-fuzzy-match t)
  '(helm-display-function (quote pop-to-buffer))
+ '(helm-display-header-line nil)
  '(helm-ff-lynx-style-map t)
  '(helm-show-completion-display-function (quote helm-show-completion-default-display-function))
+ '(helm-split-window-preferred-function (quote ignore))
  '(highlight-changes-colors (quote ("#ff8eff" "#ab7eff")))
  '(highlight-symbol-idle-delay 0.2)
  '(highlight-tail-colors
@@ -171,15 +192,22 @@
      ("#F309DF" . 85)
      ("#424748" . 100))))
  '(inhibit-compacting-font-caches t t)
- '(initial-buffer-choice (lambda nil (get-buffer "*dashboard*")))
+ '(initial-buffer-choice "~/")
  '(initial-frame-alist (quote ((fullscreen . maximized))))
  '(insert-directory-program "/usr/local/bin/gls" t)
+ '(ivy-format-functions-alist
+   (quote
+    ((swiper-isearch . swiper-isearch-format-function)
+     (swiper-all . swiper--all-format-function)
+     (swiper-multi . swiper--all-format-function)
+     (t . ivy-format-function-arrow))))
  '(ivy-posframe-display-functions-alist
    (quote
     ((swiper . ivy-posframe-display)
      (complete-symbol . ivy-posframe-display)
      (counsel-M-x . ivy-posframe-display)
      (t . ivy-posframe-display))))
+ '(ivy-use-virtual-buffers t)
  '(jdee-db-active-breakpoint-face-colors (cons "#1B2229" "#fd971f"))
  '(jdee-db-requested-breakpoint-face-colors (cons "#1B2229" "#b6e63e"))
  '(jdee-db-spec-breakpoint-face-colors (cons "#1B2229" "#525254"))
@@ -201,6 +229,7 @@
  '(js3-mirror-mode t)
  '(js3-paren-indent-offset 2)
  '(js3-square-indent-offset 2)
+ '(left-fringe-width 16 t)
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
  '(magit-process-finish-apply-ansi-colors t t)
@@ -214,13 +243,15 @@
  '(nlinum-widen nil)
  '(ns-right-alternate-modifier (quote none))
  '(ns-use-proxy-icon nil t)
+ '(org-agenda-block-separator "")
  '(org-agenda-files
    (quote
     ("~/.orgfiles/Inbox.org" "~/.orgfiles/links.org" "~/.orgfiles/todo.org" "~/.orgfiles/journal.org")))
+ '(org-babel-min-lines-for-block-output 1 t)
  '(org-capture-templates
    (quote
     (("a" "Appointment" entry
-      (file "~/Dropbox/Orgfiles/gcal.org")
+      (file "~/.orgfiles/gcal.org")
       "* %?
 
 %^T
@@ -231,39 +262,56 @@
 
 ")
      ("l" "Link" entry
-      (file+headline "~/Dropbox/Orgfiles/links.org" "Links")
+      (file+headline "~/.orgfiles/links.org" "Links")
       "* %? %^L %^g 
 %T" :prepend t)
      ("b" "Blog idea" entry
-      (file+headline "~/Dropbox/Orgfiles/todo.org" "Blog Topics:")
+      (file+headline "~/.orgfiles/todo.org" "Blog Topics:")
       "* %?
 %T" :prepend t)
      ("t" "Todo Item" entry
-      (file+headline "~/Dropbox/Orgfiles/todo.org" "Todo")
+      (file+headline "~/.orgfiles/todo.org" "Todo")
       "* TODO %?
 :PROPERTIES:
 :CREATED: %u
 :END:" :prepend t :empty-lines 1)
      ("n" "Note" entry
-      (file+headline "~/Dropbox/Orgfiles/todo.org" "Note space")
+      (file+headline "~/.orgfiles/todo.org" "Note space")
       "* %?
 %u" :prepend t)
      ("j" "Journal" entry
-      (file+datetree "~/Dropbox/Orgfiles/journal.org")
+      (file+olp+datetree "~/.orgfiles/journal.org")
       "* %?
 Entered on %U
   %i
   %a")
      ("s" "Screencast" entry
-      (file "~/Dropbox/Orgfiles/screencastnotes.org")
+      (file "~/.orgfiles/screencastnotes.org")
       "* %?
 %i
 "))))
  '(org-default-notes-file "~/org/notes.org")
- '(org-ellipsis " ...")
+ '(org-ellipsis "  ")
+ '(org-fontify-done-headline t)
+ '(org-fontify-quote-and-verse-blocks t)
+ '(org-fontify-whole-heading-line t)
+ '(org-hide-emphasis-markers t)
  '(org-indent-indentation-per-level 1)
+ '(org-modules
+   (quote
+    (org-protocol org-eshell org-habit org-mouse org-tempo org-notify org-mac-link org-mac-iCal org-git-link org-panel org-drill)) nil nil "Customized with use-package org")
+ '(org-pretty-entities t)
+ '(org-refile-allow-creating-parent-nodes (quote confirm))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 1))))
+ '(org-speed-command-help t t)
+ '(org-src-preserve-indentation t)
+ '(org-startup-folded "showeverything")
  '(org-startup-indented t)
+ '(org-startup-with-inline-images t)
+ '(org-sticky-header-always-show-header nil)
+ '(org-sticky-header-full-path (quote full))
+ '(org-sticky-header-heading-star "●")
+ '(org-sticky-header-outline-path-separator " / ")
  '(org-super-agenda-groups
    (quote
     ((:name "Today" :time-grid t :todo "TODAY")
@@ -287,38 +335,51 @@ Entered on %U
      (:priority<= "B" :order 1))))
  '(org-super-agenda-mode nil)
  '(org-tags-column 0)
+ '(org-tree-slide-skip-done nil)
+ '(org-tree-slide-skip-outline-level 4)
  '(package-selected-packages
    (quote
-    (helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview diff-hl vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (eslintd-fix ns-auto-titlebar edit-indirect edit-indiect highlight-indent-guides forge persp counsel-jq lua-mode prism git-gutter-fring git-gutter-fringe+ git-gutter-fr git-gutter-fringe git-gutter scratch ivy-rich avy org-contacts org-make-toc org-habit slime-docker dired-git-info persp-mode perspective org-tree-slide helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
  '(paradox-display-star-count t)
  '(paradox-execute-asynchronously t)
- '(paradox-github-token "")
+ '(paradox-github-token t)
  '(pdf-view-midnight-colors (quote ("#FDF4C1" . "#282828")))
+ '(persp-keymap-prefix "P")
  '(pos-tip-background-color "#E6DB74")
  '(pos-tip-foreground-color "#242728")
  '(posframe-inhibit-double-buffering t)
  '(projectile-completion-system (quote ivy))
  '(projectile-enable-caching t)
+ '(projectile-mode nil nil (projectile))
  '(projectile-switch-project-action (quote projectile-dired))
  '(python-shell-interpreter "python3")
+ '(rg-use-transient-menu t)
+ '(right-fringe-width 0 t)
+ '(search-default-mode (quote char-fold-to-regexp))
+ '(shackle-default-rule (quote (:select nil)))
  '(shackle-rules
    (quote
     (("*helm-ag*" :select t :align right :size 0.5)
      ("*helm semantic/imenu*" :select t :align right :size 0.4)
      ("*helm org inbuffer*" :select t :align right :size 0.4)
      ("*eshell*" :select t :inhibit-window-quit t :other t)
-     (magit-status-mode :select t :inhibit-window-quit t :align right)
-     (magit-log-mode :select t :inhibit-window-quit t: :same t)
-     (flycheck-error-list-mode :select nil :align below :size 0.25)
+     (magit-status-mode :select t :align right :inhibit-window-quit t :other t)
+     (magit-log-mode :select t :inhibit-window-quit t :other t)
+     (magit-log-select-mode :select t :inhibit-window-quit t :other t)
+     (magit-diff-mode :select nil :inhibit-window-quit t :other t)
+     (magit-stash-mode :select nil :inhibit-window-quit t :other t)
+     (magit-revision-mode :select t :inhibit-window-quit t :other t)
+     (flycheck-error-list-mode :select nil :inhibit-window-quit t :align below :size 0.25)
      (compilation-mode :select nil :align below :size 0.25)
      (messages-buffer-mode :select t :align below :size 0.25)
      (inferior-emacs-lisp-mode :select t :align below :size 0.25)
      (calendar-mode :select t :align below :size 0.25)
      (help-mode :select t :align right :size 0.5)
      (helpful-mode :select t :align right :size 0.5)
+     ("*rg*" :select t :inhibit-window-quit t :other t)
      (" *Deletions*" :select t :align below :size 0.25)
      (" *Marked Files*" :select t :align below :size 0.25)
      ("*Org Select*" :select t :align below :size 0.33)
@@ -328,49 +389,49 @@ Entered on %U
      ("*Man.*" :select t :align below :size 0.5 :regexp t)
      ("*helm.*" :select t :align below :size 0.33 :regexp t)
      ("*Org Src.*" :select t :align right :size 0.5 :regexp t))))
- '(show-trailing-whitespace t)
  '(tramp-default-method "ssh")
  '(tramp-default-proxies-alist nil)
  '(tramp-save-ad-hoc-proxies t)
  '(typescript-enabled-frameworks (quote (typescript)))
  '(typescript-indent-level 2)
- '(vc-annotate-background nil)
+ '(vc-annotate-background "#1c1e1f")
  '(vc-annotate-color-map
-   (quote
-    ((20 . "#ff0066")
-     (40 . "#CF4F1F")
-     (60 . "#C26C0F")
-     (80 . "#E6DB74")
-     (100 . "#AB8C00")
-     (120 . "#A18F00")
-     (140 . "#989200")
-     (160 . "#8E9500")
-     (180 . "#63de5d")
-     (200 . "#729A1E")
-     (220 . "#609C3C")
-     (240 . "#4E9D5B")
-     (260 . "#3C9F79")
-     (280 . "#53f2dc")
-     (300 . "#299BA6")
-     (320 . "#2896B5")
-     (340 . "#2790C3")
-     (360 . "#06d8ff"))))
+   (list
+    (cons 20 "#b6e63e")
+    (cons 40 "#c4db4e")
+    (cons 60 "#d3d15f")
+    (cons 80 "#e2c770")
+    (cons 100 "#ebb755")
+    (cons 120 "#f3a73a")
+    (cons 140 "#fd971f")
+    (cons 160 "#fc723b")
+    (cons 180 "#fb4d57")
+    (cons 200 "#fb2874")
+    (cons 220 "#f43461")
+    (cons 240 "#ed404e")
+    (cons 260 "#e74c3c")
+    (cons 280 "#c14d41")
+    (cons 300 "#9c4f48")
+    (cons 320 "#77504e")
+    (cons 340 "#555556")
+    (cons 360 "#555556")))
  '(vc-annotate-very-old-color nil)
  '(vc-handled-backends nil)
  '(web-mode-css-indent-offset 2)
  '(web-mode-enable-auto-indentation nil)
+ '(which-key-popup-type (quote side-window))
+ '(which-key-side-window-location (quote bottom))
+ '(which-key-side-window-max-height 0.25)
+ '(which-key-side-window-max-width 0.33)
  '(yaml-indent-offset 4)
  '(zoom-ignored-buffer-names (quote ("*which-key*")))
- '(zoom-ignored-major-modes (quote (ranger-mode neotree-mode))))
+ '(zoom-ignored-major-modes (quote (ranger-mode neotree-mode)))
+ '(zoom-mode nil nil (zoom)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 130 :width normal :foundry "nil" :family "Fira Emacs"))))
- '(bold ((t (:weight extra-bold))))
- '(diredfl-no-priv ((t (:background "#222323" :foreground "#555556"))))
- '(web-mode-function-call-face ((t (:foreground "#E6DB74"))))
- '(web-mode-function-name-face ((t (:foreground "#63de5d"))))
- '(web-mode-javascript-string-face ((t (:foreground "#E6DB74"))))
- '(web-mode-keyword-face ((t (:foreground "#ff0066" :weight normal)))))
+ '(default ((t (:inherit nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 150 :width normal :foundry "nil" :family "Inconsolata"))))
+ '(diredfl-date-time ((t (:inherit default :foreground "#66d9ef" :weight light))))
+ '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
