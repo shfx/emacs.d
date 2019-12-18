@@ -81,13 +81,12 @@
  '(dashboard-navigator-buttons
    (quote
     ((#("" 0 1
-        (face
-         (:family "github-octicons" :height 1.32)
-         font-lock-face
-         (:family "github-octicons" :height 1.32)
-         display
-         (raise 0.0)
-         rear-nonsticky t))
+        (rear-nonsticky t display
+                        (raise 0.0)
+                        font-lock-face
+                        (:family "github-octicons" :height 1.32)
+                        face
+                        (:family "github-octicons" :height 1.32)))
       "Homepage" "Browse homepage"
       (lambda
         (&rest _)
@@ -154,14 +153,14 @@
                     (quote eshell-prompt-face))
         (propertize " "
                     (quote face)
-                    (quote default))))))
- '(eshell-prompt-regexp "^.*❯ ")
+                    (quote default))))) t)
+ '(eshell-prompt-regexp "^.*❯ " t)
  '(eshell-save-history-on-exit t)
  '(eshell-scroll-to-bottom-on-input (quote all))
- '(eshell-toggle-name-separator " ❯ ")
+ '(eshell-toggle-name-separator " ❯ " t)
  '(eshell-toggle-run-command nil)
- '(eshell-toggle-size-fraction 3)
- '(eshell-toggle-use-projectile-root t)
+ '(eshell-toggle-size-fraction 3 t)
+ '(eshell-toggle-use-projectile-root t t)
  '(eshell-visual-commands
    (quote
     ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
@@ -173,7 +172,7 @@
  '(global-eldoc-mode t)
  '(global-flycheck-mode nil)
  '(global-nlinum-mode nil)
- '(helm-M-x-fuzzy-match t)
+ '(helm-M-x-fuzzy-match t t)
  '(helm-display-function (quote pop-to-buffer))
  '(helm-display-header-line nil)
  '(helm-ff-lynx-style-map t)
@@ -233,7 +232,7 @@
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
  '(magit-process-finish-apply-ansi-colors t t)
- '(magit-refresh-status-buffer nil)
+ '(magit-refresh-status-buffer nil t)
  '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
@@ -296,7 +295,7 @@ Entered on %U
  '(org-fontify-quote-and-verse-blocks t)
  '(org-fontify-whole-heading-line t)
  '(org-hide-emphasis-markers t)
- '(org-indent-indentation-per-level 1)
+ '(org-indent-indentation-per-level 1 t)
  '(org-modules
    (quote
     (org-protocol org-eshell org-habit org-mouse org-tempo org-notify org-mac-link org-mac-iCal org-git-link org-panel org-drill)) nil nil "Customized with use-package org")
@@ -308,10 +307,10 @@ Entered on %U
  '(org-startup-folded "showeverything")
  '(org-startup-indented t)
  '(org-startup-with-inline-images t)
- '(org-sticky-header-always-show-header nil)
- '(org-sticky-header-full-path (quote full))
- '(org-sticky-header-heading-star "●")
- '(org-sticky-header-outline-path-separator " / ")
+ '(org-sticky-header-always-show-header nil t)
+ '(org-sticky-header-full-path (quote full) t)
+ '(org-sticky-header-heading-star "●" t)
+ '(org-sticky-header-outline-path-separator " / " t)
  '(org-super-agenda-groups
    (quote
     ((:name "Today" :time-grid t :todo "TODAY")
@@ -345,7 +344,7 @@ Entered on %U
  '(paradox-display-download-count t)
  '(paradox-display-star-count t)
  '(paradox-execute-asynchronously t)
- '(paradox-github-token t)
+ '(paradox-github-token nil)
  '(pdf-view-midnight-colors (quote ("#FDF4C1" . "#282828")))
  '(persp-keymap-prefix "P")
  '(pos-tip-background-color "#E6DB74")

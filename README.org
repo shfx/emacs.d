@@ -93,7 +93,6 @@ Add this to file:~/Library/LaunchAgents/homebrew.mxcl.emacs
       ns-right-alternate-modifier nil
       visible-bell t)
 
-
 (setq scroll-step 1
       scroll-margin 1
       scroll-conservatively 101
@@ -841,17 +840,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 #+BEGIN_SRC emacs-lisp
   (use-package command-log-mode)
-#+END_SRC
-
-** Packages autoupdate
-
-#+BEGIN_SRC emacs-lisp
-  (use-package auto-package-update
-    :custom
-    ((auto-package-update-delete-old-versions t)
-     (auto-package-update-hide-results t))
-    :config
-    (auto-package-update-maybe))
 #+END_SRC
 
 ** Key statistics
