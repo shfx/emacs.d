@@ -232,7 +232,7 @@
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
  '(magit-process-finish-apply-ansi-colors t t)
- '(magit-refresh-status-buffer nil t)
+ '(magit-refresh-status-buffer nil)
  '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
@@ -295,10 +295,10 @@ Entered on %U
  '(org-fontify-quote-and-verse-blocks t)
  '(org-fontify-whole-heading-line t)
  '(org-hide-emphasis-markers t)
- '(org-indent-indentation-per-level 1 t)
+ '(org-indent-indentation-per-level 1)
  '(org-modules
    (quote
-    (org-protocol org-eshell org-habit org-mouse org-tempo org-notify org-mac-link org-mac-iCal org-git-link org-panel org-drill)) nil nil "Customized with use-package org")
+    (org-protocol org-eshell org-habit org-mouse org-tempo org-notify org-mac-link org-mac-iCal org-panel)) nil nil "Customized with use-package org")
  '(org-pretty-entities t)
  '(org-refile-allow-creating-parent-nodes (quote confirm))
  '(org-refile-targets (quote ((org-agenda-files :maxlevel . 1))))
@@ -307,10 +307,10 @@ Entered on %U
  '(org-startup-folded "showeverything")
  '(org-startup-indented t)
  '(org-startup-with-inline-images t)
- '(org-sticky-header-always-show-header nil t)
- '(org-sticky-header-full-path (quote full) t)
- '(org-sticky-header-heading-star "●" t)
- '(org-sticky-header-outline-path-separator " / " t)
+ '(org-sticky-header-always-show-header nil)
+ '(org-sticky-header-full-path (quote full))
+ '(org-sticky-header-heading-star "●")
+ '(org-sticky-header-outline-path-separator " / ")
  '(org-super-agenda-groups
    (quote
     ((:name "Today" :time-grid t :todo "TODAY")
@@ -338,7 +338,7 @@ Entered on %U
  '(org-tree-slide-skip-outline-level 4)
  '(package-selected-packages
    (quote
-    (eslintd-fix ns-auto-titlebar edit-indirect edit-indiect highlight-indent-guides forge persp counsel-jq lua-mode prism git-gutter-fring git-gutter-fringe+ git-gutter-fr git-gutter-fringe git-gutter scratch ivy-rich avy org-contacts org-make-toc org-habit slime-docker dired-git-info persp-mode perspective org-tree-slide helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+    (yequake org-popnote eslintd-fix ns-auto-titlebar edit-indirect edit-indiect highlight-indent-guides forge persp counsel-jq lua-mode prism git-gutter-fring git-gutter-fringe+ git-gutter-fr git-gutter-fringe git-gutter scratch ivy-rich avy org-contacts org-make-toc org-habit slime-docker dired-git-info persp-mode perspective org-tree-slide helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -381,7 +381,7 @@ Entered on %U
      ("*rg*" :select t :inhibit-window-quit t :other t)
      (" *Deletions*" :select t :align below :size 0.25)
      (" *Marked Files*" :select t :align below :size 0.25)
-     ("*Org Select*" :select t :align below :size 0.33)
+     ("*Org Select*" :same t)
      ("*Org Note*" :select t :align below :size 0.33)
      ("*Org Links*" :select t :align below :size 0.2)
      (" *Org todo*" :select t :align below :size 0.2)
@@ -433,4 +433,5 @@ Entered on %U
  ;; If there is more than one, they won't work right.
  '(default ((t (:inherit nil :stipple nil :background "#1c1e1f" :foreground "#d6d6d4" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 150 :width normal :foundry "nil" :family "Inconsolata"))))
  '(diredfl-date-time ((t (:inherit default :foreground "#66d9ef" :weight light))))
- '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
+ '(org-ellipsis ((t (:foreground "gray40" :underline nil))))
+ '(web-mode-css-variable-face ((t (:inherit web-mode-variable-name-face)))))

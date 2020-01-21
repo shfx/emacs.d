@@ -19,7 +19,7 @@
 
   ;; Install newer version of org-mode
   (use-package org
-    :defer nil
+    :mode (("\\.org$" . org-mode))
     :ensure org-plus-contrib)
 
   ;; Load org literal config config
