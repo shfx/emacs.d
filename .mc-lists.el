@@ -66,6 +66,7 @@
         mouse-buffer-menu
         mouse-drag-mode-line
         mouse-drag-vertical-line
+        mouse-save-then-kill
         mouse-select-window
         mouse-set-region
         next-buffer

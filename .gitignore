@@ -30,3 +30,6 @@ auto-save-list
 eshell
 tramp
 url
+/places
+/var/savehist.el
+/var/keyfreq.el

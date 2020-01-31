@@ -621,6 +621,12 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
       (exec-path-from-shell-copy-env "GOPATH")))
 #+END_SRC
 
+** no-littering ([[https://melpa.org/#/no-littering][link]])
+
+#+BEGIN_SRC emacs-lisp
+(use-package no-littering)
+#+END_SRC
+
 ** Load theme
 
 #+BEGIN_SRC emacs-lisp
