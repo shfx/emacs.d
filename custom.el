@@ -81,12 +81,13 @@
  '(dashboard-navigator-buttons
    (quote
     ((#("" 0 1
-        (rear-nonsticky t display
-                        (raise 0.0)
-                        font-lock-face
-                        (:family "github-octicons" :height 1.32)
-                        face
-                        (:family "github-octicons" :height 1.32)))
+        (face
+         (:family "github-octicons" :height 1.32)
+         font-lock-face
+         (:family "github-octicons" :height 1.32)
+         display
+         (raise 0.0)
+         rear-nonsticky t))
       "Homepage" "Browse homepage"
       (lambda
         (&rest _)
@@ -232,7 +233,7 @@
  '(ls-lisp-use-insert-directory-program t)
  '(magit-diff-use-overlays nil)
  '(magit-process-finish-apply-ansi-colors t t)
- '(magit-refresh-status-buffer nil)
+ '(magit-refresh-status-buffer nil t)
  '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
@@ -290,7 +291,7 @@ Entered on %U
  '(org-fontify-quote-and-verse-blocks t)
  '(org-fontify-whole-heading-line t)
  '(org-hide-emphasis-markers t)
- '(org-indent-indentation-per-level 1)
+ '(org-indent-indentation-per-level 1 t)
  '(org-modules
    (quote
     (org-protocol org-eshell org-habit org-mouse org-tempo org-notify org-mac-link org-mac-iCal org-panel)) nil nil "Customized with use-package org")

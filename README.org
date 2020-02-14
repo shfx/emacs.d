@@ -274,8 +274,6 @@ itself runs on.
                               'face 'font-lock-comment-face)
                   (propertize (cdr base/dir)
                               'face 'font-lock-constant-face)
-                  ;; (propertize (+eshell--current-git-branch)
-                  ;;             'face 'font-lock-function-name-face)
                   (propertize " ❯" 'face 'eshell-prompt-face)
                   ;; needed for the input text to not have prompt face
                   (propertize " " 'face 'default)))))))

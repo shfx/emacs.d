@@ -1,0 +1,15 @@
+# -*- mode: snippet -*-
+# name: React Class
+# key: rcl
+# --
+
+class $1 extends Component {
+
+  static propTypes = {
+    children: PropTypes.node
+  };
+
+  render() {
+    $2
+  }
+}
