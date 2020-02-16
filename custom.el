@@ -226,10 +226,6 @@
  '(js3-square-indent-offset 2)
  '(left-fringe-width 16 t)
  '(ls-lisp-use-insert-directory-program t)
- '(magit-diff-use-overlays nil)
- '(magit-process-finish-apply-ansi-colors t t)
- '(magit-refresh-status-buffer nil t)
- '(magit-refresh-verbose t)
  '(minibuffer-auto-raise t)
  '(minibuffer-frame-alist (quote ((width . 80) (height . 3))))
  '(minibuffer-prompt-properties (quote (read-only t face minibuffer-prompt)))
@@ -258,7 +254,7 @@
 ")
      ("l" "Link" entry
       (file+headline "~/.orgfiles/links.org" "Links")
-      "* %? %^L %^g 
+      "* %? %^L %^g
 %T" :prepend t)
      ("b" "Blog idea" entry
       (file+headline "~/.orgfiles/todo.org" "Blog Topics:")
