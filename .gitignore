@@ -34,3 +34,5 @@ url
 /var/savehist.el
 /var/keyfreq.el
 /var/
+/dev/
+/session.*
