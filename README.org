@@ -194,24 +194,16 @@ itself runs on.
               ([remap eshell-pcomplete] . helm-esh-pcomplete)
               ("M-r" . helm-eshell-history)
               ("M-s f" . helm-eshell-prompts-all))
-  :hook ((eshell-mode . (lambda ()
-                          (eshell/alias "e" "find-file $1")
-                          (eshell/alias "ff" "find-file $1")
-                          (eshell/alias "emacs" "find-file $1")
-                          (eshell/alias "ee" "find-file-other-window $1")
-
-                          (eshell/alias "gd" "magit-diff-unstaged")
-                          (eshell/alias "gds" "magit-diff-staged")
-                          (eshell/alias "d" "dired $1"))))
   :custom
   (helm-show-completion-display-function #'helm-show-completion-default-display-function)
   (eshell-banner-message "")
-  (eshell-scroll-to-bottom-on-input 'all)
+  (eshell-scroll-to-bottom-on-input t)
   (eshell-error-if-no-glob t)
   (eshell-hist-ignoredups t)
   (eshell-save-history-on-exit t)
   (eshell-prefer-lisp-functions nil)
   (eshell-destroy-buffer-when-process-dies t)
+  (eshell-highlight-prompt nil)
 
   :config
   (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
@@ -324,7 +316,7 @@ the bottom of active window with directory of its buffer.
 (use-package vterm)
 #+END_SRC
 
-** Shackle ([[https://github.com/wasamasa/shackle][link]])
+** COMMENT Shackle ([[https://github.com/wasamasa/shackle][link]])
 
 *Shackle* gives you the means to put an end to popped up buffers not
 behaving they way you'd like them to. By setting up simple rules you
@@ -665,7 +657,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 #+BEGIN_SRC emacs-lisp
 (use-package paradox
   :custom
-  (paradox-github-token nil)
+  (paradox-github-token t)
   :config
   (paradox-enable))
 #+END_SRC
@@ -1006,7 +998,7 @@ syste.
      ;; ASSIGNED means someone else has full, autonomous responsibility for it
      ;; CANCELLED means it's no longer necessary to finish
      ;; DONE means it's complete
-     (sequence "TODO(t@/!)" "WAITING(w@/!)" "DELEGATED(e@/!)" "|" "ASSIGNED(.@/!)" "CANCELLED(x@/!)" "DONE(d@/!)")
+     (sequence "TODO(t)" "WAITING(w)" "DELEGATED(e)" "|" "ASSIGNED(.)" "CANCELLED(x)" "DONE(d)")
 
      ;; Sequence for POSSESSIONS
      ;; PURCHASE means to buy; it's functionally the wishlist
@@ -1020,7 +1012,7 @@ syste.
      ;; GIFTED is given to someone as a gift
      ;; SOLD is sold to someone
      ;; DISCARDED is for thrown out
-     (sequence "PURCHASE(p@/!)" "PURCHASED(j@/!)" "TRANSIT(u@/!)" "GIFT(h@/!)" "SELL(k@/!)" "LOANED(n@/!)" "|" "UNWANTED(a@/!)" "OWN(o@/!)" "GIFTED(g@/!)"  "SOLD(c@/!)" "DISCARDED(q@/!)")
+     (sequence "PURCHASE(p)" "PURCHASED(j)" "TRANSIT(u)" "GIFT(h)" "SELL(k)" "LOANED(n)" "|" "UNWANTED(a)" "OWN(o)" "GIFTED(g)"  "SOLD(c)" "DISCARDED(q)")
 
      ;; Sequence for MULTIMEDIA
      ;; CONSUME means to read (articles, books, quote, etc.), play (games), listen (music), or watch (a series or movie)
@@ -1030,14 +1022,14 @@ syste.
      ;; IGNORED means not read and no desire to read in the future
      ;; REFERENCE is for stuff you don't own but want to be available later
      ;; SHARED means sent to someone or posted
-     (sequence "CONSUME(r@/!)" "SUBSCRIBE(b@/!)" "CONSUMING(l@/!)" "SHARE(s@/!)" "|" "IGNORED(i@/!)" "REFERENCE(f@/!)" "SHARED(,@/!)")
+     (sequence "CONSUME(r)" "SUBSCRIBE(b)" "CONSUMING(l)" "SHARE(s)" "|" "IGNORED(i)" "REFERENCE(f)" "SHARED(,)")
 
      ;; Sequence for EVENTS
      ;; VISIT means that there is something you would physically like to do, no dates associated
      ;; DIDNOTGO means the event was cancelled or I didn't go
      ;; MEETING means a real time meeting, i.e. at work, or on the phone for something official
      ;; VISITED means the event took place and is no longer scheduled
-     (sequence "VISIT(v@/!)" "|" "DIDNOTGO(z@/!)" "MEETING(m@/!)" "VISITED(y@/!)")))
+     (sequence "VISIT(v)" "|" "DIDNOTGO(z)" "MEETING(m)" "VISITED(y)")))
   (org-modules
    '(org-protocol
      org-eshell
