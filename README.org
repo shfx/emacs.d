@@ -473,12 +473,13 @@ unchained from constraints of backward compatibility.
   :custom
   (helm-ff-lynx-style-map t)
   (helm-display-header-line nil)
-  (helm-split-window-preferred-function 'ignore)
+  (helm-split-window-preferred-function 'helm-split-window-default-fn)
   (helm-M-x-fuzzy-match t)
   :bind (("M-x"     . helm-M-x)
 	 ("M-y"     . helm-show-kill-ring)
 	 ("C-x b"   . helm-mini)
 	 ("C-x C-f" . helm-find-files)
+         ("C-x r b" . helm-filtered-bookmarks)
 	 :map helm-map
 	 (("<left>" . helm-previous-source)
 	  ("<right>" . helm-next-source)))
@@ -1183,10 +1184,14 @@ syste.
 (use-package yequake
   :custom
   (yequake-frames
-   (list (cons "org-popnote"
-               (list (cons 'buffer-fns '(org-popnote))
-                     (cons 'width 0.75)
-                     (cons 'height 0.3))))))
+   '(("org-popnote"
+      (buffer-fns . (org-popnote))
+      (width . 0.75)
+      (height . 0.3)
+      (alpha . 0.95)
+      (frame-parameters . ((undecorated . t)
+                           (skip-taskbar . t)
+                           (sticky . t)))))))
 #+END_SRC
 
 *** Htmlize for org-mode
