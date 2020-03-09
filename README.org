@@ -212,11 +212,6 @@ itself runs on.
           (concat
            "/usr/local/bin:/usr/local/sbin:"
            (getenv "PATH")))
-  ;; The 'ls' executable requires the Gnu version on the Mac
-  (let ((ls (if (file-exists-p "/usr/local/bin/gls")
-                "/usr/local/bin/gls"
-              "/bin/ls")))
-    (eshell/alias "ll" (concat ls " -AlohG --color=always")))
   (defun eshell/gst (&rest args)
     (magit-status (pop args) nil)
     (eshell/echo)))
