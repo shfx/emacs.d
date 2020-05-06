@@ -80,8 +80,7 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
       desktop-save t
       frame-resize-pixelwise t
       frame-title-format nil
-      inhibit-splash-screen t
-      inhibit-startup-message t
+      inhibit-startup-screen t
       make-backup-files nil
       ns-use-proxy-icon nil
       pop-up-frames nil
@@ -464,20 +463,19 @@ unchained from constraints of backward compatibility.
 
 #+BEGIN_SRC emacs-lisp
 (use-package helm
-  :init
   :custom
   (helm-ff-lynx-style-map t)
   (helm-display-header-line nil)
   (helm-split-window-preferred-function 'helm-split-window-default-fn)
   (helm-M-x-fuzzy-match t)
   :bind (("M-x"     . helm-M-x)
-	 ("M-y"     . helm-show-kill-ring)
-	 ("C-x b"   . helm-mini)
-	 ("C-x C-f" . helm-find-files)
+         ("M-y"     . helm-show-kill-ring)
+         ("C-x b"   . helm-mini)
+         ("C-x C-f" . helm-find-files)
          ("C-x r b" . helm-filtered-bookmarks)
-	 :map helm-map
-	 (("<left>" . helm-previous-source)
-	  ("<right>" . helm-next-source)))
+         :map helm-map
+         (("<left>" . helm-previous-source)
+          ("<right>" . helm-next-source)))
   :config
   (helm-mode 1))
 
@@ -487,7 +485,7 @@ unchained from constraints of backward compatibility.
 
 (use-package helm-descbinds
   :after (helm)
-  :init
+  :config
   (helm-descbinds-mode))
 
 (use-package helm-org)
@@ -798,11 +796,12 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   ("C-c /" . 'company-files)
   :custom
   (company-idle-delay 0.3)
-  (company-tooltip-limit 15)
+  (company-tooltip-limit 20)
   (company-minimum-prefix-length 1)
   (company-tooltip-flip-when-above t)
   (company-tooltip-align-annotations t)
   (company-backends '())
+  (company-begin-commands '(self-insert-command))
   (company-transformers (quote (company-sort-by-backend-importance)))
   :config
   (global-company-mode))
@@ -813,6 +812,17 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   (company-box-icons-alist '(company-box-icons-all-the-icons))
   :hook
   (company-mode . company-box-mode))
+
+(use-package company-web)
+#+END_SRC
+
+** Emmet
+
+#+BEGIN_SRC emacs-lisp
+(use-package emmet-mode
+  :hook
+  (sgml-mode . emmet-mode)
+  (css-mode emmet-mode))
 #+END_SRC
 
 ** command-log
@@ -925,7 +935,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :commands (flycheck-mode)
   :config
   (global-flycheck-mode))
 #+END_SRC
@@ -1059,6 +1068,7 @@ syste.
    (list "~/.orgfiles/Inbox.org"
          "~/.orgfiles/links.org"
          "~/.orgfiles/todo.org"
+         "~/.orgfiles/done.org"
          "~/.orgfiles/journal.org"))
   (org-capture-templates
    '(("a" "Appointment" entry (file  "~/.orgfiles/gcal.org" )
@@ -1259,26 +1269,23 @@ syste.
   :mode ("\\.ts$")
   :hook (typescript-mode . setup-tide-mode))
 
+(defun setup-tide-mode ()
+  (interactive)
+  (tide-setup)
+  (flycheck-mode +1)
+  (setq flycheck-check-syntax-automatically '(save mode-enabled))
+  (eldoc-mode +1)
+  (tide-hl-identifier-mode +1)
+  (company-mode +1))
+
 (use-package js2-mode
   :mode ("\\.js$"))
 
 (use-package eslintd-fix
-  :after (js2-mode)
   :hook (js2-mode . eslintd-fix-mode))
 
 (use-package prettier-js
-  :after (js2-mode eslintd-fix)
-  :hook (js2-mode . prettier-js-mode))
-
-(defun setup-tide-mode ()
-  (message "Setting tide mode...")
-  (tide-setup)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (prettier-js-mode)
-  (company-mode +1)
-  (tide-hl-identifier-mode +1)
-  (flycheck-add-mode 'javascript-eslint 'typescript-mode))
+  :hook ((js2-mode web-mode) . prettier-js-mode))
 
 (use-package tide
   :after (flycheck typescript-mode)
@@ -1287,20 +1294,21 @@ syste.
   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append))
 
 (use-package web-mode
-  :mode ("\\.html\\'"
-         "\\.tsx\\'"
-         "\\.svelte\\'"
-         )
+  :mode
+  ("\\.html\\'"
+   "\\.tsx\\'"
+   "\\.svelte\\'")
+
   :hook
-  (web-mode . (lambda ()
-                (when (string-equal "tsx" (file-name-extension buffer-file-name))
-                  (setup-tide-mode))))
+  (web-mode . emmet-mode)
   (web-mode . (lambda ()
                 (flycheck-add-mode 'javascript-eslint 'web-mode)))
+  (web-mode . (lambda ()
+                (add-to-list (make-local-variable 'company-backends)
+                             '(company-web-html :with company-yasnippet))))
   :config
   (setq web-mode-content-types-alist
-        '(("html" . "\\.svelte\\'")
-          ("jsx" . "\\.tsx\\'")
+        '(("jsx" . "\\.tsx\\'")
           ("jsx" . "\\.jsx\\'")
           ("html" . "\\.html\\'"))))
 #+END_SRC
@@ -1311,9 +1319,6 @@ syste.
 (use-package elpy
   :config
   (elpy-enable))
-
-(use-package py-autopep8
-  :hook (elpy-mode py-autopep8-enable-on-save))
 
 (use-package python-mode
   :mode "\\.py"
