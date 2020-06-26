@@ -41,12 +41,16 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
-(set-language-environment "UTF-8")
+(setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding (Chinese/Japanese/Korean characters)
+(set-language-environment 'utf-8)
+(set-keyboard-coding-system 'utf-8-mac) ; For old Carbon emacs on OS X only
+(setq locale-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-
+(set-selection-coding-system
+ (if (eq system-type 'windows-nt)
+     'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
+   'utf-8))
 (prefer-coding-system 'utf-8)
 #+END_SRC
 
@@ -60,7 +64,6 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 (line-number-mode 1)
 (column-number-mode 1)
 (global-linum-mode 0)
-(desktop-save-mode 1)
 (savehist-mode 1)
 (delete-selection-mode 1)
 (global-auto-revert-mode 1)
@@ -69,15 +72,21 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 (tool-bar-mode -1)
 (toggle-scroll-bar -1)
 
+(use-package desktop
+  :defer 2
+  :ensure nil
+  :config
+  (setq desktop-dirname "~/.emacs.d/")
+  (setq desktop-path (list desktop-dirname))
+  (setq desktop-restore-eager 5)
+  (setq desktop-load-locked-desktop t)
+  (setq desktop-auto-save-timeout 30)
+  (setq desktop-base-file-name "emacs.desktop")
+  (setq desktop-base-lock-name "lock")
+  (setq desktop-files-not-to-save "^$")
+  (desktop-save-mode +1))
+
 (setq auto-save-default nil
-      desktop-auto-save-timeout 30
-      desktop-base-file-name "emacs.desktop"
-      desktop-base-lock-name "lock"
-      desktop-dirname "~/.emacs.d/"
-      desktop-files-not-to-save "^$" ;reload tramp paths
-      desktop-load-locked-desktop nil
-      desktop-path (list desktop-dirname)
-      desktop-save t
       frame-resize-pixelwise t
       frame-title-format nil
       inhibit-startup-screen t
@@ -310,7 +319,7 @@ the bottom of active window with directory of its buffer.
 (use-package vterm)
 #+END_SRC
 
-** COMMENT Shackle ([[https://github.com/wasamasa/shackle][link]])
+** Shackle ([[https://github.com/wasamasa/shackle][link]])
 
 *Shackle* gives you the means to put an end to popped up buffers not
 behaving they way you'd like them to. By setting up simple rules you
@@ -325,17 +334,10 @@ everything reuse your currently selected window.
      ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
      ("*helm org inbuffer*"    :select t   :align right :size 0.4)
      ("*eshell*"               :select t   :inhibit-window-quit t :other t)
-     (magit-status-mode        :select t   :align right :inhibit-window-quit t :other t)
-     (magit-log-mode           :select t   :inhibit-window-quit t :other t)
-     (magit-log-select-mode    :select t   :inhibit-window-quit t :other t)
-     (magit-diff-mode          :select nil :inhibit-window-quit t :other t)
-     (magit-stash-mode         :select nil :inhibit-window-quit t :other t)
-     (magit-revision-mode      :select t   :inhibit-window-quit t :other t)
-     (flycheck-error-list-mode :select nil :inhibit-window-quit t :align below :size 0.25)
+     (flycheck-error-list-mode :select t   :inhibit-window-quit t :align below :size 0.25)
      (compilation-mode         :select nil :align below :size 0.25)
      (messages-buffer-mode     :select t   :align below :size 0.25)
      (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-     (calendar-mode            :select t   :align below :size 0.25)
      (help-mode                :select t   :align right :size 0.5)
      (helpful-mode             :select t   :align right :size 0.5)
      ("*rg*"                   :select t   :inhibit-window-quit t :other t)
@@ -466,7 +468,7 @@ unchained from constraints of backward compatibility.
   :custom
   (helm-ff-lynx-style-map t)
   (helm-display-header-line nil)
-  (helm-split-window-preferred-function 'helm-split-window-default-fn)
+  (helm-split-window-preferred-function 'ignorfe)
   (helm-M-x-fuzzy-match t)
   :bind (("M-x"     . helm-M-x)
          ("M-y"     . helm-show-kill-ring)
@@ -947,6 +949,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :mode (("\\.http\\'" . restclient-mode))
   :bind (:map restclient-mode-map
               ("C-c C-f" . json-mode-beautify)))
+#+END_SRC
+
+** npm
+
+#+BEGIN_SRC emacs-lisp
+(use-package npm)
 #+END_SRC
 
 ** File types

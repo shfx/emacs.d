@@ -81,12 +81,13 @@
   '(dashboard-navigator-buttons
      (quote
        ((#("" 0 1
-            (rear-nonsticky t display
-              (raise 0.0)
+            (face
+              (:family "github-octicons" :height 1.32)
               font-lock-face
               (:family "github-octicons" :height 1.32)
-              face
-              (:family "github-octicons" :height 1.32)))
+              display
+              (raise 0.0)
+              rear-nonsticky t))
           "Homepage" "Browse homepage"
           (lambda
             (&rest _)
@@ -149,14 +150,14 @@
              (quote eshell-prompt-face))
            (propertize " "
              (quote face)
-             (quote default))))) t)
- '(eshell-prompt-regexp "^.*❯ " t)
+             (quote default))))))
+ '(eshell-prompt-regexp "^.*❯ ")
  '(eshell-save-history-on-exit t)
  '(eshell-scroll-to-bottom-on-input (quote all))
- '(eshell-toggle-name-separator " ❯ " t)
+ '(eshell-toggle-name-separator " ❯ ")
  '(eshell-toggle-run-command nil)
- '(eshell-toggle-size-fraction 3 t)
- '(eshell-toggle-use-projectile-root t t)
+ '(eshell-toggle-size-fraction 3)
+ '(eshell-toggle-use-projectile-root t)
   '(eshell-visual-commands
      (quote
        ("vi" "screen" "top" "less" "more" "lynx" "ncftp" "pine" "tin" "trn" "elm" "htop" "ctop")))
@@ -324,7 +325,7 @@ Entered on %U
  '(org-tree-slide-skip-outline-level 4)
   '(package-selected-packages
      (quote
-       (emmet-mode no-littering yequake org-popnote ivy all-the-icons posframe shrink-path quelpa-use-package quelpa eslintd-fix ns-auto-titlebar edit-indirect edit-indiect highlight-indent-guides forge persp counsel-jq lua-mode prism git-gutter-fring git-gutter-fringe+ git-gutter-fr git-gutter-fringe git-gutter scratch ivy-rich avy org-contacts org-make-toc org-habit slime-docker dired-git-info persp-mode perspective org-tree-slide helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
+       (npm emmet-mode no-littering yequake org-popnote ivy all-the-icons posframe shrink-path quelpa-use-package quelpa eslintd-fix ns-auto-titlebar edit-indirect edit-indiect highlight-indent-guides forge persp counsel-jq lua-mode prism git-gutter-fring git-gutter-fringe+ git-gutter-fr git-gutter-fringe git-gutter scratch ivy-rich avy org-contacts org-make-toc org-habit slime-docker dired-git-info persp-mode perspective org-tree-slide helm-c-yasnippet yasnippet-snippets helm-org toc-org org-sticky-header solaire-mode eshell-up magithub xterm-color eshell-toggle ob-restclient system-package grip-mode ivy-taskrunner helm-taskrunner taskrunner bang linum-relative rg use-package-ensure-system-package unfill auto-package-update goto-line-preview vterm helm-org-rifle counsel-projectile counsel org-super-agenda hackernews shackle helm-flyspell doom-modeline dired-quick-sort company-box osx-trash org-protocol org-bullets esh-autosuggest py-autopep8 elpy restart-emacs typescript deadgrep ripgrep helm-man parrot dashboard transmission helm-rg tuareg merlin reason-mode company-tern tern all-the-icons-dired diredfl dired true command-log-mode symbol-overlay dimmer org-gcal pcmpl-args pcmpl-git pcmpl-homebrew flyspell-popup org-plus-contrib doom-themes darktooth-theme select-themes moe-theme htmlize magit helpful atomic-chrome srcery-theme spaceline-all-the-icons abbrev-mode python-mode abbrev spaceline-config dotenv-mode auctex nlinum-hl prettier-js-mode nlinum dired-du restclient-helm helm-spotify-plus alert copy-as-format highlight-symbol flycheck-flow dimmer-mode dimemr zoom projectile-ripgrep indium flow-minor-mode auto-minor-mode helm-core prettier-js tide rjsx-mode company-flow neotree string-inflection color-theme-sanityinc-tomorrow wttrin wolfram dracula-theme golint expand-region dockerfile-mode better-defaults paradox nginx-mode web-mode move-text zoom-frm zoom-window ujelly-theme cyberpunk-theme darkokai-theme helm-flycheck helm-descbinds golden-ratio cask-mode keyfreq which-key helm-ag company-flx vagrant-tramp puppet-mode nodejs-repl system-packages dash-at-point ## fancy-battery rainbow-mode elm-mode elm-yasnippets scss-mode react-snippets js2-refactor flycheck-css-colorguard flycheck-elm flycheck-typescript-tslint company-go go-mode anzu eyebrowse spaceline editorconfig yasnippet company-web company-jedi yaml-mode company afternoon-theme pdf-tools helm-package async helm-ack helm-chrome helm-gitignore helm-google helm-projectile helm projectile markdown-mode exec-path-from-shell flycheck use-package multiple-cursors monokai-theme php-mode json-mode js2-mode imenu+ bubbleberry-theme 2048-game)))
  '(paradox-automatically-star nil)
  '(paradox-column-width-package 22)
  '(paradox-display-download-count t)
@@ -344,6 +345,28 @@ Entered on %U
  '(right-fringe-width 0 t)
  '(safe-local-variable-values (quote ((eval progn (pp-buffer) (indent-buffer)))))
  '(search-default-mode (quote char-fold-to-regexp))
+  '(shackle-rules
+     (quote
+       (("*helm-ag*" :select t :align right :size 0.5)
+         ("*helm semantic/imenu*" :select t :align right :size 0.4)
+         ("*helm org inbuffer*" :select t :align right :size 0.4)
+         ("*eshell*" :select t :inhibit-window-quit t :other t)
+         (flycheck-error-list-mode :select nil :inhibit-window-quit t :align below :size 0.25)
+         (compilation-mode :select nil :align below :size 0.25)
+         (messages-buffer-mode :select t :align below :size 0.25)
+         (inferior-emacs-lisp-mode :select t :align below :size 0.25)
+         (help-mode :select t :align right :size 0.5)
+         (helpful-mode :select t :align right :size 0.5)
+         ("*rg*" :select t :inhibit-window-quit t :other t)
+         (" *Deletions*" :select t :align below :size 0.25)
+         (" *Marked Files*" :select t :align below :size 0.25)
+         ("*Org Select*" :same t)
+         ("*Org Note*" :select t :align below :size 0.33)
+         ("*Org Links*" :select t :align below :size 0.2)
+         (" *Org todo*" :select t :align below :size 0.2)
+         ("*Man.*" :select t :align below :size 0.5 :regexp t)
+         ("*helm.*" :select t :align below :size 0.33 :regexp t)
+         ("*Org Src.*" :select t :align right :size 0.5 :regexp t))))
  '(tramp-default-method "ssh")
  '(tramp-default-proxies-alist nil)
  '(tramp-save-ad-hoc-proxies t)
