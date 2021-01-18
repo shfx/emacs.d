@@ -99,6 +99,7 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
       transient-mark-mode t
       vc-handled-backends nil
       ns-right-alternate-modifier nil
+      create-lockfiles nil
       visible-bell t)
 
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -197,11 +198,10 @@ itself runs on.
 
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
-  :after eshell-toggle
-  :bind (:map eshell-mode-map
-              ([remap eshell-pcomplete] . helm-esh-pcomplete)
-              ("M-r" . helm-eshell-history)
-              ("M-s f" . helm-eshell-prompts-all))
+  ;; :bind (:map eshell-mode-map
+  ;;             ([remap eshell-pcomplete] . helm-esh-pcomplete)
+  ;;             ("M-r" . helm-eshell-history)
+  ;;             ("M-s f" . helm-eshell-prompts-all))
   :custom
   (helm-show-completion-display-function #'helm-show-completion-default-display-function)
   (eshell-banner-message "")
@@ -214,12 +214,12 @@ itself runs on.
   (eshell-highlight-prompt nil)
 
   :config
-  (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
   (setenv "PAGER" "cat")
   (setenv "PATH"
           (concat
            "/usr/local/bin:/usr/local/sbin:"
            (getenv "PATH")))
+
   (defun eshell/gst (&rest args)
     (magit-status (pop args) nil)
     (eshell/echo)))
@@ -229,7 +229,7 @@ itself runs on.
   :hook (eshell-mode . esh-autosuggest-mode))
 
 (use-package xterm-color
-  :after eshell-toggle
+  :after (eshell eshell-toggle)
   :custom
   (comint-output-filter-functions
    (remove 'ansi-color-process-output comint-output-filter-functions))
@@ -238,8 +238,8 @@ itself runs on.
   (eshell-before-prompt .
                         (lambda ()
                           (setq xterm-color-preserve-properties t)))
+  (eshell-preoutput-filter-functions . xterm-color-filter)
   :config
-  (add-to-list 'eshell-preoutput-filter-functions 'xterm-color-filter)
   (setenv "TERM" "xterm-256color"))
 
 (use-package eshell-up
@@ -313,7 +313,7 @@ the bottom of active window with directory of its buffer.
   (eshell-toggle-use-projectile-root t))
 #+END_SRC
 
-** COMMENT vterm
+** vterm
 
 #+BEGIN_SRC emacs-lisp
 (use-package vterm)
@@ -818,7 +818,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 (use-package company-web)
 #+END_SRC
 
-** Emmet
+** COMMENT Emmet
 
 #+BEGIN_SRC emacs-lisp
 (use-package emmet-mode
@@ -938,7 +938,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
   :config
-  (global-flycheck-mode))
+  (global-flycheck-mode 1))
 #+END_SRC
 
 ** restclient
@@ -1045,7 +1045,6 @@ syste.
      (sequence "VISIT(v)" "|" "DIDNOTGO(z)" "MEETING(m)" "VISITED(y)")))
   (org-modules
    '(org-protocol
-     org-eshell
      org-habit
      org-mouse
      org-tempo
