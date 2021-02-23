@@ -722,7 +722,8 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   :custom
   ((vc-handled-backends nil)
    (magit-process-finish-apply-ansi-colors t)
-   (magit-refresh-status-buffer t))
+   (magit-refresh-status-buffer t)
+   (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message)))
   :config
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags))
 #+END_SRC

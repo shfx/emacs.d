@@ -21,7 +21,6 @@
 
   ;; Install newer version of org-mode
   (use-package org
-    :after gcmh
     :mode (("\\.org$" . org-mode))
     :ensure org-plus-contrib)
 
