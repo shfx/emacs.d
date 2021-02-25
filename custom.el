@@ -76,13 +76,12 @@
      (registers . 5)) t)
  '(dashboard-navigator-buttons
    '((#("" 0 1
-        (face
-         (:family "github-octicons" :height 1.32)
-         font-lock-face
-         (:family "github-octicons" :height 1.32)
-         display
-         (raise 0.0)
-         rear-nonsticky t))
+        (rear-nonsticky t display
+                        (raise 0.0)
+                        font-lock-face
+                        (:family "github-octicons" :height 1.32)
+                        face
+                        (:family "github-octicons" :height 1.32)))
       "Homepage" "Browse homepage"
       (lambda
         (&rest _)
