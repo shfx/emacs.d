@@ -3,8 +3,11 @@
 
   ;; Packages
   (require 'package)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
-  (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+
   (package-initialize)
 
   ;; Package management
@@ -25,14 +28,22 @@
     :mode (("\\.org$" . org-mode))
     :ensure org-plus-contrib)
 
-  ;; Track max-specpdl-size exceded error by uncommenting this
-  (setq max-specpdl-size 5)
-  (setq debug-on-error t)
+  ;; ;; Track max-specpdl-size exceded error by uncommenting this
+  ;; (setq max-specpdl-size 5)
+  ;; (setq debug-on-error t)
 
   ;; Load org literal config config
   (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
 
-  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-  (load custom-file)
+  (setq custom-file
+    (if (boundp 'server-socket-dir)
+      (expand-file-name "custom.el" server-socket-dir)
+      (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+
+  (load custom-file t)
 
   (garbage-collect))
+
+(provide 'init)
+;;; init.el ends here
+(put 'upcase-region 'disabled nil)

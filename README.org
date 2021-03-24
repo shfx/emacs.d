@@ -38,6 +38,18 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 
 * Initialiation defaults
 
+** Measure startup time
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (message "*** Emacs loaded in %s with %d garbage collections."
+                     (format "%.2f seconds"
+                             (float-time
+                              (time-subtract after-init-time before-init-time)))
+                     gcs-done)))
+#+END_SRC
+
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
@@ -73,17 +85,14 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 (toggle-scroll-bar -1)
 
 (use-package desktop
-  :defer 2
   :ensure nil
+  :custom
+  (desktop-restore-eager 5)
+  (desktop-load-locked-desktop t)
+  (desktop-auto-save-timeout 30)
+  (desktop-base-lock-name "lock")
+  (desktop-files-not-to-save "^$")
   :config
-  (setq desktop-dirname "~/.emacs.d/")
-  (setq desktop-path (list desktop-dirname))
-  (setq desktop-restore-eager 5)
-  (setq desktop-load-locked-desktop t)
-  (setq desktop-auto-save-timeout 30)
-  (setq desktop-base-file-name "emacs.desktop")
-  (setq desktop-base-lock-name "lock")
-  (setq desktop-files-not-to-save "^$")
   (desktop-save-mode +1))
 
 (setq auto-save-default nil
@@ -114,13 +123,18 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
                 (lambda ()
                   (interactive)
                   (let ((old-face-attribute (face-attribute 'default :height)))
+                    (message (format "Changed font size to %d" (+ old-face-attribute 10)))
                     (set-face-attribute 'default nil :height (+ old-face-attribute 10)))))
 
 (global-set-key (kbd "s--")
                 (lambda ()
                   (interactive)
                   (let ((old-face-attribute (face-attribute 'default :height)))
+                    (message (format "Changed font size to %d" (- old-face-attribute 10)))
                     (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
+
+(global-set-key "\C-l" 'goto-line)
+(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
 (add-to-list 'default-frame-alist '(ns-appearance . dark))
 (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
@@ -146,13 +160,10 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 #+END_SRC
 
 ** Ensure system-package
+
 #+BEGIN_SRC emacs-lisp
 (use-package system-packages)
 (use-package use-package-ensure-system-package)
-
-(defun string/ends-with (string suffix)
-  "Return t if STRING ends with SUFFIX."
-  (and (string-match (rx-to-string `(: ,suffix eos) t) string) t))
 #+END_SRC
 
 ** Default trash behavior
@@ -160,6 +171,7 @@ launchctl load -w ~/Library/LaunchAgents/homebrew.mxcl.emacs
 #+BEGIN_SRC emacs-lisp
 (use-package osx-trash
   :if (eq system-type 'darwin)
+  :ensure-system-package trash
   :init
   (osx-trash-setup)
   :config
@@ -186,7 +198,29 @@ Very annoying binding, lets get rid of it.
 (global-unset-key (kbd "C-z"))
 #+END_SRC
 
+** Browser Url
+
+Set build-in module defaults to handle chrome as a default browser
+
+#+BEGIN emacs-lisp
+(use-package browse-url
+  :custom
+  (browse-url-browser-function 'browse-url-default-browser))
+
+(use-package browse-url-dwim
+  :config
+  (browse-url-dwim-mode 1))
+#+END_SRC
+
 * Packages
+
+** no-littering ([[https://melpa.org/#/no-littering][link]])
+
+Help keeping ~/.emacs.d clean.
+
+#+BEGIN_SRC emacs-lisp
+(use-package no-littering)
+#+END_SRC
 
 ** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
 
@@ -370,7 +404,7 @@ with version control systems.
   (editorconfig-mode 1))
 #+END_SRC
 
-** Dimmer ([[https://github.com/gonewest818/dimmer.el][link]])
+** COMMENT Dimmer ([[https://github.com/gonewest818/dimmer.el][link]])
 
 This module provides a minor mode that indicates which buffer is
 currently active by dimming the faces in the other buffers.
@@ -383,6 +417,10 @@ currently active by dimming the faces in the other buffers.
   (dimmer-configure-which-key)
   (dimmer-configure-helm)
   (dimmer-configure-hydra)
+  (dimmer-configure-company-box)
+  (dimmer-configure-magit)
+  (dimmer-configure-org)
+  (dimmer-configure-posframe)
   (dimmer-mode))
 #+END_SRC
 
@@ -499,14 +537,14 @@ of all matches.
 #+BEGIN_SRC emacs-lisp
 (use-package ivy)
 
-(use-package counsel-projectile
-  :config
-  (counsel-projectile-mode))
-
 (use-package swiper
   :bind (("C-s" . swiper-isearch)
          :map swiper-isearch-map
          ("C-w" . ivy-yank-word)))
+
+(use-package counsel-projectile
+  :config
+  (counsel-projectile-mode))
 
 (use-package counsel-jq
   :quelpa (counsel-jq :fetcher github :repo "200ok-ch/counsel-jq"))
@@ -549,6 +587,27 @@ Hydra.
   ("SPC" nil))
 #+END_SRC
 
+** K8s
+
+#+BEGIN_SRC emacs-lisp
+(use-package kubernetes
+  :commands (kubernetes-overview)
+  :custom
+  ((kubernetes-commands-display-buffer-function 'display-buffer)
+   (Kubernetes-Commands-display-buffer-select nil)))
+#+END_SRC
+
+** Idium - JS debugging tool ([[https://github.com/NicolasPetton/Indium][link]])
+
+A JavaScript development environment for Emacs.
+
+Indium connects to a browser tab or nodejs process and provides many
+features for JavaScript development
+
+#+BEGIN_SRC emacs-lisp
+(use-package indium)
+#+END_SRC
+
 ** Multiple Cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
 
 Multiple cursors for Emacs. This is some pretty crazy functionality,
@@ -574,10 +633,249 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
     (exec-path-from-shell-copy-env "GOPATH")))
 #+END_SRC
 
-** no-littering ([[https://melpa.org/#/no-littering][link]])
+** Org ([[https://orgmode.org/][link]])
+
+Org mode is for keeping notes, maintaining TODO lists, planning
+projects, and authoring documents with a fast and effective plain-text
+syste.
 
 #+BEGIN_SRC emacs-lisp
-(use-package no-littering)
+(use-package org
+  :hook
+  (org-mode . org-indent-mode)
+  (org-mode . turn-on-auto-fill)
+  (org-mode . (lambda ()
+                (add-to-list (make-local-variable 'company-backends)
+                             '(company-yasnippet))))
+  :bind
+  ("C-c l" . org-store-link)
+  ("C-c a" . org-agenda)
+  ("C-c c" . org-capture)
+
+  :config
+  (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((ditaa . t)))
+
+  :custom
+  (org-todo-keywords
+   '(;; Sequence for TASKS
+     ;; TODO means it's an item that needs addressing
+     ;; WAITING means it's dependent on something else happening
+     ;; DELEGATED means someone else is doing it and I need to follow up with them
+     ;; ASSIGNED means someone else has full, autonomous responsibility for it
+     ;; CANCELLED means it's no longer necessary to finish
+     ;; DONE means it's complete
+     (sequence "TODO(t)" "WAITING(w)" "DELEGATED(e)" "|" "ASSIGNED(.)" "CANCELLED(x)" "DONE(d)")
+
+     ;; Sequence for POSSESSIONS
+     ;; PURCHASE means to buy; it's functionally the wishlist
+     ;; PURCHASED means it's been purcahsed, but not shipped yet
+     ;; TRANSIT means it's in the mail but not here yet
+     ;; GIFT means it's in my posession but I still need to gift it
+     ;; SELL means you want to get rid of it, put it up on Craigslist
+     ;; LOANED means someone currently has it
+     ;; UNWANTED is for no longer wanted
+     ;; OWN is for stuff you actually own (may be overlap for reference and own)
+     ;; GIFTED is given to someone as a gift
+     ;; SOLD is sold to someone
+     ;; DISCARDED is for thrown out
+     (sequence "PURCHASE(p)" "PURCHASED(j)" "TRANSIT(u)" "GIFT(h)" "SELL(k)" "LOANED(n)" "|" "UNWANTED(a)" "OWN(o)" "GIFTED(g)"  "SOLD(c)" "DISCARDED(q)")
+
+     ;; Sequence for MULTIMEDIA
+     ;; CONSUME means to read (articles, books, quote, etc.), play (games), listen (music), or watch (a series or movie)
+     ;; SUBSCRIBE means to add it to a newsreader or list of some sort
+     ;; CONSUMING means currently consuming
+     ;; SHARE means to share on G+, Facebook, reddit, blog about, etc.
+     ;; IGNORED means not read and no desire to read in the future
+     ;; REFERENCE is for stuff you don't own but want to be available later
+     ;; SHARED means sent to someone or posted
+     (sequence "CONSUME(r)" "SUBSCRIBE(b)" "CONSUMING(l)" "SHARE(s)" "|" "IGNORED(i)" "REFERENCE(f)" "SHARED(,)")
+
+     ;; Sequence for EVENTS
+     ;; VISIT means that there is something you would physically like to do, no dates associated
+     ;; DIDNOTGO means the event was cancelled or I didn't go
+     ;; MEETING means a real time meeting, i.e. at work, or on the phone for something official
+     ;; VISITED means the event took place and is no longer scheduled
+     (sequence "VISIT(v)" "|" "DIDNOTGO(z)" "MEETING(m)" "VISITED(y)")))
+  (org-modules
+   '(org-protocol
+     org-habit
+     org-mouse
+     org-tempo
+     org-notify
+     org-mac-link
+     org-mac-iCal
+     org-panel))
+  (org-hide-leading-stars t)
+  (org-src-tab-acts-natively t)
+  (org-startup-indented t)
+  (org-babel-min-lines-for-block-output 1)
+  (org-speed-command-help t)
+  (org-startup-folded "showeverything")
+  (org-startup-with-inline-images t)
+  (org-src-preserve-indentation t)
+  (org-ellipsis "  " )
+  (org-pretty-entities t)
+  (org-hide-emphasis-markers t)
+  (org-agenda-block-separator "")
+  (org-fontify-whole-heading-line t)
+  (org-fontify-done-headline t)
+  (org-fontify-quote-and-verse-blocks t)
+  (org-tags-column 0)
+  (org-indent-indentation-per-level 1)
+  (org-directory "~/Dropbox/org")
+  (org-default-notes-file "notes.org")
+  (org-agenda-files
+   (list "inbox.org"
+         "links.org"
+         "todo.org"
+         "done.org"
+         "journal.org"))
+  (org-refile-targets '((org-agenda-files :maxlevel . 1)))
+  (org-refile-allow-creating-parent-nodes 'confirm)
+  (org-capture-templates
+   '(("a" "Appointment" entry (file  "gcal.org" )
+      "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
+     ("l" "Link" entry (file+headline "links.org" "Links")
+      "* %? %^L %^g \n%T" :prepend t)
+     ("b" "Blog idea" entry (file+headline "todo.org" "Blog Topics:")
+      "* %?\n%T" :prepend t)
+     ("t" "Todo Item" entry
+      (file+headline "todo.org" "Todo")
+      "* TODO %?\n:PROPERTIES:\n:CREATED: %u\n:END:" :prepend t :empty-lines 1)
+     ("n" "Note" entry (file+headline "todo.org" "Note space")
+      "* %?\n%u" :prepend t)
+     ("j" "Journal" entry (file+olp+datetree "journal.org")
+      "* %?\nEntered on %U\n  %i\n  %a")
+     )))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(use-package org-habit
+  :ensure nil)
+
+(use-package org-contacts
+  :ensure nil)
+
+(use-package org-tree-slide
+  :custom
+  (org-tree-slide-skip-outline-level 4)
+  (org-tree-slide-skip-done nil)
+  :config
+  (global-set-key (kbd "<f8>") 'org-tree-slide-mode)
+  (global-set-key (kbd "S-<f8>") 'org-tree-slide-skip-done-toggle)
+  (define-key org-tree-slide-mode-map (kbd "<f9>")
+    'org-tree-slide-move-previous-tree)
+  (define-key org-tree-slide-mode-map (kbd "<f10>")
+    'org-tree-slide-move-next-tree)
+  (define-key org-tree-slide-mode-map (kbd "<f11>")
+    'org-tree-slide-content)
+  (org-tree-slide-narrowing-control-profile))
+
+(use-package org-bullets
+  :hook (org-mode . org-bullets-mode))
+
+(use-package ob-restclient
+  :config
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((restclient . t))))
+
+(use-package ob-js
+  :ensure nil
+  :config
+  (add-to-list 'org-babel-load-languages '(js . t))
+  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  (add-to-list 'org-babel-tangle-lang-exts '("js" . "js")))
+
+(use-package org-super-agenda
+  :init
+  :custom
+  (org-super-agenda-groups
+   ;; Each group has an implicit boolean OR operator between its selectors.
+   '((:name "Today"        ; Optionally specify section name
+            :time-grid t   ; Items that appear on the time grid
+            :todo "TODAY") ; Items that have this TODO keyword
+     (:name "Important"
+            ;; Single arguments given alone
+            :tag "bills"
+            :priority "A")
+     ;; Set order of multiple groups at once
+     (:order-multi (2 (:name "Shopping in town"
+                             ;; Boolean AND group matches items that match all subgroups
+                             :and (:tag "shopping" :tag "@town"))
+                      (:name "Food-related"
+                             ;; Multiple args given in list with implicit OR
+                             :tag ("food" "dinner"))
+                      (:name "Personal"
+                             :habit t
+                             :tag "personal")
+                      (:name "Space-related (non-moon-or-planet-related)"
+                             ;; Regexps match case-insensitively on the entire entry
+                             :and (:regexp ("space" "NASA")
+                                           ;; Boolean NOT also has implicit OR between selectors
+                                           :not (:regexp "moon" :tag "planet")))))
+     ;; Groups supply their own section names when none are given
+     (:todo "WAITING" :order 8)  ; Set order of this section
+     (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+            ;; Show this group at the end of the agenda (since it has the
+            ;; highest number). If you specified this group last, items
+            ;; with these todo keywords that e.g. have priority A would be
+            ;; displayed in that group instead, because items are grouped
+            ;; out in the order the groups are listed.
+            :order 9)
+     (:priority<= "B"
+                  ;; Show this section after "Today" and "Important", because
+                  ;; their order is unspecified, defaulting to 0. Sections
+                  ;; are displayed lowest-number-first.
+                  :order 1)
+     ;; After the last group, the agenda will display items that didn't
+     ;; match any of these groups, with the default order position of 99
+     ))
+  (org-super-agenda-mode))
+
+(defun make-orgcapture-frame ()
+  "Create a new frame and run org-capture."
+  (interactive)
+  (make-frame '((name . "remember") (width . 80) (height . 16)
+                (top . 400) (left . 300)
+                (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
+                ))
+  (select-frame-by-name "remember")
+  (delete-other-windows)
+  (org-capture))
+
+(use-package org-popnote
+  :ensure nil
+  :quelpa (org-popnote :fetcher github :repo "alphapapa/org-popnote"))
+
+(use-package yequake
+  :custom
+  (yequake-frames
+   '(("org-popnote"
+      (buffer-fns . (org-popnote))
+      (width . 0.75)
+      (height . 0.3)
+      (alpha . 0.95)
+      (frame-parameters . ((undecorated . t)
+                           (skip-taskbar . t)
+                           (sticky . t)))))))
+
+(defun org-babel-tangle-dont-ask ()
+  ;; Dynamic scoping to the rescue
+  (let ((org-confirm-babel-evaluate nil))
+    (org-babel-tangle)))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'org-babel-tangle-dont-ask
+                                              'run-at-end 'only-in-org-mode)))
+#+END_SRC
+
+** Htmlize for org-mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package htmlize)
 #+END_SRC
 
 ** Load theme
@@ -589,10 +887,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   (doom-themes-org-config)
   (doom-themes-visual-bell-config)
   (doom-themes-neotree-config)
-  (let ((height (face-attribute 'default :height)))
-    ;; for all linum/nlinum users
-    (set-face-attribute 'linum nil :height height))
-  (set-face-attribute 'default nil :font "Monaco 12"))
+  (add-to-list 'default-frame-alist '(font . "Monaco 16")))
 #+END_SRC
 
 ** Better defaults
@@ -617,7 +912,9 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 ** Editing forms in chrome
 
 #+BEGIN_SRC emacs-lisp
-(use-package atomic-chrome)
+(use-package atomic-chrome
+  :config
+  (atomic-chrome-start-server))
 #+END_SRC
 
 ** Better help dialogs
@@ -678,8 +975,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 ** Modeline
 
 #+BEGIN_SRC emacs-lisp
-(use-package all-the-icons)
-
 (use-package doom-modeline
   :after all-the-icons
   :custom
@@ -793,7 +1088,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 (use-package company-box
   :custom
   (company-box-enable-icon t)
-  (company-box-icons-alist '(company-box-icons-all-the-icons))
   :hook
   (company-mode . company-box-mode))
 
@@ -835,7 +1129,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   (keyfreq-autosave-mode 1))
 #+END_SRC
 
-** Perspective
+** COMMENT Perspective
 
 #+BEGIN_SRC emacs-lisp
 (use-package persp-mode
@@ -857,8 +1151,10 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 #+BEGIN_SRC emacs-lisp
 (use-package rg
+  :ensure-system-package rg
   :custom
   (rg-use-transient-menu t)
+  (rg-ignore-ripgreprc nil)
   :config
   (rg-enable-default-bindings))
 #+END_SRC
@@ -870,7 +1166,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   :bind ("M-!" . bang))
 #+END_SRC
 
-** Symbol Overlay
+** COMMENT Symbol Overlay
 
 #+BEGIN_SRC emacs-lisp
 (use-package symbol-overlay
@@ -891,6 +1187,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package dired
   :ensure nil
+  :custom
+  (dired-dwim-target t)
   :config
   (cond ((string-equal system-type "darwin")
          (setq insert-directory-program "/usr/local/bin/gls")
@@ -919,7 +1217,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :config
+  :ensure nil
+  :init
   (global-flycheck-mode 1))
 #+END_SRC
 
@@ -933,10 +1232,25 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
               ("C-c C-f" . json-mode-beautify)))
 #+END_SRC
 
-** npm
+** LSP Mode
 
 #+BEGIN_SRC emacs-lisp
-(use-package npm)
+(use-package lsp-mode
+  :commands lsp
+  :init
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "C-c l")
+  :hook ((web-mode . lsp)
+         (js2-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration)))
+
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-show))
 #+END_SRC
 
 ** File types
@@ -1307,8 +1621,6 @@ syste.
 
 #+BEGIN_SRC emacs-lisp
 ;; TODO: Use general for keybindings
-(load (expand-file-name "keys.el" user-emacs-directory))
-
 (defun my-delete-trailing-whitespace ()
   "Deleting trailing whitespaces."
   (when (derived-mode-p 'prog-mode)
