@@ -113,11 +113,6 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
 
 (global-set-key "\C-l" 'goto-line)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-
-(when (boundp 'comp-eln-load-path)
-  (setcar comp-eln-load-path
-	  (expand-file-name "var/eln-cache/" user-emacs-directory)))
 #+END_SRC
 
 ** Auto minor-mode for use-package
@@ -1236,6 +1231,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :commands lsp
   :init
   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  :custom
+  (lsp-auto-guess-root t)
   (setq lsp-keymap-prefix "C-c l")
   :hook ((web-mode . lsp)
          (js2-mode . lsp)
