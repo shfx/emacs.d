@@ -117,7 +117,7 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
 
 (when (boundp 'comp-eln-load-path)
   (setcar comp-eln-load-path
- (concat no-littering-var-directory "eln-cache/")))
+	  (expand-file-name "var/eln-cache/" user-emacs-directory)))
 #+END_SRC
 
 ** Auto minor-mode for use-package
@@ -478,6 +478,7 @@ introducing external dependencies (when feasible)
   :bind ("C-c p" . projectile-command-map)
   :custom
   (projectile-enable-caching t)
+  (projectile-sort-order 'recently-active)
   :config
   (projectile-mode)
   (projectile-register-project-type 'npm '("package.json")
@@ -1353,8 +1354,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package eslintd-fix
   :hook (js2-mode . eslintd-fix-mode))
 
-(use-package prettier-js
-  :hook ((js2-mode web-mode) . prettier-js-mode))
+(use-package prettier
+  :hook (after-init . global-prettier-mode))
 
 (use-package tide
   :after (flycheck typescript-mode)
