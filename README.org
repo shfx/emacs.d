@@ -89,6 +89,10 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
       split-height-threshold 80
       split-width-threshold 160)
 
+(if (boundp 'xwidget-webkit-enable-plugins)
+    (setq xwidget-webkit-enable-plugins t)
+  (defvar xwidget-webkit-enable-plugins t))
+
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (global-unset-key (kbd "C-x C-c"))
@@ -349,6 +353,7 @@ the bottom of active window with directory of its buffer.
 
 (use-package multi-vterm
   :after vterm)
+
 (use-package vterm-toggle
   :after vterm)
 
@@ -403,26 +408,6 @@ with version control systems.
 (use-package editorconfig
   :init
   (editorconfig-mode 1))
-#+END_SRC
-
-** COMMENT Dimmer ([[https://github.com/gonewest818/dimmer.el][link]])
-
-This module provides a minor mode that indicates which buffer is
-currently active by dimming the faces in the other buffers.
-
-#+BEGIN_SRC emacs-lisp
-(use-package dimmer
-  :custom
-  (dimmer-fraction 0.35)
-  :config
-  (dimmer-configure-which-key)
-  (dimmer-configure-helm)
-  (dimmer-configure-hydra)
-  (dimmer-configure-company-box)
-  (dimmer-configure-magit)
-  (dimmer-configure-org)
-  (dimmer-configure-posframe)
-  (dimmer-mode))
 #+END_SRC
 
 ** Posframe
@@ -524,6 +509,9 @@ unchained from constraints of backward compatibility.
 
 (use-package helm-org)
 (use-package helm-org-rifle)
+(use-package helm-posframe
+  :config
+  (helm-posframe-enable))
 #+END_SRC
 
 ** Ivy / Swiper ([[https://github.com/abo-abo/swiper][link]])
@@ -632,17 +620,19 @@ syste.
 #+BEGIN_SRC emacs-lisp
 (use-package org
   :hook
-  (org-mode . org-indent-mode)
   (org-mode . turn-on-auto-fill)
   (org-mode . (lambda ()
                 (add-to-list (make-local-variable 'company-backends)
                              '(company-yasnippet))))
+  (org-src-mode . (lambda ()
+                    (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc))))
   :bind
   ("C-c l" . org-store-link)
   ("C-c a" . org-agenda)
   ("C-c c" . org-capture)
 
   :config
+  (org-indent-mode t)
   (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
   (org-babel-do-load-languages
    'org-babel-load-languages
@@ -837,8 +827,8 @@ syste.
                 (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
                 ))
   (select-frame-by-name "remember")
-  (delete-other-windows)
-  (org-capture))
+  (org-capture)
+  (delete-other-windows))
 
 (use-package org-popnote
   :ensure nil
@@ -847,10 +837,10 @@ syste.
 (use-package yequake
   :custom
   (yequake-frames
-   '(("org-popnote"
-      (buffer-fns . (org-popnote))
+   '(("org-capture"
+      (buffer-fns . (yequake-org-capture))
       (width . 0.75)
-      (height . 0.3)
+      (height . 0.5)
       (alpha . 0.95)
       (frame-parameters . ((undecorated . t)
                            (skip-taskbar . t)
@@ -1066,7 +1056,7 @@ syste.
   ("C-." . company-complete)
   ("C-c /" . 'company-files)
   :custom
-  (company-idle-delay 0.3)
+  (company-idle-delay 0.0)
   (company-tooltip-limit 20)
   (company-minimum-prefix-length 1)
   (company-tooltip-flip-when-above t)
@@ -1229,23 +1219,30 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
   :commands lsp
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
   :custom
   (lsp-auto-guess-root t)
-  (setq lsp-keymap-prefix "C-c l")
+  (lsp-keymap-prefix "C-c l")
+  (lsp-headerline-breadcrumb-enable nil)
+  (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
   :hook ((web-mode . lsp)
          (js2-mode . lsp)
          (lsp-mode . lsp-enable-which-key-integration)))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
+  :custom
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-show-hover nil)
+  (lsp-ui-doc-position 'at-point)
   :config
-  (setq lsp-ui-sideline-enable t)
-  (setq lsp-ui-sideline-show-hover nil)
-  (setq lsp-ui-doc-position 'at-point)
   (lsp-ui-doc-show))
 #+END_SRC
+
+** DAP Mode
+
+#+begin_src emacs-lisp
+(use-package dap-mode)
+#+end_src
 
 ** File types
 

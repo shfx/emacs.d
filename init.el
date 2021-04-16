@@ -39,5 +39,3 @@
     (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 
 (load custom-file t)
-
-(garbage-collect)

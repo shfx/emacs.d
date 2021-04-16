@@ -36,3 +36,4 @@ url
 /var/
 /dev/
 /session.*
+/eln-cache/
