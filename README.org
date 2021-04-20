@@ -89,10 +89,6 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
       split-height-threshold 80
       split-width-threshold 160)
 
-(if (boundp 'xwidget-webkit-enable-plugins)
-    (setq xwidget-webkit-enable-plugins t)
-  (defvar xwidget-webkit-enable-plugins t))
-
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (global-unset-key (kbd "C-x C-c"))
@@ -118,6 +114,17 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
 (global-set-key "\C-l" 'goto-line)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 #+END_SRC
+
+** xwidget-webkit problem with emacsclient
+
+We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
+to work properly
+
+#+begin_src elisp
+(if (boundp 'xwidget-webkit-enable-plugins)
+      (setq xwidget-webkit-enable-plugins t)
+  (defvar xwidget-webkit-enable-plugins t))
+#+end_src
 
 ** Auto minor-mode for use-package
 
@@ -209,6 +216,9 @@ Set build-in module defaults to handle chrome as a default browser
 (use-package epa
   :if (eq system-type 'darwin)
   :ensure-system-package pinentry-mac)
+
+(use-package epa
+  :if (eq system-type 'gnu/linux))
 #+end_src
 
 * Packages
@@ -266,11 +276,11 @@ itself runs on.
   :custom
   (comint-output-filter-functions
    (remove 'ansi-color-process-output comint-output-filter-functions))
-  (eshell-output-filter-functions (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
+  (eshell-output-filter-functions
+   (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
   :hook
-  (eshell-before-prompt .
-                        (lambda ()
-                          (setq xterm-color-preserve-properties t)))
+  (eshell-before-prompt . (lambda ()
+                            (setq xterm-color-preserve-properties t)))
   (eshell-preoutput-filter-functions . xterm-color-filter)
   :config
   (setenv "TERM" "xterm-256color"))
@@ -509,9 +519,6 @@ unchained from constraints of backward compatibility.
 
 (use-package helm-org)
 (use-package helm-org-rifle)
-(use-package helm-posframe
-  :config
-  (helm-posframe-enable))
 #+END_SRC
 
 ** Ivy / Swiper ([[https://github.com/abo-abo/swiper][link]])
@@ -647,7 +654,7 @@ syste.
      ;; ASSIGNED means someone else has full, autonomous responsibility for it
      ;; CANCELLED means it's no longer necessary to finish
      ;; DONE means it's complete
-     (sequence "TODO(t)" "WAITING(w)" "DELEGATED(e)" "|" "ASSIGNED(.)" "CANCELLED(x)" "DONE(d)")
+     (sequence "TODO(t)" "WAITING(w)" "|" "CANCELLED(x)" "DONE(d)")
 
      ;; Sequence for POSSESSIONS
      ;; PURCHASE means to buy; it's functionally the wishlist
@@ -671,14 +678,7 @@ syste.
      ;; IGNORED means not read and no desire to read in the future
      ;; REFERENCE is for stuff you don't own but want to be available later
      ;; SHARED means sent to someone or posted
-     (sequence "CONSUME(r)" "SUBSCRIBE(b)" "CONSUMING(l)" "SHARE(s)" "|" "IGNORED(i)" "REFERENCE(f)" "SHARED(,)")
-
-     ;; Sequence for EVENTS
-     ;; VISIT means that there is something you would physically like to do, no dates associated
-     ;; DIDNOTGO means the event was cancelled or I didn't go
-     ;; MEETING means a real time meeting, i.e. at work, or on the phone for something official
-     ;; VISITED means the event took place and is no longer scheduled
-     (sequence "VISIT(v)" "|" "DIDNOTGO(z)" "MEETING(m)" "VISITED(y)")))
+     (sequence "CONSUME(r)" "SUBSCRIBE(b)" "CONSUMING(l)" "SHARE(s)" "|" "IGNORED(i)" "REFERENCE(f)" "SHARED(,)")))
   (org-modules
    '(org-protocol
      org-habit
@@ -1135,10 +1135,10 @@ syste.
 (use-package rg
   :ensure-system-package rg
   :custom
-  (rg-use-transient-menu t)
-  (rg-ignore-ripgreprc nil)
+  (rg-custom-type-aliases
+   '(("svelte" .    "*.svelte")))
   :config
-  (rg-enable-default-bindings))
+  (rg-enable-menu))
 #+END_SRC
 
 ** bang
