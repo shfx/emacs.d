@@ -211,14 +211,23 @@ Set build-in module defaults to handle chrome as a default browser
     (exec-path-from-shell-copy-env "GOPATH")))
 #+END_SRC
 
-** Easy PGP Assistant
+** EasyGP Assistant
+
 #+begin_src emacs-lisp
 (use-package epa
   :if (eq system-type 'darwin)
-  :ensure-system-package pinentry-mac)
+  :ensure-system-package (gpg pinentry-mac))
 
 (use-package epa
   :if (eq system-type 'gnu/linux))
+#+end_src
+
+when staring, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
+
+#+begin_src sh
+gpg --list-keys
+echo "pinentry-program /usr/local/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.conf
+gpg --expert --full-generate-key
 #+end_src
 
 * Packages
