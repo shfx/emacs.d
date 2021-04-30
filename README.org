@@ -451,12 +451,6 @@ with version control systems.
 (use-package restart-emacs)
 #+END_SRC
 
-** Auto minor-mode
-
-#+BEGIN_SRC emacs-lisp
-(use-package auto-minor-mode)
-#+END_SRC
-
 ** All the icons ([[https://github.com/domtronn/all-the-icons.el][link]])
 
 A utility package to collect various Icon Fonts and propertize them
