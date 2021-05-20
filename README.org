@@ -835,10 +835,6 @@ syste.
   (org-capture)
   (delete-other-windows))
 
-(use-package org-popnote
-  :ensure nil
-  :quelpa (org-popnote :fetcher github :repo "alphapapa/org-popnote"))
-
 (use-package yequake
   :custom
   (yequake-frames
