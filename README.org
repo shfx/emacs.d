@@ -1248,7 +1248,11 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package grip-mode
   :bind
   (:map markdown-mode-command-map
-        ("g" . grip-mode)))
+        ("g" . grip-mode))
+  :config
+  (let ((credential (auth-source-user-and-password "github.com")))
+    (setq grip-github-user (car credential)
+          grip-github-password (cadr credential))))
 
 (use-package edit-indirect
   :after markdown-mode)
@@ -1340,7 +1344,10 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :hook (js2-mode . eslintd-fix-mode))
 
 (use-package prettier
-  :hook (after-init . global-prettier-mode))
+  :ensure-system-package prettier
+  :minor (("\\.html\\'" . prettier-mode)
+         ("\\.js\\'" . prettier-mode)
+         ("\\.svelte\\'" . prettier-mode)))
 
 (use-package tide
   :after (flycheck typescript-mode)
