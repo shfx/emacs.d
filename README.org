@@ -599,17 +599,6 @@ Hydra.
    (Kubernetes-Commands-display-buffer-select nil)))
 #+END_SRC
 
-** Idium - JS debugging tool ([[https://github.com/NicolasPetton/Indium][link]])
-
-A JavaScript development environment for Emacs.
-
-Indium connects to a browser tab or nodejs process and provides many
-features for JavaScript development
-
-#+BEGIN_SRC emacs-lisp
-(use-package indium)
-#+END_SRC
-
 ** Multiple Cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
 
 Multiple cursors for Emacs. This is some pretty crazy functionality,
