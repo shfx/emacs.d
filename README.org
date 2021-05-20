@@ -1163,8 +1163,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (dired-dwim-target t)
   :config
   (cond ((string-equal system-type "darwin")
-         (setq insert-directory-program "/usr/local/bin/gls")
-         (setq dired-listing-switches "-alXv"))))
+         (setq insert-directory-program "gls"
+               dired-use-ls-dired t)
+         (setq dired-listing-switches "-alXv --group-directories-first"))))
 
 (use-package diredfl
   :after dired
