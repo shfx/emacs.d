@@ -30,19 +30,37 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
                      gcs-done)))
 #+END_SRC
 
+** Init erros and server errors
+
+When running as a server emacs checks if custom.el is safe. Here were
+setting custom.el in ~/tmp~ dir and it will sometimes throw an
+errors. Here is a dirty hack.
+
+#+BEGIN_SRC emacs-lisp
+(defadvice server-ensure-safe-dir
+    (around
+     my-around-server-ensure-safe-dir
+     activate)
+  "Ignores any errors raised from server-ensure-safe-dir"
+  (ignore-errors ad-do-it))
+#+end_src
+
+Disable native-compile warnings when starting emacs. Warnings should
+not break the init of Emacs.
+
+#+begin_src emacs-lisp
+(setq warning-minimum-level :error)
+#+end_src
+
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
-(setq utf-translate-cjk-mode nil) ; disable CJK coding/encoding (Chinese/Japanese/Korean characters)
 (set-language-environment 'utf-8)
 (set-keyboard-coding-system 'utf-8-mac) ; For old Carbon emacs on OS X only
 (setq locale-coding-system 'utf-8)
 (set-default-coding-systems 'utf-8)
 (set-terminal-coding-system 'utf-8)
-(set-selection-coding-system
- (if (eq system-type 'windows-nt)
-     'utf-16-le  ;; https://rufflewind.com/2014-07-20/pasting-unicode-in-emacs-on-windows
-   'utf-8))
+(set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 #+END_SRC
 
@@ -210,7 +228,9 @@ Move your env variables to ~.zshenv~ befre setting this up
   (when (or (memq window-system '(ns x))
             (daemonp))
     (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "GOPATH")))
+    (exec-path-from-shell-copy-env "GOPATH")
+    (when (eq (length (getenv "NODE_PATH")) 0)
+      (setenv "NODE_PATH" "/usr/local/lib/node_modules"))))
 #+END_SRC
 
 ** EasyGP Assistant
@@ -973,7 +993,13 @@ syste.
    (magit-refresh-status-buffer t)
    (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message)))
   :config
-  (remove-hook 'magit-refs-sections-hook 'magit-insert-tags))
+  (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
+  (transient-define-suffix magit-submodule-update-all ()
+    "Update all submodules"
+    :description "Update All (git submodule update --init --recursive)"
+    (interactive)
+    (magit-with-toplevel
+      (magit-run-git-async "submodule" "update" "--init" "--recursive"))))
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -1209,15 +1235,15 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
-  :commands lsp
+  :commands (lsp lsp-deferred)
   :custom
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
   (lsp-headerline-breadcrumb-enable nil)
+  (lsp-enable-indentation nil)
+  (lsp-enable-on-type-formatting nil)
   (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
-  :hook ((web-mode . lsp)
-         (js2-mode . lsp)
-         (lsp-mode . lsp-enable-which-key-integration)))
+  :hook (lsp-mode . lsp-enable-which-key-integration))
 
 (use-package lsp-ui
   :hook (lsp-mode . lsp-ui-mode)
@@ -1231,8 +1257,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 ** DAP Mode
 
+Run ~dap-chrome-setup~ after requiring ~dab-chrome~
+
 #+begin_src emacs-lisp
-(use-package dap-mode)
+(use-package dap-mode
+  :config
+  (require 'dap-chrome))
 #+end_src
 
 ** File types
@@ -1311,7 +1341,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
 (use-package scss-mode
-  :mode "\\.scss")
+  :mode "\\.scss"
+  :hook (scss-mode . lsp-deferred))
 #+END_SRC
 
 *** LUA
@@ -1325,8 +1356,11 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+BEGIN_SRC emacs-lisp
 (use-package typescript-mode
+  :after lsp-mode
   :mode ("\\.ts$")
-  :hook (typescript-mode . setup-tide-mode))
+  :hook
+  ((typescript-mode . setup-tide-mode)
+   (typescript-mode . lsp-deferred)))
 
 (defun setup-tide-mode ()
   (interactive)
@@ -1338,16 +1372,17 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (company-mode +1))
 
 (use-package js2-mode
-  :mode ("\\.js$"))
+  :mode ("\\.js$")
+  :hook (js2-mode . lsp-deferred))
 
 (use-package eslintd-fix
   :hook (js2-mode . eslintd-fix-mode))
 
-(use-package prettier
+(use-package prettier-js
   :ensure-system-package prettier
-  :minor (("\\.html\\'" . prettier-mode)
-         ("\\.js\\'" . prettier-mode)
-         ("\\.svelte\\'" . prettier-mode)))
+  :minor (("\\.html\\'" . prettier-js-mode)
+         ("\\.js\\'" . prettier-js-mode)
+         ("\\.svelte\\'" . prettier-js-mode)))
 
 (use-package tide
   :after (flycheck typescript-mode)
@@ -1356,13 +1391,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append))
 
 (use-package web-mode
+  :after lsp-mode
   :mode
   ("\\.html\\'"
    "\\.tsx\\'"
    "\\.svelte\\'")
 
   :hook
-  (web-mode . emmet-mode)
+  (web-mode . lsp-deferred)
   (web-mode . (lambda ()
                 (flycheck-add-mode 'javascript-eslint 'web-mode)))
   (web-mode . (lambda ()
