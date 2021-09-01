@@ -110,7 +110,8 @@ not break the init of Emacs.
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (global-unset-key (kbd "C-x C-c"))
-(global-unset-key (kbd "s-w"))
+(global-unset-key (kbd "S-w"))
+(global-unset-key (kbd "C-x C-z"))
 (windmove-default-keybindings 'super)
 (winner-mode 1)
 
@@ -131,6 +132,10 @@ not break the init of Emacs.
 
 (global-set-key "\C-l" 'goto-line)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+(global-set-key (kbd "M-s-<right>") 'tab-next)
+(global-set-key (kbd "M-s-<left>") 'tab-previous)
+(tab-bar-mode 1)
 #+END_SRC
 
 ** xwidget-webkit problem with emacsclient
@@ -390,7 +395,9 @@ the bottom of active window with directory of its buffer.
 ** vterm
 
 #+BEGIN_SRC emacs-lisp
-(use-package vterm)
+(use-package vterm
+  :custom
+  (vterm-always-compile-module t))
 
 (use-package multi-vterm
   :after vterm)
@@ -414,14 +421,14 @@ everything reuse your currently selected window.
    '(("*helm-ag*"              :select t   :align right :size 0.5)
      ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
      ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-     ("*eshell*"               :select t   :inhibit-window-quit t :other t)
-     (flycheck-error-list-mode :select t   :inhibit-window-quit t :align below :size 0.25)
+     ("*eshell*"               :select t   :other t)
+     (flycheck-error-list-mode :select t   :align below :size 0.25)
      (compilation-mode         :select nil :align below :size 0.25)
      (messages-buffer-mode     :select t   :align below :size 0.25)
      (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
      (help-mode                :select t   :align right :size 0.5)
      (helpful-mode             :select t   :align right :size 0.5)
-     ("*rg*"                   :select t   :inhibit-window-quit t :other t)
+     ("*rg*"                   :select t   :other t)
      (" *Deletions*"           :select t   :align below :size 0.25)
      (" *Marked Files*"        :select t   :align below :size 0.25)
      ("*Org Select*"           :same t)
@@ -1242,6 +1249,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-enable-indentation nil)
   (lsp-enable-on-type-formatting nil)
+  (lsp-ui-sideline-enable nil)
   (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
   :hook (lsp-mode . lsp-enable-which-key-integration))
 
@@ -1253,6 +1261,10 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-ui-doc-position 'at-point)
   :config
   (lsp-ui-doc-show))
+
+(use-package lsp-java
+  :config
+  (add-hook 'java-mode-hook 'lsp))
 #+END_SRC
 
 ** DAP Mode
