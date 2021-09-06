@@ -1207,6 +1207,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 (use-package dired-git-info
   :after dired
+  :commands (dired-git-info-mode)
   :ensure t
   :bind (:map dired-mode-map
               (")" . dired-git-info-mode)))
