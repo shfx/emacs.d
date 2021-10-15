@@ -30,9 +30,36 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
                      gcs-done)))
 #+END_SRC
 
-** Init erros and server errors
+** Starting the server if not already started
 
-When running as a server emacs checks if custom.el is safe. Here were
+#+begin_src emacs-lisp
+(if (and (fboundp 'server-running-p)
+         (not (server-running-p)))
+   (server-start))
+#+end_src
+
+** Focus new frame
+
+#+begin_src emacs-lisp
+(when (featurep 'ns)
+  (defun ns-raise-emacs ()
+    "Raise Emacs."
+    (ns-do-applescript "tell application \"Emacs\" to activate"))
+
+  (defun ns-raise-emacs-with-frame (frame)
+    "Raise Emacs and select the provided frame."
+    (with-selected-frame frame
+      (when (display-graphic-p)
+        (ns-raise-emacs))))
+
+  (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
+  (when (display-graphic-p)
+    (ns-raise-emacs)))
+#+end_src
+
+** Errors handling and ignore server errors
+
+When running as a deamon emacs checks if custom.el is in safe place. Here were
 setting custom.el in ~/tmp~ dir and it will sometimes throw an
 errors. Here is a dirty hack.
 
@@ -77,6 +104,7 @@ not break the init of Emacs.
 (savehist-mode 1)
 (delete-selection-mode 1)
 (global-auto-revert-mode 1)
+(menu-bar-mode -1)
 
 (use-package desktop
   :ensure nil
@@ -105,7 +133,8 @@ not break the init of Emacs.
       create-lockfiles nil
       visible-bell t
       split-height-threshold 80
-      split-width-threshold 160)
+      split-width-threshold 160
+      compilation-scroll-output t)
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -567,6 +596,7 @@ of all matches.
 (use-package ivy)
 
 (use-package swiper
+  :after ivy
   :bind (("C-s" . swiper-isearch)
          :map swiper-isearch-map
          ("C-w" . ivy-yank-word)))
@@ -576,6 +606,7 @@ of all matches.
   (counsel-projectile-mode))
 
 (use-package counsel-jq
+  :ensure-system-package jq
   :quelpa (counsel-jq :fetcher github :repo "200ok-ch/counsel-jq"))
 #+END_SRC
 
@@ -1099,6 +1130,15 @@ syste.
 (use-package company-web)
 #+END_SRC
 
+** Prescient
+
+#+begin_src emacs-lisp
+(use-package prescient)
+(use-package ivy-prescient
+  :after ivy)
+(use-package company-prescient)
+#+end_src
+
 ** COMMENT Emmet
 
 #+BEGIN_SRC emacs-lisp
@@ -1263,9 +1303,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :config
   (lsp-ui-doc-show))
 
-(use-package lsp-java
-  :config
-  (add-hook 'java-mode-hook 'lsp))
+(use-package lsp-tailwindcss
+  :custom
+  (lsp-tailwindcss-add-on-mode t))
 #+END_SRC
 
 ** DAP Mode
@@ -1371,6 +1411,8 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (use-package typescript-mode
   :after lsp-mode
   :mode ("\\.ts$")
+  :custom
+  (typescript-indent-level 2)
   :hook
   ((typescript-mode . setup-tide-mode)
    (typescript-mode . lsp-deferred)))
@@ -1412,11 +1454,11 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
   :hook
   (web-mode . lsp-deferred)
-  (web-mode . (lambda ()
-                (flycheck-add-mode 'javascript-eslint 'web-mode)))
-  (web-mode . (lambda ()
-                (add-to-list (make-local-variable 'company-backends)
-                             '(company-web-html :with company-yasnippet))))
+  ;; (web-mode . (lambda ()
+  ;;               (flycheck-add-mode 'javascript-eslint 'web-mode)))
+  ;; (web-mode . (lambda ()
+  ;;               (add-to-list (make-local-variable 'company-backends)
+  ;;                            '(company-web-html :with company-yasnippet))))
   :config
   (setq web-mode-content-types-alist
         '(("jsx" . "\\.tsx\\'")
