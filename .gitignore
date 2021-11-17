@@ -38,3 +38,4 @@ url
 /session.*
 /eln-cache/
 /async-bytecomp.log
+/forge-database.sqlite

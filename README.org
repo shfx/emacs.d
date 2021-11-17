@@ -38,6 +38,14 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
    (server-start))
 #+end_src
 
+** Electric pairs only for prog-mode
+
+#+begin_src emacs-lisp
+(add-hook 'prog-mode-hook
+          (lambda ()
+            (electric-pair-mode 1)))
+#+end_src 
+
 ** Focus new frame
 
 #+begin_src emacs-lisp
@@ -79,6 +87,13 @@ not break the init of Emacs.
 (setq warning-minimum-level :error)
 #+end_src
 
+#+begin_src emacs-lisp
+(use-package warnings
+  :ensure nil
+  :custom
+  (warning-suppress-types '((use-package))))
+#+end_src
+
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
@@ -97,7 +112,7 @@ not break the init of Emacs.
 (set-default 'truncate-lines t)
 (global-hl-line-mode 0)
 (set-window-margins nil 0 0)
-(electric-pair-mode 1)
+(electric-pair-mode 0)
 (line-number-mode 1)
 (column-number-mode 1)
 (global-linum-mode 0)
@@ -137,6 +152,16 @@ not break the init of Emacs.
       compilation-scroll-output t)
 
 (fset 'yes-or-no-p 'y-or-n-p)
+
+;;http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
+(defconst y-or-n-p-ret-yes-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map y-or-n-p-map)
+    (define-key map [return] 'act)
+    map)
+  "A keymap for y-or-n-p with RET meaning \"yes\".")
+
+(setq y-or-n-p-map y-or-n-p-ret-yes-map)
 
 (global-unset-key (kbd "C-x C-c"))
 (global-unset-key (kbd "S-w"))
@@ -187,14 +212,13 @@ to work properly
 ** Quelpa
 
 #+BEGIN_SRC emacs-lisp
-(use-package quelpa)
-
-(quelpa
- '(quelpa-use-package
-   :fetcher git
-   :url "https://framagit.org/steckerhalter/quelpa-use-package.git"))
-
-(require 'quelpa-use-package)
+(use-package quelpa
+  :init
+  (quelpa
+   '(quelpa-use-package
+     :fetcher git
+     :url "https://framagit.org/steckerhalter/quelpa-use-package.git"))
+  (require 'quelpa-use-package))
 #+END_SRC
 
 ** Ensure system-package
@@ -306,12 +330,7 @@ itself runs on.
 
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
-  ;; :bind (:map eshell-mode-map
-  ;;             ([remap eshell-pcomplete] . helm-esh-pcomplete)
-  ;;             ("M-r" . helm-eshell-history)
-  ;;             ("M-s f" . helm-eshell-prompts-all))
   :custom
-  (helm-show-completion-display-function #'helm-show-completion-default-display-function)
   (eshell-banner-message "")
   (eshell-scroll-to-bottom-on-input t)
   (eshell-error-if-no-glob t)
@@ -421,6 +440,12 @@ the bottom of active window with directory of its buffer.
   (eshell-toggle-use-projectile-root t))
 #+END_SRC
 
+** ESUP
+
+#+begin_src emacs-lisp
+(use-package esup)
+#+end_src
+
 ** vterm
 
 #+BEGIN_SRC emacs-lisp
@@ -447,10 +472,7 @@ everything reuse your currently selected window.
 (use-package shackle
   :custom
   (shackle-rules
-   '(("*helm-ag*"              :select t   :align right :size 0.5)
-     ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
-     ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-     ("*eshell*"               :select t   :other t)
+   '(("*eshell*"               :select t   :other t)
      (flycheck-error-list-mode :select t   :align below :size 0.25)
      (compilation-mode         :select nil :align below :size 0.25)
      (messages-buffer-mode     :select t   :align below :size 0.25)
@@ -465,11 +487,27 @@ everything reuse your currently selected window.
      ("*Org Links*"            :select t   :align below :size 0.2)
      (" *Org todo*"            :select t   :align below :size 0.2)
      ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-     ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
      ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t)))
   :config
   (shackle-mode t))
 #+END_SRC
+
+** Marginalia
+
+#+begin_src emacs-lisp
+;; Enable richer annotations using the Marginalia package
+(use-package marginalia
+  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+
+  ;; The :init configuration is always executed (Not lazy!)
+  :init
+
+  ;; Must be in the :init section of use-package such that the mode gets
+  ;; enabled right away. Note that this forces loading the package.
+  (marginalia-mode))
+#+end_src
 
 ** Editor Config ([[https://github.com/editorconfig/editorconfig-emacs][link]])
 
@@ -537,78 +575,257 @@ introducing external dependencies (when feasible)
                                     :test "npm test"
                                     :run "npm start"
                                     :test-suffix ".spec.js"))
-
-
 #+END_SRC
 
-** Helm ([[https://emacs-helm.github.io/helm/][link]])
+** Vertico ()
 
-Helm is an Emacs framework for incremental completions and narrowing
-selections. It helps to rapidly complete file names, buffer names, or
-any other Emacs interactions requiring selecting an item from a list
-of possible choices. Helm is a fork of anything.el, which was
-originally written by Tamas Patrovic and can be considered to be its
-successor. Helm cleans the legacy code that is leaner, modular, and
-unchained from constraints of backward compatibility.
-
-#+BEGIN_SRC emacs-lisp
-(use-package helm
+#+begin_src emacs-lisp
+(use-package vertico
+  :init
+  (vertico-mode )
   :custom
-  (helm-ff-lynx-style-map t)
-  (helm-display-header-line nil)
-  (helm-split-window-preferred-function 'ignorfe)
-  (helm-M-x-fuzzy-match t)
-  :bind (("M-x"     . helm-M-x)
-         ("M-y"     . helm-show-kill-ring)
-         ("C-x b"   . helm-mini)
-         ("C-x C-f" . helm-find-files)
-         ("C-x r b" . helm-filtered-bookmarks)
-         :map helm-map
-         (("<left>" . helm-previous-source)
-          ("<right>" . helm-next-source)))
+  (vertico-resize nil)
+  (vertico-cycle t))
+#+end_src
+
+also helpful emacs config just for vertico
+
+#+begin_src emacs-lisp
+(use-package emacs
+  :ensure nil
+  :init
+  ;; Add prompt indicator to `completing-read-multiple'.
+  ;; Alternatively try `consult-completing-read-multiple'.
+  (defun crm-indicator (args)
+    (cons (concat "[CRM] " (car args)) (cdr args)))
+  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+  :hook
+  (minibuffer-setup . cursor-intangible-mode)
+
+  :custom
+  ;; Do not allow the cursor in the minibuffer prompt
+  (minibuffer-prompt-properties
+   '(read-only t cursor-intangible t face minibuffer-prompt))
+  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+  ;; Vertico commands are hidden in normal buffers.
+  (read-extended-command-predicate
+        #'command-completion-default-include-p)
+  ;; Enable recursive minibuffers
+  (enable-recursive-minibuffers t))
+#+end_src
+
+** Orderless ()
+
+#+begin_src emacs-lisp
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+#+end_src
+
+** Savehist
+
+#+begin_src emacs-lisp
+(use-package savehist
+  :init
+  (savehist-mode))
+#+end_src
+
+** Consult ([[https://github.com/minad/consult][link]])
+
+#+begin_src emacs-lisp
+;; Example configuration for Consult
+(use-package consult
+  ;; Replace bindings. Lazily loaded due by `use-package'.
+  :bind (;; C-c bindings (mode-specific-map)
+         ("C-c h" . consult-history)
+         ("C-c m" . consult-mode-command)
+         ("C-c b" . consult-bookmark)
+         ("C-c k" . consult-kmacro)
+         ;; C-x bindings (ctl-x-map)
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ("<help> a" . consult-apropos)            ;; orig. apropos-command
+         ;; M-g bindings (goto-map)
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-imenu-multi)
+         ;; M-s bindings (search-map)
+         ("M-s f" . consult-find)
+         ("M-s F" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s L" . consult-line-multi)
+         ("M-s m" . consult-multi-occur)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("M-s e" . consult-isearch-history)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch-history)         ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch-history)       ;; orig. isearch-edit-string
+         ("M-s l" . consult-line)                  ;; needed by consult-line to detect isearch
+         ("M-s L" . consult-line-multi))           ;; needed by consult-line to detect isearch
+
+  ;; Enable automatic preview at point in the *Completions* buffer.
+  ;; This is relevant when you use the default completion UI,
+  ;; and not necessary for Vertico, Selectrum, etc.
+  :hook (completion-list-mode . consult-preview-at-point-mode-hook)
+
+  ;; The :init configuration is always executed (Not lazy)
+  :init
+
+  ;; Optionally configure the register formatting. This improves the register
+  ;; preview for `consult-register', `consult-register-load',
+  ;; `consult-register-store' and the Emacs built-ins.
+  (setq register-preview-delay 0
+        register-preview-function #'consult-register-format)
+
+  ;; Optionally tweak the register preview window.
+  ;; This adds thin lines, sorting and hides the mode line of the window.
+  (advice-add #'register-preview :override #'consult-register-window)
+
+  ;; Optionally replace `completing-read-multiple' with an enhanced version.
+  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+  ;; Use Consult to select xref locations with preview
+  (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+
+  ;; Configure other variables and modes in the :config section,
+  ;; after lazily loading the package.
   :config
-  (helm-mode 1))
 
-(use-package helm-flycheck
-  :after helm
-  :bind (:map flycheck-mode-map ("C-c ! h" . helm-flycheck)))
+  ;; Optionally configure preview. The default value
+  ;; is 'any, such that any key triggers the preview.
+  ;; (setq consult-preview-key 'any)
+  ;; (setq consult-preview-key (kbd "M-."))
+  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+  ;; For some commands and buffer sources it is useful to configure the
+  ;; :preview-key on a per-command basis using the `consult-customize' macro.
+  (consult-customize
+   consult-theme
+   :preview-key '(:debounce 0.2 any)
+   consult-ripgrep consult-git-grep consult-grep
+   consult-bookmark consult-recent-file consult-xref
+   consult--source-file consult--source-project-file consult--source-bookmark
+   :preview-key (kbd "M-."))
 
-(use-package helm-descbinds
-  :after (helm)
+  ;; Optionally configure the narrowing key.
+  ;; Both < and C-+ work reasonably well.
+  (setq consult-narrow-key "<") ;; (kbd "C-+")
+
+  ;; Optionally make narrowing help available in the minibuffer.
+  ;; You may want to use `embark-prefix-help-command' or which-key instead.
+  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+  ;; Optionally configure a function which returns the project root directory.
+  ;; There are multiple reasonable alternatives to chose from.
+  ;;;; 1. project.el (project-roots)
+  ;; (setq consult-project-root-function
+  ;;       (lambda ()
+  ;;         (when-let (project (project-current))
+  ;;           (car (project-roots project)))))
+  ;;;; 2. projectile.el (projectile-project-root)
+  (autoload 'projectile-project-root "projectile")
+  (setq consult-project-root-function #'projectile-project-root)
+  ;;;; 3. vc.el (vc-root-dir)
+  ;; (setq consult-project-root-function #'vc-root-dir)
+  ;;;; 4. locate-dominating-file
+  ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+  )
+#+end_src
+
+** Embark
+
+#+begin_src emacs-lisp
+(defun embark-which-key-indicator ()
+  "An embark indicator that displays keymaps using which-key.
+The which-key help message will show the type and value of the
+current target followed by an ellipsis if there are further
+targets."
+  (lambda (&optional keymap targets prefix)
+    (if (null keymap)
+        (which-key--hide-popup-ignore-command)
+      (which-key--show-keymap
+       (if (eq (plist-get (car targets) :type) 'embark-become)
+           "Become"
+         (format "Act on %s '%s'%s"
+                 (plist-get (car targets) :type)
+                 (embark--truncate-target (plist-get (car targets) :target))
+                 (if (cdr targets) "…" "")))
+       (if prefix
+           (pcase (lookup-key keymap prefix 'accept-default)
+             ((and (pred keymapp) km) km)
+             (_ (key-binding prefix 'accept-default)))
+         keymap)
+       nil nil t (lambda (binding)
+                   (not (string-suffix-p "-argument" (cdr binding))))))))
+
+(use-package embark
+  :ensure t
+  :bind
+  (("s-." . embark-act)         ;; pick some comfortable binding
+   ("C-;" . embark-dwim)        ;; good alternative: M-.
+   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+  :custom
+  ;; Optionally replace the key help with a completing-read interface
+  ((prefix-help-command #'embark-prefix-help-command)
+   (embark-indicators
+    '(embark-which-key-indicator
+      embark-highlight-indicator
+      embark-isearch-highlight-indicator)))
+
   :config
-  (helm-descbinds-mode))
 
-(use-package helm-org)
-(use-package helm-org-rifle)
-#+END_SRC
+  ;; Hide the mode line of the Embark live/completions buffers
+  (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                 nil
+                 (window-parameters (mode-line-format . none)))))
 
-** Ivy / Swiper ([[https://github.com/abo-abo/swiper][link]])
+(defun embark-hide-which-key-indicator (fn &rest args)
+  "Hide the which-key indicator immediately when using the completing-read prompter."
+  (which-key--hide-popup-ignore-command)
+  (let ((embark-indicators
+         (remq #'embark-which-key-indicator embark-indicators)))
+    (apply fn args)))
 
-Ivy is a generic completion mechanism for Emacs. While it operates
-similarly to other completion schemes such as icomplete-mode, Ivy aims
-to be more efficient, smaller, simpler, and smoother to use yet highly
-customizable.
+(advice-add #'embark-completing-read-prompter
+            :around #'embark-hide-which-key-indicator)
 
-Swiper is an alternative to isearch that uses ivy to show an overview
-of all matches.
-
-#+BEGIN_SRC emacs-lisp
-(use-package ivy)
-
-(use-package swiper
-  :after ivy
-  :bind (("C-s" . swiper-isearch)
-         :map swiper-isearch-map
-         ("C-w" . ivy-yank-word)))
-
-(use-package counsel-projectile
-  :config
-  (counsel-projectile-mode))
-
-(use-package counsel-jq
-  :ensure-system-package jq
-  :quelpa (counsel-jq :fetcher github :repo "200ok-ch/counsel-jq"))
-#+END_SRC
+;; Consult users will also want the embark-consult package.
+(use-package embark-consult
+  :ensure t
+  :after (embark consult)
+  :demand t ; only necessary if you have the hook below
+  ;; if you want to have consult previews as you move around an
+  ;; auto-updating embark collect buffer
+  :hook
+  (embark-collect-mode . consult-preview-at-point-mode))
+#+end_src
 
 ** Hydra ([[https://github.com/abo-abo/hydra][link]])
 
@@ -677,12 +894,23 @@ projects, and authoring documents with a fast and effective plain-text
 syste.
 
 #+BEGIN_SRC emacs-lisp
+(defmacro org-babel-add-langs (langs)
+  `(org-babel-do-load-languages
+   'org-babel-load-languages
+   (append org-babel-load-languages
+           ',langs)))
+
+(defmacro org-babel-set-langs (langs)
+  `(org-babel-do-load-languages
+   'org-babel-load-languages
+   ',langs))
+
 (use-package org
   :hook
   (org-mode . turn-on-auto-fill)
-  (org-mode . (lambda ()
-                (add-to-list (make-local-variable 'company-backends)
-                             '(company-yasnippet))))
+  ;; (org-mode . (lambda ()
+  ;;               (add-to-list (make-local-variable 'company-backends)
+  ;;                            '(company-yasnippet))))
   (org-src-mode . (lambda ()
                     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc))))
   :bind
@@ -693,9 +921,8 @@ syste.
   :config
   (org-indent-mode t)
   (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((ditaa . t)))
+  (org-babel-add-langs
+   ((ditaa . t)))
 
   :custom
   (org-todo-keywords
@@ -812,18 +1039,25 @@ syste.
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
 
+;; org-babel
+(use-package ob-elisp)
+
 (use-package ob-restclient
   :config
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((restclient . t))))
+  (org-babel-add-langs
+   ((restclient . t))))
 
 (use-package ob-js
   :ensure nil
   :config
-  (add-to-list 'org-babel-load-languages '(js . t))
-  (org-babel-do-load-languages 'org-babel-load-languages org-babel-load-languages)
+  (org-babel-add-langs
+   ((js . t)))
+  
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js")))
+
+(use-package ob-deno
+  :config
+  (org-babel-add-lang ((deno . t))))
 
 (use-package org-super-agenda
   :init
@@ -903,6 +1137,19 @@ syste.
                                               'run-at-end 'only-in-org-mode)))
 #+END_SRC
 
+
+
+** compay-org-block
+
+#+begin_src emacs-lisp
+(use-package company-org-block
+  :after company
+  :custom
+  (company-org-block-edit-style 'inline)
+  :hook (org-mode . (lambda ()
+                       (setq-local company-backends '(company-org-block)))))
+#+end_src
+
 ** Htmlize for org-mode
 
 #+BEGIN_SRC emacs-lisp
@@ -965,6 +1212,7 @@ syste.
   :config
   (paradox-enable))
 #+END_SRC
+
 
 ** Cycling between different var notations
 
@@ -1047,23 +1295,16 @@ syste.
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository)))
 #+END_SRC
 
+** ESUP
+
+<
+
 ** goto-line-preview
 
 #+BEGIN_SRC emacs-lisp
 (use-package goto-line-preview
   :bind ([remap goto-line] . goto-line-preview)
   :config)
-#+END_SRC
-
-** COMMENT git-gutter-fringe
-
-#+BEGIN_SRC emacs-lisp
-(use-package git-gutter-fringe
-  :quelpa (git-gutter-fringe :fetcher github :repo "syohex/emacs-git-gutter-fringe")
-  :custom
-  (add-hook 'prog-mode-hook 'git-gutter-mode)
-  (add-hook 'org-mode-hook 'git-gutter-mode)
-  (git-gutter:update-interval 2))
 #+END_SRC
 
 ** diff-hl
@@ -1091,15 +1332,12 @@ syste.
 
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
-  :hook ((prog-mode org-mode) . yas-minor-mode))
+  :hook (prog-mode . yas-minor-mode))
 
 (use-package yasnippet-snippets
   :after yasnippet
   :config
   (yas-reload-all))
-
-(use-package helm-c-yasnippet
-  :after yasnippet)
 #+END_SRC
 
 ** Auto completion
@@ -1133,20 +1371,13 @@ syste.
 ** Prescient
 
 #+begin_src emacs-lisp
-(use-package prescient)
-(use-package ivy-prescient
-  :after ivy)
-(use-package company-prescient)
+(use-package prescient
+  :config
+  (prescient-persist-mode))
+
+(use-package company-prescient
+  :after (prescient company))
 #+end_src
-
-** COMMENT Emmet
-
-#+BEGIN_SRC emacs-lisp
-(use-package emmet-mode
-  :hook
-  (sgml-mode . emmet-mode)
-  (css-mode emmet-mode))
-#+END_SRC
 
 ** command-log
 
@@ -1174,24 +1405,6 @@ syste.
   (keyfreq-autosave-mode 1))
 #+END_SRC
 
-** COMMENT Perspective
-
-#+BEGIN_SRC emacs-lisp
-(use-package persp-mode
-  :config
-  (persp-mode 1))
-#+END_SRC
-
-** COMMENT Fira Code
-
-#+BEGIN_SRC emacs-lisp
-(use-package fira-code
-  :commands (fira-code-mode)
-  :load-path "elisp/fira-code"
-  :hook
-  (prog-mode . fira-code-mode))
-#+END_SRC
-
 ** rg - ripgrep frontend
 
 #+BEGIN_SRC emacs-lisp
@@ -1209,18 +1422,6 @@ syste.
 #+BEGIN_SRC emacs-lisp
 (use-package bang
   :bind ("M-!" . bang))
-#+END_SRC
-
-** COMMENT Symbol Overlay
-
-#+BEGIN_SRC emacs-lisp
-(use-package symbol-overlay
-  :bind
-  ("M-i" . symbol-overlay-put)
-  ("M-n" . symbol-overlay-switch-forward)
-  ("M-p" . symbol-overlay-switch-backward)
-  ("<f7>" . symbol-overlay-mode)
-  ("<f8>" . symbol-overlay-remove-all))
 #+END_SRC
 
 ** Dired
@@ -1265,6 +1466,11 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
   :ensure nil
+  :custom
+  (flycheck-idle-change-delay 1)
+  :custom-face
+  (flycheck-error ((t (:underline (:color "#e74c3c" :style wave)))))
+  (flycheck-info ((t (:underline (:color "#b6e63e" :style wave)))))
   :init
   (global-flycheck-mode 1))
 #+END_SRC
@@ -1292,6 +1498,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-enable-on-type-formatting nil)
   (lsp-ui-sideline-enable nil)
   (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
+  (lsp-clients-typescript-init-opts
+   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
+
   :hook (lsp-mode . lsp-enable-which-key-integration))
 
 (use-package lsp-ui
@@ -1414,20 +1623,10 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :custom
   (typescript-indent-level 2)
   :hook
-  ((typescript-mode . setup-tide-mode)
-   (typescript-mode . lsp-deferred)))
-
-(defun setup-tide-mode ()
-  (interactive)
-  (tide-setup)
-  (flycheck-mode +1)
-  (setq flycheck-check-syntax-automatically '(save mode-enabled))
-  (eldoc-mode +1)
-  (tide-hl-identifier-mode +1)
-  (company-mode +1))
+  (typescript-mode . lsp-deferred))
 
 (use-package js2-mode
-  :mode ("\\.js$")
+  :mode ("\\.[cm]*js$")
   :hook (js2-mode . lsp-deferred))
 
 (use-package eslintd-fix
@@ -1439,12 +1638,6 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          ("\\.js\\'" . prettier-js-mode)
          ("\\.svelte\\'" . prettier-js-mode)))
 
-(use-package tide
-  :after (flycheck typescript-mode)
-  :config
-  (flycheck-add-next-checker 'javascript-eslint 'jsx-tide 'append)
-  (flycheck-add-next-checker 'javascript-eslint 'javascript-tide 'append))
-
 (use-package web-mode
   :after lsp-mode
   :mode
@@ -1454,11 +1647,6 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
   :hook
   (web-mode . lsp-deferred)
-  ;; (web-mode . (lambda ()
-  ;;               (flycheck-add-mode 'javascript-eslint 'web-mode)))
-  ;; (web-mode . (lambda ()
-  ;;               (add-to-list (make-local-variable 'company-backends)
-  ;;                            '(company-web-html :with company-yasnippet))))
   :config
   (setq web-mode-content-types-alist
         '(("jsx" . "\\.tsx\\'")
@@ -1497,5 +1685,4 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
-
 #+END_SRC
