@@ -1552,6 +1552,17 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 ** File types
 
+*** Elisp
+
+#+begin_src emacs-lisp
+(use-package elisp
+  :ensure nil
+  :mode ("\\.el\\'" . emacs-lisp-mode)
+  :hook
+  (emacs-lisp-mode . (lambda () (add-to-list (make-local-variable 'company-backends)
+                                        '(company-elisp :width company-yasnippet :separate)))))
+#+end_src
+
 *** Conf
 
 #+begin_src emacs-lisp
