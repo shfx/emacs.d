@@ -796,21 +796,24 @@ targets."
                    (not (string-suffix-p "-argument" (cdr binding))))))))
 
 (use-package embark
-  :ensure t
+  :after which-key
   :bind
   (("s-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
    ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :custom
-  ;; Optionally replace the key help with a completing-read interface
-  ((prefix-help-command #'embark-prefix-help-command)
-   (embark-indicators
-    '(embark-which-key-indicator
-      embark-highlight-indicator
-      embark-isearch-highlight-indicator)))
+  (embark-indicators
+   '(embark-which-key-indicator
+     embark-highlight-indicator
+     embark-isearch-highlight-indicator))
 
   :config
+  ;; Unbind help-command so completing-read interface can do it's job
+  (unbind-key "C-h <help>" global-map)
+  (unbind-key "C-h" help-map)
+  (unbind-key "C-h" ehelp-map)
+  (setq prefix-help-command #'embark-prefix-help-command)
 
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
