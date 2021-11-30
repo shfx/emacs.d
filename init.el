@@ -13,7 +13,8 @@
   (package-install 'use-package))
 
 ;; All packages should be ensured unless stated othewise
-(setq-default use-package-always-ensure t)
+(require 'use-package-ensure)
+(setq use-package-always-ensure t)
 
 ;; Garbage Collector Magic Hack
 (use-package gcmh
@@ -38,8 +39,8 @@
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
 
 (setq custom-file
-  (if (boundp 'server-socket-dir)
-    (expand-file-name "custom.el" server-socket-dir)
-    (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+      (if (boundp 'server-socket-dir)
+          (expand-file-name "custom.el" server-socket-dir)
+        (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 
 (load custom-file t)

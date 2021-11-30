@@ -577,7 +577,7 @@ introducing external dependencies (when feasible)
                                     :test-suffix ".spec.js"))
 #+END_SRC
 
-** Vertico ()
+** Vertico ([[https://github.com/minad/vertico][link]])
 
 #+begin_src emacs-lisp
 (use-package vertico
@@ -830,19 +830,27 @@ targets."
 
 (advice-add #'embark-completing-read-prompter
             :around #'embark-hide-which-key-indicator)
+#+end_src
 
-;; Consult users will also want the embark-consult package.
+** Embark Consult ([[https://github.com/oantolin/embark/blob/master/embark-consult.el][link]])
+
+Consult users will also want the embark-consult package.
+
+#+begin_src emacs-lisp
 (use-package embark-consult
   :ensure t
   :after (embark consult)
-  :demand t ; only necessary if you have the hook below
+  ;; only necessary if you have the hook below
   ;; if you want to have consult previews as you move around an
   ;; auto-updating embark collect buffer
+  :demand t
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
-** Hydra ([[https://github.com/abo-abo/hydra][link]])
+** COMMENT Hydra ([[https://github.com/abo-abo/hydra][link]])
+
+(storing this as comment for future reference)
 
 This is a package for GNU Emacs that can be used to tie related
 commands into a family of short bindings with a common prefix - a
