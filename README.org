@@ -757,7 +757,19 @@ also helpful emacs config just for vertico
   )
 #+end_src
 
-** Embark
+** Consult Projectile ([[https://github.com/emacsmirror/consult-projectile][link]])
+
+#+begin_src emacs-lisp
+(use-package consult-projectile
+  :bind
+  (:map projectile-command-map
+        ("p" . consult-projectile))
+  :after (consult projectile)
+  :custom
+  (projectile-switch-project-action consult-projectile))
+#+end_src
+
+** Embark ([[https://github.com/oantolin/embark/][link]])
 
 #+begin_src emacs-lisp
 (defun embark-which-key-indicator ()
