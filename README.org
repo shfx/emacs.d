@@ -942,6 +942,7 @@ syste.
   ("C-c c" . org-capture)
 
   :config
+  (org-babel-add-langs ((emacs-lisp .  t)))
   (org-indent-mode t)
   (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
   (org-babel-add-langs
