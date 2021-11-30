@@ -1552,6 +1552,17 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 ** File types
 
+*** Conf
+
+#+begin_src emacs-lisp
+  (use-package conf-mode
+    :mode
+    ("\\.env\\'" . conf-mode)
+    ("\\.env\\.default\\'" . conf-mode)
+    ("\\.env\\.example\\'" . conf-mode)
+    :ensure nil)
+#+end_src
+
 *** Markdown
 
 #+BEGIN_SRC emacs-lisp
