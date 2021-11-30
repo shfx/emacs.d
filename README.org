@@ -1657,9 +1657,10 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 (use-package prettier-js
   :ensure-system-package prettier
-  :minor (("\\.html\\'" . prettier-js-mode)
-         ("\\.js\\'" . prettier-js-mode)
-         ("\\.svelte\\'" . prettier-js-mode)))
+  :minor
+  ("\\.html\\'" . prettier-js-mode)
+  ("\\.js\\'" . prettier-js-mode)
+  ("\\.svelte\\'" . prettier-js-mode))
 
 (use-package web-mode
   :after lsp-mode
@@ -1670,11 +1671,20 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
   :hook
   (web-mode . lsp-deferred)
-  :config
-  (setq web-mode-content-types-alist
-        '(("jsx" . "\\.tsx\\'")
-          ("jsx" . "\\.jsx\\'")
-          ("html" . "\\.html\\'"))))
+  :custom
+  (web-mode-content-types-alist
+   '(("jsx" . "\\.tsx\\'")
+     ("jsx" . "\\.jsx\\'")
+     ("svelte" . "\\.svelte\\'")
+     ("html" . "\\.html\\'")))
+  (web-mode-enable-auto-indentation nil)
+  (web-mode-indentation-params
+   '(("lineup-args" . t)
+     ("lineup-calls" . t)
+     ("lineup-concats" . t)
+     ("lineup-quotes" . t)
+     ("lineup-ternary" . nil)
+     ("case-extra-offset" . t))))
 #+END_SRC
 
 *** Py
