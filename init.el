@@ -1,10 +1,9 @@
 (require 'package)
 
 (setq package-archives
-  '(("melpa" . "https://melpa.org/packages/")
-     ;; ("melpa-stable" . "https://stable.melpa.org/packages/")
-     ("org" . "https://orgmode.org/elpa/")
-     ("elpa" . "https://elpa.gnu.org/packages/")))
+      '(("melpa" . "https://melpa.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("elpa" . "https://elpa.gnu.org/packages/")))
 
 (package-initialize)
 
@@ -23,8 +22,13 @@
 
 ;; Install newer version of org-mode
 (use-package org
-  :mode (("\\.org$" . org-mode))
-  :ensure org-plus-contrib)
+  :pin elpa
+  :commands (org-mode org-capture org-agenda orgbl-mode)
+  :mode (("\\.org$" . org-mode)))
+
+(use-package org-contrib
+  :pin nongnu
+  :after org)
 
 ;; ;; Track max-specpdl-size exceded error by uncommenting this
 ;; (setq max-specpdl-size 5)
