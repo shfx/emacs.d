@@ -357,17 +357,23 @@ itself runs on.
 
 (use-package xterm-color
   :after (eshell eshell-toggle)
+  :hook
+  (eshell-before-prompt . (lambda ()
+                            (setq xterm-color-preserve-properties t)))
+  (eshell-preoutput-filter-functions . xterm-color-filter)
+  (shell-mode . (lambda ()
+                  ;; Disable font-locking in this buffer to improve performance
+                  (font-lock-mode -1)
+                  ;; Prevent font-locking from being re-enabled in this buffer
+                  (make-local-variable 'font-lock-function)
+                  (setq font-lock-function (lambda (_) nil))
+                  (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter nil t)))
   :custom
   (comint-output-filter-functions
    (remove 'ansi-color-process-output comint-output-filter-functions))
   (eshell-output-filter-functions
    (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
-  :hook
-  (eshell-before-prompt . (lambda ()
-                            (setq xterm-color-preserve-properties t)))
-  (eshell-preoutput-filter-functions . xterm-color-filter)
-  :config
-  (setenv "TERM" "xterm-256color"))
+  :config)
 
 (use-package eshell-up
   :after eshell)
@@ -450,15 +456,12 @@ the bottom of active window with directory of its buffer.
 
 #+BEGIN_SRC emacs-lisp
 (use-package vterm
+  :after consult
   :custom
   (vterm-always-compile-module t))
 
 (use-package multi-vterm
   :after vterm)
-
-(use-package vterm-toggle
-  :after vterm)
-
 #+END_SRC
 
 ** Shackle ([[https://github.com/wasamasa/shackle][link]])
@@ -570,11 +573,18 @@ introducing external dependencies (when feasible)
   (projectile-sort-order 'recently-active)
   :config
   (projectile-mode)
-  (projectile-register-project-type 'npm '("package.json")
-                                    :compile "npm i"
-                                    :test "npm test"
-                                    :run "npm start"
-                                    :test-suffix ".spec.js"))
+  ;; Projectile is testing in the reverse order so more specific must me at the end
+  (projectile-register-project-type
+   'npm '("package.json")
+   :compile "npm i"
+   :test "npm test"
+   :run "npm start"
+   :test-suffix ".spec.js")
+  (projectile-register-project-type
+   'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
+   :project-file "desktop/BUILD.gn"
+   :configure "desktop/gn_opera.py --release --force product=\\\"gx\\\" use_jumbo_build=false rich_hints_test_build=true use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
+   :compile "ninja -j 150 -C chromium/src/out/Release opera"))
 #+END_SRC
 
 ** Vertico ([[https://github.com/minad/vertico][link]])
@@ -738,7 +748,7 @@ also helpful emacs config just for vertico
 
   ;; Optionally make narrowing help available in the minibuffer.
   ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+  (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
   ;; Optionally configure a function which returns the project root directory.
   ;; There are multiple reasonable alternatives to chose from.
@@ -797,6 +807,7 @@ targets."
 
 (use-package embark
   :after which-key
+  :defer 1
   :bind
   (("s-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -947,41 +958,7 @@ syste.
   (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
   (org-babel-add-langs
    ((ditaa . t)))
-
   :custom
-  (org-todo-keywords
-   '(;; Sequence for TASKS
-     ;; TODO means it's an item that needs addressing
-     ;; WAITING means it's dependent on something else happening
-     ;; DELEGATED means someone else is doing it and I need to follow up with them
-     ;; ASSIGNED means someone else has full, autonomous responsibility for it
-     ;; CANCELLED means it's no longer necessary to finish
-     ;; DONE means it's complete
-     (sequence "TODO(t)" "WAITING(w)" "|" "CANCELLED(x)" "DONE(d)")
-
-     ;; Sequence for POSSESSIONS
-     ;; PURCHASE means to buy; it's functionally the wishlist
-     ;; PURCHASED means it's been purcahsed, but not shipped yet
-     ;; TRANSIT means it's in the mail but not here yet
-     ;; GIFT means it's in my posession but I still need to gift it
-     ;; SELL means you want to get rid of it, put it up on Craigslist
-     ;; LOANED means someone currently has it
-     ;; UNWANTED is for no longer wanted
-     ;; OWN is for stuff you actually own (may be overlap for reference and own)
-     ;; GIFTED is given to someone as a gift
-     ;; SOLD is sold to someone
-     ;; DISCARDED is for thrown out
-     (sequence "PURCHASE(p)" "PURCHASED(j)" "TRANSIT(u)" "GIFT(h)" "SELL(k)" "LOANED(n)" "|" "UNWANTED(a)" "OWN(o)" "GIFTED(g)"  "SOLD(c)" "DISCARDED(q)")
-
-     ;; Sequence for MULTIMEDIA
-     ;; CONSUME means to read (articles, books, quote, etc.), play (games), listen (music), or watch (a series or movie)
-     ;; SUBSCRIBE means to add it to a newsreader or list of some sort
-     ;; CONSUMING means currently consuming
-     ;; SHARE means to share on G+, Facebook, reddit, blog about, etc.
-     ;; IGNORED means not read and no desire to read in the future
-     ;; REFERENCE is for stuff you don't own but want to be available later
-     ;; SHARED means sent to someone or posted
-     (sequence "CONSUME(r)" "SUBSCRIBE(b)" "CONSUMING(l)" "SHARE(s)" "|" "IGNORED(i)" "REFERENCE(f)" "SHARED(,)")))
   (org-modules
    '(org-protocol
      org-habit
@@ -1064,7 +1041,8 @@ syste.
   :hook (org-mode . org-bullets-mode))
 
 ;; org-babel
-(use-package ob-elisp)
+(use-package ob-elisp
+  :ensure nil)
 
 (use-package ob-restclient
   :config
@@ -1081,7 +1059,7 @@ syste.
 
 (use-package ob-deno
   :config
-  (org-babel-add-lang ((deno . t))))
+  (org-babel-add-langs ((deno . t))))
 
 (use-package org-super-agenda
   :init
@@ -1151,17 +1129,74 @@ syste.
       (frame-parameters . ((undecorated . t)
                            (skip-taskbar . t)
                            (sticky . t)))))))
-
-(defun org-babel-tangle-dont-ask ()
-  ;; Dynamic scoping to the rescue
-  (let ((org-confirm-babel-evaluate nil))
-    (org-babel-tangle)))
-
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'org-babel-tangle-dont-ask
-                                              'run-at-end 'only-in-org-mode)))
 #+END_SRC
 
+** Org Roam
 
+#+begin_src emacs-lisp :lexical yes
+(use-package org-roam
+  :ensure t
+  :init
+  (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory "~/Dropbox/OrgRoam")
+  (org-roam-completion-everywhere t)
+  (org-roam-capture-templates
+   '(("d" "default" plain
+      "%?"
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+      :unnarrowed t)
+     ("p" "project" plain
+      (file "~/Dropbox/OrgRoam/Templates/Project.org")
+      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Project")
+     :unnarrowed t)))
+  :bind (("C-c n l" . org-roam-buffer-toggle)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n i" . org-roam-node-insert)
+         ("C-c n I" . org-roam-node-insert-immediate)
+         :map org-mode-map
+         ("C-M-i"    . completion-at-point)
+         :map org-roam-dailies-map
+         ("Y" . org-roam-dailies-capture-yesterday)
+         ("T" . org-roam-dailies-capture-tomorrow))
+  :bind-keymap
+  ("C-c n d" . org-roam-dailies-map)
+  :custom-face
+  (org-roam-link ((t (:foreground "#e24888" :underline t))))
+  (org-roam-link-current ((t (:foreground "#e24888" :underline t))))
+  :config
+  (org-roam-setup)
+  (require 'org-roam-dailies)
+  (org-roam-db-autosync-mode)
+  (my/org-roam-refresh-agenda-list))
+
+(defun org-roam-node-insert-immediate (arg &rest args)
+  "This will allow you to quickly create new notes for topics
+you're mentioning while writing so that you can go back later and
+fill those notes in with more details!"
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+
+(defun my/org-roam-filter-by-tag (tag-name)
+  "returns a filter function for "
+  (lambda (node)
+    (member tag-name (org-roam-node-tags node))))
+
+(defun my/org-roam-list-notes-by-tag (tag-name)
+  "Returns list of noted with given filetag"
+  (mapcar #'org-roam-node-file
+          (seq-filter
+           (my/org-roam-filter-by-tag tag-name)
+           (org-roam-node-list))))
+
+(defun my/org-roam-refresh-agenda-list ()
+  "Refreshes the agenda list adding Project notes to the list"
+  (interactive)
+  (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+#+end_src
 
 ** compay-org-block
 
@@ -1319,9 +1354,13 @@ syste.
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository)))
 #+END_SRC
 
-** ESUP
+** COMMENT Magit Delta
 
-<
+#+begin_src emacs-lisp
+  (use-package magit-delta
+    :ensure-system-package git-delta
+    :hook (magit-mode . magit-delta-mode))
+#+end_src
 
 ** goto-line-preview
 
@@ -1483,6 +1522,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (ls-lisp-use-insert-directory-program t)
   :config
   (dired-quick-sort-setup))
+
+(use-package dired-subtree
+  :ensure t
+  :after dired
+  :bind (:map dired-mode-map
+              ("TAB" . dired-subtree-toggle)))
 #+END_SRC
 
 ** Flycheck
@@ -1703,12 +1748,9 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (use-package eslintd-fix
   :hook (js2-mode . eslintd-fix-mode))
 
-(use-package prettier-js
-  :ensure-system-package prettier
-  :minor
-  ("\\.html\\'" . prettier-js-mode)
-  ("\\.js\\'" . prettier-js-mode)
-  ("\\.svelte\\'" . prettier-js-mode))
+(use-package apheleia
+  :config
+  (apheleia-global-mode +1))
 
 (use-package web-mode
   :after lsp-mode

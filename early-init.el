@@ -30,4 +30,9 @@
 ;; Set initial-frame-alist before init.el
 (push '(fullscreen . maximized) initial-frame-alist)
 
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("gnu" . "https://elpa.gnu.org/packages/")))
+
 (setq-default comp-deferred-compilation nil)

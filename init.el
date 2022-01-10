@@ -1,10 +1,5 @@
 (require 'package)
 
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-        ("elpa" . "https://elpa.gnu.org/packages/")))
-
 (package-initialize)
 
 ;; Package management
@@ -13,7 +8,7 @@
   (package-install 'use-package))
 
 ;; All packages should be ensured unless stated othewise
-(require 'use-package-ensure)
+(require 'use-package)
 (setq use-package-always-ensure t)
 
 ;; Garbage Collector Magic Hack
@@ -23,7 +18,7 @@
 
 ;; Install newer version of org-mode
 (use-package org
-  :pin elpa
+  :pin gnu
   :commands (org-mode org-capture org-agenda orgbl-mode)
   :mode (("\\.org$" . org-mode)))
 
@@ -44,3 +39,4 @@
         (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 
 (load custom-file t)
+(put 'narrow-to-region 'disabled nil)
