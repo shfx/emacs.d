@@ -192,6 +192,56 @@ not break the init of Emacs.
 (tab-bar-mode 1)
 #+END_SRC
 
+** Alerter - notifications for macos
+
+#+begin_src emacs-lisp
+(defun alerter--symbol-value (symbol)
+  "Stripts keyword symbol name from a colon" 
+  (replace-regexp-in-string "^:" "" (symbol-name key)))
+
+(defun alerter--option (args)
+  "Returns a function that will generate single argument for alerter using ARGS as a string"
+  (lambda (key)
+    (concat "-" (alerter--symbol-value key) " " (format "\"%s\"" (plist-get args key)))))
+
+(defun alerter (message &rest args)
+  "Notify user using native macOS notifications. MESSAGE will be displayed using alerter package, with additional ARGS"
+  (if (executable-find "alerter")
+      (let* ((options (seq-filter (lambda (element) (keywordp element)) args))
+             (config (mapconcat (alerter--option args) options " "))
+             (cmd (concat "alerter " config " -message \"" (replace-regexp-in-string "\"" "\\\"" message  t t) "\" &")))
+        (call-process-shell-command cmd))
+    (error "Can't find alerter executable")))
+#+end_src
+
+** Check on save if config is valid
+
+#+begin_src emacs-lisp
+(setq check-if-config-valid-files '("init.el" "early-init.el" "README.org"))
+
+(defun check-if-config-valid ()
+  (alerter "Checking config..." :group "check-config" :timeout "60")
+  (async-start (lambda ()
+                 (call-process-shell-command "./scripts/validate"))
+               (lambda (results)
+                 (if (< 0 results)
+                     (alerter "Problem with emacs config!" :group "check-config" :sound "default")
+                   (alerter "Config valid!" :sound "default" :group "check-config" :timeout "5"))
+                 )))
+
+(defun current-file-is-config ()
+  (member t (mapcar (lambda (file)
+                      (message (expand-file-name file user-emacs-directory))
+                      (message (buffer-file-name))
+                      (equal (expand-file-name file user-emacs-directory) (buffer-file-name))) check-if-config-valid-files)))
+
+(add-hook 'after-save-hook
+          (lambda ()
+            (if (current-file-is-config)
+                (check-if-config-valid)
+              )))
+#+end_src
+
 ** xwidget-webkit problem with emacsclient
 
 We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
@@ -934,10 +984,19 @@ syste.
    (append org-babel-load-languages
            ',langs)))
 
-(defmacro org-babel-set-langs (langs)
-  `(org-babel-do-load-languages
-   'org-babel-load-languages
-   ',langs))
+(defun alist-unique (alist)
+  (reduce (lambda (output value)
+            (let* ((key (car value))
+                   (existing-value (alist-get key output)))
+              (cond ((not output) (list value))
+                    ((not existing-value) (append output (list value)))
+                    (t output))))
+          alist :initial-value nil))
+
+(defun append-alist-unique (values alist)
+  "Add unique VALUE to ALIST when car of VALUE is unique, returns ALIST otherwise"
+  (alist-unique (append alist values)))
+
 
 (use-package org
   :hook

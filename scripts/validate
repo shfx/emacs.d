@@ -1,0 +1,18 @@
+#!/usr/bin/env emacs --script
+
+(defmacro emacs-exec (string)
+  "Execs code in separate instance"
+  `(let* ((string (prin1-to-string ',string))
+          (formatted (format "\"%s\"" (replace-regexp-in-string "\"" "\\\"" string t t)))
+          (cmd (concat "emacs -Q --batch --eval " formatted)))
+     (call-process-shell-command cmd)))
+
+(if (< 0 (emacs-exec (condition-case e
+                (progn
+                  (load (expand-file-name "early-init.el" user-emacs-directory))
+                  (load (expand-file-name "init.el" user-emacs-directory)))
+              (error
+               (message "ERROR!")
+               (signal (car e) (cdr e))))))
+         (error "Failed to load emacs config")
+       (message "Successfully loaded emacs config"))
