@@ -2,10 +2,8 @@
 
 (defmacro emacs-exec (string)
   "Execs code in separate instance"
-  `(let* ((string (prin1-to-string ',string))
-          (formatted (format "\"%s\"" (replace-regexp-in-string "\"" "\\\"" string t t)))
-          (cmd (concat "emacs -Q --batch --eval " formatted)))
-     (call-process-shell-command cmd)))
+  `(let ((formatted (format "\"%s\"" (replace-regexp-in-string "\"" "\\\"" (prin1-to-string ',string) t t))))
+     (call-process "/bin/bash" nil "*emacs-exec*" t "-c" (concat "emacs -Q --debug-init --batch --eval " formatted))))
 
 (if (< 0 (emacs-exec (condition-case e
                 (progn
@@ -14,5 +12,4 @@
               (error
                (message "ERROR!")
                (signal (car e) (cdr e))))))
-         (error "Failed to load emacs config")
-       (message "Successfully loaded emacs config"))
+         (error (with-current-buffer "*emacs-exec*" (buffer-string))))

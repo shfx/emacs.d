@@ -16,6 +16,12 @@ To start a bg service, run:
 brew services start d12frosted/emacs-plus/emacs-plus@28
 #+END_SRC
 
+* Tidy up .emcac.d mess
+
+#+begin_src emacs-lisp
+(use-package no-littering)
+#+end_src
+
 * Initialiation defaults
 
 ** Measure startup time
@@ -87,13 +93,6 @@ not break the init of Emacs.
 (setq warning-minimum-level :error)
 #+end_src
 
-#+begin_src emacs-lisp
-(use-package warnings
-  :ensure nil
-  :custom
-  (warning-suppress-types '((use-package))))
-#+end_src
-
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
@@ -116,7 +115,6 @@ not break the init of Emacs.
 (line-number-mode 1)
 (column-number-mode 1)
 (global-linum-mode 0)
-(savehist-mode 1)
 (delete-selection-mode 1)
 (global-auto-revert-mode 1)
 (menu-bar-mode -1)
@@ -124,6 +122,7 @@ not break the init of Emacs.
 (use-package desktop
   :ensure nil
   :custom
+  (desktop-save 'ask-if-new)
   (desktop-restore-eager 5)
   (desktop-load-locked-desktop t)
   (desktop-auto-save-timeout 30)
@@ -197,19 +196,24 @@ not break the init of Emacs.
 #+begin_src emacs-lisp
 (defun alerter--symbol-value (symbol)
   "Stripts keyword symbol name from a colon" 
-  (replace-regexp-in-string "^:" "" (symbol-name key)))
+  (replace-regexp-in-string "^:" "" (symbol-name symbol)))
 
 (defun alerter--option (args)
   "Returns a function that will generate single argument for alerter using ARGS as a string"
   (lambda (key)
-    (concat "-" (alerter--symbol-value key) " " (format "\"%s\"" (plist-get args key)))))
+    (concat "-" (alerter--symbol-value key) " " (plist-get args key))))
+
+(setq alerter-default-args
+      '(:title "Emacs" :sender "org.gnu.Emacs"))
 
 (defun alerter (message &rest args)
   "Notify user using native macOS notifications. MESSAGE will be displayed using alerter package, with additional ARGS"
   (if (executable-find "alerter")
-      (let* ((options (seq-filter (lambda (element) (keywordp element)) args))
-             (config (mapconcat (alerter--option args) options " "))
-             (cmd (concat "alerter " config " -message \"" (replace-regexp-in-string "\"" "\\\"" message  t t) "\" &")))
+      (let* ((args (append alerter-default-args args))
+             (options (seq-filter (lambda (element) (keywordp element)) args))
+	     (config (mapconcat (alerter--option args) options " "))
+	     (cmd (concat "alerter " config " -message \"" (replace-regexp-in-string "\"" "\\\"" message  t t) "\" &")))
+        (message cmd)
         (call-process-shell-command cmd))
     (error "Can't find alerter executable")))
 #+end_src
@@ -220,26 +224,24 @@ not break the init of Emacs.
 (setq check-if-config-valid-files '("init.el" "early-init.el" "README.org"))
 
 (defun check-if-config-valid ()
-  (alerter "Checking config..." :group "check-config" :timeout "60")
+  (alerter "Checking config..." :group "check-config" )
   (async-start (lambda ()
-                 (call-process-shell-command "./scripts/validate"))
-               (lambda (results)
-                 (if (< 0 results)
-                     (alerter "Problem with emacs config!" :group "check-config" :sound "default")
-                   (alerter "Config valid!" :sound "default" :group "check-config" :timeout "5"))
-                 )))
+		 (call-process-shell-command "./scripts/validate"))
+	       (lambda (results)
+		 (if (< 0 results )
+		     (alerter "Problem with emacs config!" :group "check-config" :sound "funky" )
+		   (alerter "Config valid!" :group "check-config" )))))
 
 (defun current-file-is-config ()
   (member t (mapcar (lambda (file)
-                      (message (expand-file-name file user-emacs-directory))
-                      (message (buffer-file-name))
-                      (equal (expand-file-name file user-emacs-directory) (buffer-file-name))) check-if-config-valid-files)))
+		      (message (expand-file-name file user-emacs-directory))
+		      (message (buffer-file-name))
+		      (equal (expand-file-name file user-emacs-directory) (buffer-file-name))) check-if-config-valid-files)))
 
 (add-hook 'after-save-hook
-          (lambda ()
-            (if (current-file-is-config)
-                (check-if-config-valid)
-              )))
+	  (lambda ()
+	    (if (current-file-is-config)
+		(check-if-config-valid))))
 #+end_src
 
 ** xwidget-webkit problem with emacsclient
@@ -286,8 +288,8 @@ to work properly
   :ensure-system-package trash
   :init
   (osx-trash-setup)
-  :config
-  (setq delete-by-moving-to-trash t))
+  :custom
+  (delete-by-moving-to-trash t))
 #+END_SRC
 
 ** System specific defaults
@@ -360,15 +362,61 @@ echo "pinentry-program /usr/local/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.co
 gpg --expert --full-generate-key
 #+end_src
 
-* Packages
+* Window management and frame management 
 
-** no-littering ([[https://melpa.org/#/no-littering][link]])
+** Pooper (link)
 
-Help keeping ~/.emacs.d clean.
+#+begin_src emacs-lisp
+(use-package popper
+  :ensure t ; or :straight t
+  :bind (("s-§"   . popper-toggle-latest)
+         ("s-M-§" . popper-cycle)
+         ("s-M-§" . popper-toggle-type))
+  :init
+  (setq popper-reference-buffers
+        '("\\*Messages\\*"
+          "Output\\*$"
+          "\\*Async Shell Command\\*"
+          compilation-mode
+          vterm-mode))
+  (popper-mode +1)
+  (popper-echo-mode +1))
+#+end_src
+
+** Shackle ([[https://github.com/wasamasa/shackle][link]])
+
+*Shackle* gives you the means to put an end to popped up buffers not
+behaving they way you'd like them to. By setting up simple rules you
+can for instance make Emacs always select help buffers for you or make
+everything reuse your currently selected window.
 
 #+BEGIN_SRC emacs-lisp
-(use-package no-littering)
+(use-package shackle
+  :custom
+  (shackle-rules
+   '(("*eshell*"               :select t   :other t)
+     (flycheck-error-list-mode :select t   :align below :size 0.25)
+     (compilation-mode         :select nil :align below :size 0.25)
+     (messages-buffer-mode     :select t   :align below :size 0.25)
+     (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+     (help-mode                :select t   :align right :size 0.5)
+     (helpful-mode             :select t   :align right :size 0.5)
+     ("*rg*"                   :select t   :other t)
+     (" *Deletions*"           :select t   :align below :size 0.25)
+     (" *Marked Files*"        :select t   :align below :size 0.25)
+     ("*Org Select*"           :same t)
+     ("*Org Note*"             :select t   :align below :size 0.33)
+     ("*Org Links*"            :select t   :align below :size 0.2)
+     (" *Org todo*"            :select t   :align below :size 0.2)
+     ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+     ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t)))
+  :config
+  (shackle-mode t))
 #+END_SRC
+
+
+
+* Packages
 
 ** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
 
@@ -401,16 +449,12 @@ itself runs on.
     (magit-status (pop args) nil)
     (eshell/echo)))
 
-(use-package esh-autosuggest
-  :after eshell
-  :hook (eshell-mode . esh-autosuggest-mode))
-
 (use-package xterm-color
   :after (eshell eshell-toggle)
   :hook
   (eshell-before-prompt . (lambda ()
                             (setq xterm-color-preserve-properties t)))
-  (eshell-preoutput-filter-functions . xterm-color-filter)
+  (eshell-preoutput-filter-functions . xterm-co§§§§§§§§§§§§lor-filter)
   (shell-mode . (lambda ()
                   ;; Disable font-locking in this buffer to improve performance
                   (font-lock-mode -1)
@@ -514,37 +558,6 @@ the bottom of active window with directory of its buffer.
   :after vterm)
 #+END_SRC
 
-** Shackle ([[https://github.com/wasamasa/shackle][link]])
-
-*Shackle* gives you the means to put an end to popped up buffers not
-behaving they way you'd like them to. By setting up simple rules you
-can for instance make Emacs always select help buffers for you or make
-everything reuse your currently selected window.
-
-#+BEGIN_SRC emacs-lisp
-(use-package shackle
-  :custom
-  (shackle-rules
-   '(("*eshell*"               :select t   :other t)
-     (flycheck-error-list-mode :select t   :align below :size 0.25)
-     (compilation-mode         :select nil :align below :size 0.25)
-     (messages-buffer-mode     :select t   :align below :size 0.25)
-     (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-     (help-mode                :select t   :align right :size 0.5)
-     (helpful-mode             :select t   :align right :size 0.5)
-     ("*rg*"                   :select t   :other t)
-     (" *Deletions*"           :select t   :align below :size 0.25)
-     (" *Marked Files*"        :select t   :align below :size 0.25)
-     ("*Org Select*"           :same t)
-     ("*Org Note*"             :select t   :align below :size 0.33)
-     ("*Org Links*"            :select t   :align below :size 0.2)
-     (" *Org todo*"            :select t   :align below :size 0.2)
-     ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-     ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t)))
-  :config
-  (shackle-mode t))
-#+END_SRC
-
 ** Marginalia
 
 #+begin_src emacs-lisp
@@ -616,36 +629,50 @@ provide a nice set of features operating on a project level without
 introducing external dependencies (when feasible)
 
 #+BEGIN_SRC emacs-lisp
-(use-package projectile
-  :bind ("C-c p" . projectile-command-map)
-  :custom
-  (projectile-enable-caching t)
-  (projectile-sort-order 'recently-active)
-  :config
-  (projectile-mode)
-  ;; Projectile is testing in the reverse order so more specific must me at the end
-  (projectile-register-project-type
-   'npm '("package.json")
-   :compile "npm i"
-   :test "npm test"
-   :run "npm start"
-   :test-suffix ".spec.js")
-  (projectile-register-project-type
-   'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
-   :project-file "desktop/BUILD.gn"
-   :configure "desktop/gn_opera.py --release --force product=\\\"gx\\\" use_jumbo_build=false rich_hints_test_build=true use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
-   :compile "ninja -j 150 -C chromium/src/out/Release opera"))
+  (use-package projectile
+    :demand t
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :custom
+    (projectile-enable-caching t)
+    (projectile-sort-order 'recently-active)
+    :config
+    (projectile-mode)
+    ;; Projectile is testing in the reverse order so more specific must me at the end
+    (projectile-register-project-type
+     'npm '("package.json")
+     :compile "npm i"
+     :test "npm test"
+     :run "npm start"
+     :test-suffix ".spec.js")
+  
+    (projectile-register-project-type
+     'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
+     :project-file "desktop/BUILD.gn"
+     :configure "desktop/gn_opera.py --release --force product=\\\"gx\\\" use_jumbo_build=false rich_hints_test_build=true use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
+     :compile "ninja -j 150 -C chromium/src/out/Release opera"))
 #+END_SRC
+
+** ibuffer-projectile ([[https://github.com/purcell/ibuffer-projectile][link]])
+
+#+begin_src emacs-lisp
+(use-package ibuffer-projectile
+  :hook
+  (ibuffer . (lambda ()
+               (ibuffer-projectile-set-filter-groups)
+               (unless (eq ibuffer-sorting-mode 'alphabetic)
+                 (ibuffer-do-sort-by-alphabetic)))))
+#+end_src
 
 ** Vertico ([[https://github.com/minad/vertico][link]])
 
 #+begin_src emacs-lisp
 (use-package vertico
   :init
-  (vertico-mode )
+  (vertico-mode)
   :custom
   (vertico-resize nil)
-  (vertico-cycle t))
+  (vertico-cycle nil))
 #+end_src
 
 also helpful emacs config just for vertico
@@ -675,23 +702,39 @@ also helpful emacs config just for vertico
   (enable-recursive-minibuffers t))
 #+end_src
 
-** Orderless ()
+** COMMENT vertico-multiform ([[https://github.com/minad/vertico/blob/main/extensions/vertico-multiform.el][link]])
+
+#+begin_src emacs-lisp
+(use-package vertico-multiform-mode
+  :ensure nil
+  :config
+  (vertico-multiform-mode)
+  :custom
+  (vertico-multiform-commands
+   '((consult-imenu buffer indexed)))
+
+  (vertico-multiform-categories
+   '((consult-grep buffer)
+     (t buffer))))
+#+end_src
+
+** Orderless ([[https://github.com/oantolin/orderless][link]])
 
 #+begin_src emacs-lisp
 (use-package orderless
-  :init
-  ;; Configure a custom style dispatcher (see the Consult wiki)
-  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
-  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
-  (setq completion-styles '(orderless)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  :custom
+  (completion-styles '(orderless))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles partial-completion)))
+  (orderless-component-separator #'orderless-escapable-split-on-space)))
 #+end_src
 
 ** Savehist
 
 #+begin_src emacs-lisp
 (use-package savehist
+  :after no-littering
   :init
   (savehist-mode))
 #+end_src
@@ -701,6 +744,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 ;; Example configuration for Consult
 (use-package consult
+  :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -751,7 +795,6 @@ also helpful emacs config just for vertico
   ;; Enable automatic preview at point in the *Completions* buffer.
   ;; This is relevant when you use the default completion UI,
   ;; and not necessary for Vertico, Selectrum, etc.
-  :hook (completion-list-mode . consult-preview-at-point-mode-hook)
 
   ;; The :init configuration is always executed (Not lazy)
   :init
@@ -796,37 +839,21 @@ also helpful emacs config just for vertico
   ;; Both < and C-+ work reasonably well.
   (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-  ;; Optionally make narrowing help available in the minibuffer.
-  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-  (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-  ;; Optionally configure a function which returns the project root directory.
-  ;; There are multiple reasonable alternatives to chose from.
-  ;;;; 1. project.el (project-roots)
-  ;; (setq consult-project-root-function
-  ;;       (lambda ()
-  ;;         (when-let (project (project-current))
-  ;;           (car (project-roots project)))))
-  ;;;; 2. projectile.el (projectile-project-root)
   (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root)
-  ;;;; 3. vc.el (vc-root-dir)
-  ;; (setq consult-project-root-function #'vc-root-dir)
-  ;;;; 4. locate-dominating-file
-  ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
-  )
+  (setq consult-project-root-function #'projectile-project-root))
 #+end_src
 
 ** Consult Projectile ([[https://github.com/emacsmirror/consult-projectile][link]])
 
 #+begin_src emacs-lisp
 (use-package consult-projectile
-  :bind
-  (:map projectile-command-map
-        ("p" . consult-projectile))
+  :demand t
   :after (consult projectile)
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :bind (:map projectile-command-map
+              ("p" . consult-projectile))
   :custom
-  (projectile-switch-project-action consult-projectile))
+  (projectile-switch-project-action 'consult-projectile))
 #+end_src
 
 ** Embark ([[https://github.com/oantolin/embark/][link]])
@@ -868,13 +895,14 @@ targets."
    '(embark-which-key-indicator
      embark-highlight-indicator
      embark-isearch-highlight-indicator))
+  
+  (prefix-help-command #'embark-prefix-help-command)
 
   :config
   ;; Unbind help-command so completing-read interface can do it's job
   (unbind-key "C-h <help>" global-map)
   (unbind-key "C-h" help-map)
   (unbind-key "C-h" ehelp-map)
-  (setq prefix-help-command #'embark-prefix-help-command)
 
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
@@ -901,52 +929,64 @@ Consult users will also want the embark-consult package.
 (use-package embark-consult
   :ensure t
   :after (embark consult)
-  ;; only necessary if you have the hook below
-  ;; if you want to have consult previews as you move around an
-  ;; auto-updating embark collect buffer
   :demand t
   :hook
   (embark-collect-mode . consult-preview-at-point-mode))
 #+end_src
 
-** COMMENT Hydra ([[https://github.com/abo-abo/hydra][link]])
+** Confu
 
-(storing this as comment for future reference)
+#+begin_src emacs-lisp
+(use-package corfu
+  ;; Optional customizations
+  :custom
+  (completion-cycle-threshold 3)
+  (tab-always-indent 'complete)
+  (tab-first-completion 'word-or-paren-or-punct)
+  (corfu-cycle t)
+  (corfu-auto t)
+  (corfu-commit-predicate nil)
+  (corfu-quit-at-boundary t)
+  (corfu-quit-no-match t)        ;; Automatically quit if there is no match
+  (corfu-echo-documentation 0.5) ;; Disable documentation in the echo area
+  :init
+  (corfu-global-mode))
 
-This is a package for GNU Emacs that can be used to tie related
-commands into a family of short bindings with a common prefix - a
-Hydra.
+;; Use dabbrev with Corfu!
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand)))
 
-#+BEGIN_SRC emacs-lisp
-(use-package hydra)
-(use-package buffer-move)
+;; Enable Corfu completion UI
+;; See the Corfu REA DME for more configuration tips.
+(use-package corfu
+  :init
+  (corfu-global-mode))
 
-(defhydra hydra-window (:color pink :hint nil :timeout 20)
-  "
-           Move                    Resize                      Swap              Split
-  ╭─────────────────────────────────────────────────────────────────────────────────────────┐
-           ^_<up>_^                    ^_C-<up>_^                      ^_M-<up>_^            [_v_]ertical
-            ^^▲^^                         ^^▲^^                           ^^▲^^              [_h_]orizontal
-   _<left>_ ◀   ▶ _<right>_    _C-<left>_ ◀   ▶ _C-<right>_    _M-<left>_ ◀   ▶ _M-<right>_
-            ^^▼^^                         ^^▼^^                           ^^▼^^              ╭──────────┐
-          ^_<down>_^                  ^_C-<down>_^                    ^_M-<down>_^           quit : [_SPC_]
-  "
-  ("<left>" windmove-left)
-  ("<down>" windmove-down)
-  ("<up>" windmove-up)
-  ("<right>" windmove-right)
-  ("h" split-window-below)
-  ("v" split-window-right)
-  ("C-<up>" hydra-move-splitter-up)
-  ("C-<down>" hydra-move-splitter-down)
-  ("C-<left>" hydra-move-splitter-left)
-  ("C-<right>" hydra-move-splitter-right)
-  ("M-<up>" buf-move-up)
-  ("M-<down>" buf-move-down)
-  ("M-<left>" buf-move-left)
-  ("M-<right>" buf-move-right)
-  ("SPC" nil))
-#+END_SRC
+;; Add extensions
+(use-package cape
+  ;; Bind dedicated completion commands
+  :bind (("C-." . completion-at-point)
+         ("C-c /" . completion-fil))
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-tex)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-keyword))
+#+end_src
+
+** kind-icon ()
+
+#+begin_src emacs-lisp
+(use-package kind-icon
+  :ensure t
+  :after corf
+  :custom
+  (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
 
 ** K8s
 
@@ -997,13 +1037,9 @@ syste.
   "Add unique VALUE to ALIST when car of VALUE is unique, returns ALIST otherwise"
   (alist-unique (append alist values)))
 
-
 (use-package org
   :hook
   (org-mode . turn-on-auto-fill)
-  ;; (org-mode . (lambda ()
-  ;;               (add-to-list (make-local-variable 'company-backends)
-  ;;                            '(company-yasnippet))))
   (org-src-mode . (lambda ()
                     (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc))))
   :bind
@@ -1098,10 +1134,6 @@ syste.
 
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
-
-;; org-babel
-(use-package ob-elisp
-  :ensure nil)
 
 (use-package ob-restclient
   :config
@@ -1255,17 +1287,6 @@ fill those notes in with more details!"
   "Refreshes the agenda list adding Project notes to the list"
   (interactive)
   (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
-#+end_src
-
-** compay-org-block
-
-#+begin_src emacs-lisp
-(use-package company-org-block
-  :after company
-  :custom
-  (company-org-block-edit-style 'inline)
-  :hook (org-mode . (lambda ()
-                       (setq-local company-backends '(company-org-block)))))
 #+end_src
 
 ** Htmlize for org-mode
@@ -1462,43 +1483,12 @@ fill those notes in with more details!"
   (yas-reload-all))
 #+END_SRC
 
-** Auto completion
-
-#+BEGIN_SRC emacs-lisp
-(use-package company
-  :bind
-  ("C-." . company-complete)
-  ("C-c /" . 'company-files)
-  :custom
-  (company-idle-delay 0.0)
-  (company-tooltip-limit 20)
-  (company-minimum-prefix-length 1)
-  (company-tooltip-flip-when-above t)
-  (company-tooltip-align-annotations t)
-  (company-backends '())
-  (company-begin-commands '(self-insert-command))
-  (company-transformers (quote (company-sort-by-backend-importance)))
-  :config
-  (global-company-mode))
-
-(use-package company-box
-  :custom
-  (company-box-enable-icon t)
-  :hook
-  (company-mode . company-box-mode))
-
-(use-package company-web)
-#+END_SRC
-
 ** Prescient
 
 #+begin_src emacs-lisp
 (use-package prescient
   :config
   (prescient-persist-mode))
-
-(use-package company-prescient
-  :after (prescient company))
 #+end_src
 
 ** command-log
@@ -1583,7 +1573,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (dired-quick-sort-setup))
 
 (use-package dired-subtree
-  :ensure t
   :after dired
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
@@ -1628,13 +1617,16 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
   (lsp-clients-typescript-init-opts
    '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
+  (lsp-yaml-schema-store-local-db
+   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
 
   :hook (lsp-mode . lsp-enable-which-key-integration))
 
 (use-package lsp-ui
+  :after lsp-mode
   :hook (lsp-mode . lsp-ui-mode)
   :custom
-  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-show-hover nil)
   (lsp-ui-doc-position 'at-point)
   :config
@@ -1687,10 +1679,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 #+begin_src emacs-lisp
 (use-package elisp
   :ensure nil
-  :mode ("\\.el\\'" . emacs-lisp-mode)
-  :hook
-  (emacs-lisp-mode . (lambda () (add-to-list (make-local-variable 'company-backends)
-                                        '(company-elisp :width company-yasnippet :separate)))))
+  :mode ("\\.el\\'" . emacs-lisp-mode))
 #+end_src
 
 *** Conf
@@ -1747,8 +1736,6 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   (add-hook 'go-mode-hook
             (lambda ()
               (add-hook 'before-save-hook 'gofmt-before-save)
-              (add-to-list (make-local-variable 'company-backends)
-                           '(company-go :width company-yasnippet :separate))
               (local-set-key (kbd "M-.") 'godef-jump))))
 #+END_SRC
 
@@ -1767,11 +1754,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 #+BEGIN_SRC emacs-lisp
 (use-package css-mode
-  :mode "\\.css"
-  :config
-  :hook (css-mode . (lambda ()
-                      (add-to-list (make-local-variable 'company-backends)
-                                   '(company-css :width company-yasnippet :separate)))))
+  :mode "\\.css")
 #+END_SRC
 
 *** SCSS
@@ -1839,18 +1822,12 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 *** Py
 
 #+BEGIN_SRC emacs-lisp
-(use-package elpy
-  :config
-  (elpy-enable))
-
 (use-package python-mode
   :mode "\\.py"
   :interpreter "py"
   :config
   (setq python-shell-interpreter "ipython"
-        python-shell-interpreter-args "-i --simple-prompt")
-
-  )
+        python-shell-interpreter-args "-i --simple-prompt"))
 #+END_SRC
 
 * Other
