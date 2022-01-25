@@ -358,8 +358,11 @@ gpg --expert --full-generate-key
 (use-package popper
   :ensure t ; or :straight t
   :bind (("s-§"   . popper-toggle-latest)
-         ("s-M-§" . popper-cycle)
-         ("s-M-§" . popper-toggle-type))
+         ("M-§" . popper-cycle)
+         ("s-M-§" . popper-toggle-type)
+         ("s-<escape>"   . popper-toggle-latest)
+         ("M-<escape>" . popper-cycle)
+         ("s-M-<escape>" . popper-toggle-type))
   :init
   (setq popper-reference-buffers
         '("\\*Messages\\*"
@@ -633,7 +636,7 @@ introducing external dependencies (when feasible)
      :test "npm test"
      :run "npm start"
      :test-suffix ".spec.js")
-  
+
     (projectile-register-project-type
      'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
      :project-file "desktop/BUILD.gn"
@@ -890,7 +893,7 @@ targets."
   ;; Unbind help-command so completing-read interface can do it's job
   (unbind-key "C-h <help>" global-map)
   (unbind-key "C-h" help-map)
-  (unbind-key "C-h" ehelp-map)
+  ;;(unbind-key "C-h" ehelp-map)
 
   ;; Hide the mode line of the Embark live/completions buffers
   (add-to-list 'display-buffer-alist
@@ -1216,7 +1219,34 @@ syste.
 
 ** Org Roam
 
-#+begin_src emacs-lisp :lexical yes
+#+begin_src emacs-lisp
+(defun org-roam-node-insert-immediate (arg &rest args)
+  "This will allow you to quickly create new notes for topics
+you're mentioning while writing so that you can go back later and
+fill those notes in with more details!"
+  (interactive "P")
+  (let ((args (cons arg args))
+        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
+                                                  '(:immediate-finish t)))))
+    (apply #'org-roam-node-insert args)))
+
+(defun my/org-roam-filter-by-tag (tag-name)
+  "returns a filter function for "
+  (lambda (node)
+    (member tag-name (org-roam-node-tags node))))
+
+(defun my/org-roam-list-notes-by-tag (tag-name)
+  "Returns list of noted with given filetag"
+  (mapcar #'org-roam-node-file
+          (seq-filter
+           (my/org-roam-filter-by-tag tag-name)
+           (org-roam-node-list))))
+
+(defun my/org-roam-refresh-agenda-list ()
+  "Refreshes the agenda list adding Project notes to the list"
+  (interactive)
+  (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+
 (use-package org-roam
   :ensure t
   :init
@@ -1252,33 +1282,6 @@ syste.
   (require 'org-roam-dailies)
   (org-roam-db-autosync-mode)
   (my/org-roam-refresh-agenda-list))
-
-(defun org-roam-node-insert-immediate (arg &rest args)
-  "This will allow you to quickly create new notes for topics
-you're mentioning while writing so that you can go back later and
-fill those notes in with more details!"
-  (interactive "P")
-  (let ((args (cons arg args))
-        (org-roam-capture-templates (list (append (car org-roam-capture-templates)
-                                                  '(:immediate-finish t)))))
-    (apply #'org-roam-node-insert args)))
-
-(defun my/org-roam-filter-by-tag (tag-name)
-  "returns a filter function for "
-  (lambda (node)
-    (member tag-name (org-roam-node-tags node))))
-
-(defun my/org-roam-list-notes-by-tag (tag-name)
-  "Returns list of noted with given filetag"
-  (mapcar #'org-roam-node-file
-          (seq-filter
-           (my/org-roam-filter-by-tag tag-name)
-           (org-roam-node-list))))
-
-(defun my/org-roam-refresh-agenda-list ()
-  "Refreshes the agenda list adding Project notes to the list"
-  (interactive)
-  (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
 #+end_src
 
 ** Htmlize for org-mode
@@ -1405,12 +1408,17 @@ fill those notes in with more details!"
   :bind ("C-x g" . magit-status)
   :hook (global-git-commit-mode . flyspell-mode)
   :custom
-  ((vc-handled-backends nil)
-   (magit-process-finish-apply-ansi-colors t)
-   (magit-refresh-status-buffer t)
-   (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message)))
+
+  (vc-handled-backends nil)
+  (magit-process-finish-apply-ansi-colors t)
+  (magit-refresh-status-buffer t)
+  (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message))
+
   :config
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
+  (add-hook 'magit-process-find-password-functions
+            'magit-process-password-auth-source)
+
   (transient-define-suffix magit-submodule-update-all ()
     "Update all submodules"
     :description "Update All (git submodule update --init --recursive)"

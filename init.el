@@ -14,6 +14,7 @@
         emacs-version)))
 
 (package-initialize)
+(package-refresh-contents)
 
 ;; Package management
 (unless (package-installed-p 'use-package)
@@ -39,7 +40,7 @@
 
 ;; Install newer version of org-mode
 (use-package org
-  :pin gnu
+  :pin elpa
   :commands (org-mode org-capture org-agenda orgbl-mode)
   :mode (("\\.org$" . org-mode)))
 
