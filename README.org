@@ -50,7 +50,7 @@ brew services start d12frosted/emacs-plus/emacs-plus@28
 (add-hook 'prog-mode-hook
           (lambda ()
             (electric-pair-mode 1)))
-#+end_src 
+#+end_src
 
 ** Focus new frame
 
@@ -195,7 +195,7 @@ not break the init of Emacs.
 
 #+begin_src emacs-lisp
 (defun alerter--symbol-value (symbol)
-  "Stripts keyword symbol name from a colon" 
+  "Stripts keyword symbol name from a colon"
   (replace-regexp-in-string "^:" "" (symbol-name symbol)))
 
 (defun alerter--option (args)
@@ -249,7 +249,7 @@ not break the init of Emacs.
 We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
 to work properly
 
-#+begin_src elisp
+#+begin_src emacs-lisp
 (if (boundp 'xwidget-webkit-enable-plugins)
       (setq xwidget-webkit-enable-plugins t)
   (defvar xwidget-webkit-enable-plugins t))
@@ -259,18 +259,6 @@ to work properly
 
 #+BEGIN_SRC emacs-lisp
 (use-package auto-minor-mode)
-#+END_SRC
-
-** Quelpa
-
-#+BEGIN_SRC emacs-lisp
-(use-package quelpa
-  :init
-  (quelpa
-   '(quelpa-use-package
-     :fetcher git
-     :url "https://framagit.org/steckerhalter/quelpa-use-package.git"))
-  (require 'quelpa-use-package))
 #+END_SRC
 
 ** Ensure system-package
@@ -362,7 +350,7 @@ echo "pinentry-program /usr/local/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.co
 gpg --expert --full-generate-key
 #+end_src
 
-* Window management and frame management 
+* Window management and frame management
 
 ** Pooper (link)
 
@@ -669,7 +657,7 @@ introducing external dependencies (when feasible)
 #+begin_src emacs-lisp
 (use-package vertico
   :init
-  (vertico-mode)
+  (vertico-mode 1)
   :custom
   (vertico-resize nil)
   (vertico-cycle nil))
@@ -744,7 +732,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 ;; Example configuration for Consult
 (use-package consult
-  :demand t
+  :after projectile
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -884,7 +872,7 @@ targets."
 
 (use-package embark
   :after which-key
-  :defer 1
+  :demand t
   :bind
   (("s-." . embark-act)         ;; pick some comfortable binding
    ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -895,7 +883,7 @@ targets."
    '(embark-which-key-indicator
      embark-highlight-indicator
      embark-isearch-highlight-indicator))
-  
+
   (prefix-help-command #'embark-prefix-help-command)
 
   :config
@@ -927,7 +915,6 @@ Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
 (use-package embark-consult
-  :ensure t
   :after (embark consult)
   :demand t
   :hook
@@ -1135,6 +1122,10 @@ syste.
 (use-package org-bullets
   :hook (org-mode . org-bullets-mode))
 
+;; org-babel
+(org-babel-add-langs
+ ((emacs-lisp . t)))
+
 (use-package ob-restclient
   :config
   (org-babel-add-langs
@@ -1145,12 +1136,13 @@ syste.
   :config
   (org-babel-add-langs
    ((js . t)))
-  
+
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js")))
 
 (use-package ob-deno
   :config
-  (org-babel-add-langs ((deno . t))))
+  (org-babel-add-langs
+   ((deno . t))))
 
 (use-package org-super-agenda
   :init
@@ -1529,13 +1521,6 @@ fill those notes in with more details!"
   (rg-enable-menu))
 #+END_SRC
 
-** bang
-
-#+BEGIN_SRC emacs-lisp
-(use-package bang
-  :bind ("M-!" . bang))
-#+END_SRC
-
 ** Dired
 
 I've tried ~[[https://github.com/ralesi/ranger.el][ranger-mode~]] with it's simplier ~[[https://github.com/ralesi/ranger.el#minimal-ranger-mode-deer][deer-mode~]] and I must say, nothing beets good old [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Dired.html][Dired]].
@@ -1545,6 +1530,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package dired
   :ensure nil
+  :hook
+  (dired-mode auto-revert-mode)
   :custom
   (dired-dwim-target t)
   :config

@@ -1,5 +1,18 @@
 (require 'package)
 
+(setq package-archives
+      '(("melpa" . "https://melpa.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("elpa" . "https://elpa.gnu.org/packages/")))
+
+;; Sets new subdir for each version so after an update we have to
+;; recompile all of the packages
+(setq package-user-dir
+      (locate-user-emacs-file
+       (concat
+        (file-name-as-directory "elpa")
+        emacs-version)))
+
 (package-initialize)
 
 ;; Package management
@@ -10,6 +23,14 @@
 ;; All packages should be ensured unless stated othewise
 (require 'use-package)
 (setq use-package-always-ensure t)
+
+;; Remove signature check before upgrating to new key
+(setq package-check-signature nil)
+
+;; Updates public keyring and reverts package-check-signature
+(use-package gnu-elpa-keyring-update
+  :init
+  (setq package-check-signature 'allow-unsigned))
 
 ;; Garbage Collector Magic Hack
 (use-package gcmh
