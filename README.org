@@ -663,7 +663,15 @@ introducing external dependencies (when feasible)
   (vertico-mode 1)
   :custom
   (vertico-resize nil)
-  (vertico-cycle nil))
+  (vertico-cycle nil)
+  (vertico-multiform-commands
+   '((consult-imenu buffer)))
+
+  (vertico-multiform-categories
+   '((file grid)
+     (consult-grep buffer)))
+  :config
+  (vertico-multiform-mode))
 #+end_src
 
 also helpful emacs config just for vertico
@@ -691,22 +699,6 @@ also helpful emacs config just for vertico
         #'command-completion-default-include-p)
   ;; Enable recursive minibuffers
   (enable-recursive-minibuffers t))
-#+end_src
-
-** COMMENT vertico-multiform ([[https://github.com/minad/vertico/blob/main/extensions/vertico-multiform.el][link]])
-
-#+begin_src emacs-lisp
-(use-package vertico-multiform-mode
-  :ensure nil
-  :config
-  (vertico-multiform-mode)
-  :custom
-  (vertico-multiform-commands
-   '((consult-imenu buffer indexed)))
-
-  (vertico-multiform-categories
-   '((consult-grep buffer)
-     (t buffer))))
 #+end_src
 
 ** Orderless ([[https://github.com/oantolin/orderless][link]])
