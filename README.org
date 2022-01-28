@@ -118,6 +118,7 @@ not break the init of Emacs.
 (delete-selection-mode 1)
 (global-auto-revert-mode 1)
 (menu-bar-mode -1)
+(ido-mode -1)
 
 (use-package desktop
   :ensure nil
