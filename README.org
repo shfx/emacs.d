@@ -204,7 +204,7 @@ not break the init of Emacs.
     (concat "-" (alerter--symbol-value key) " " (plist-get args key))))
 
 (setq alerter-default-args
-      '(:title "Emacs" :sender "org.gnu.Emacs"))
+      '(:title "Emacs" :sender "org.gnu.Emacs" :timeout "5"))
 
 (defun alerter (message &rest args)
   "Notify user using native macOS notifications. MESSAGE will be displayed using alerter package, with additional ARGS"
@@ -363,13 +363,16 @@ gpg --expert --full-generate-key
          ("s-<escape>"   . popper-toggle-latest)
          ("M-<escape>" . popper-cycle)
          ("s-M-<escape>" . popper-toggle-type))
-  :init
-  (setq popper-reference-buffers
-        '("\\*Messages\\*"
-          "Output\\*$"
-          "\\*Async Shell Command\\*"
-          compilation-mode
-          vterm-mode))
+  :custom
+  (popper-reference-buffers
+   '("\\*Messages\\*"
+     "Output\\*$"
+     "\\*Async Shell Command\\*"
+     compilation-mode
+     vterm-mode))
+  (popper-mode-line '(:eval
+                      (propertize " POP " 'face 'mode-line-emphasis)))
+  :config
   (popper-mode +1)
   (popper-echo-mode +1))
 #+end_src
@@ -1563,13 +1566,21 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after dired
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
+
+(defun sudired ()
+  (interactive)
+  (require 'tramp)
+  (let ((dir (expand-file-name default-directory)))
+    (if (string-match "^/sudo:" dir)
+        (user-error "Already in sudo")
+      (dired (concat "/sudo::" dir)))))
+(define-key dired-mode-map "!" 'sudired)
 #+END_SRC
 
 ** Flycheck
 
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :ensure nil
   :custom
   (flycheck-idle-change-delay 1)
   :custom-face
