@@ -16,13 +16,64 @@ To start a bg service, run:
 brew services start d12frosted/emacs-plus/emacs-plus@28
 #+END_SRC
 
-* Tidy up .emcac.d mess
+* Tidy up .emacs.d mess
 
 #+begin_src emacs-lisp
 (use-package no-littering)
 #+end_src
 
+* Better package management
+** Better list-package mode
+
+#+BEGIN_SRC emacs-lisp
+(use-package paradox
+  :custom
+  (paradox-github-token t)
+  :config
+  (paradox-enable))
+#+END_SRC
+
+** Quelpa & use-packlage
+
+#+begin_src emacs-lisp
+(use-package quelpa-use-package
+  :ensure nil
+  :config
+  (unless (package-installed-p 'quelpa)
+    (with-temp-buffer
+      (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+      (eval-buffer)
+      (quelpa-self-upgrade)
+      (quelpa
+       '(quelpa-use-package
+         :fetcher git
+         :url "https://github.com/quelpa/quelpa-use-package.git"))
+      (require 'quelpa-use-package))))
+#+end_src
+
+** Auto minor-mode for use-package
+
+#+BEGIN_SRC emacs-lisp
+(use-package auto-minor-mode)
+#+END_SRC
+
+** Ensure system-package
+
+#+BEGIN_SRC emacs-lisp
+(use-package system-packages
+  :custom
+  (system-packages-package-manager 'brew))
+
+(use-package use-package-ensure-system-package :after system-packages)
+#+END_SRC
+
 * Initialiation defaults
+
+** Async
+
+#+begin_src emacs-lisp
+(use-package async)
+#+end_src
 
 ** Measure startup time
 
@@ -118,7 +169,6 @@ not break the init of Emacs.
 (delete-selection-mode 1)
 (global-auto-revert-mode 1)
 (menu-bar-mode -1)
-(ido-mode -1)
 
 (use-package desktop
   :ensure nil
@@ -132,7 +182,9 @@ not break the init of Emacs.
   :config
   (desktop-save-mode +1))
 
-(setq auto-save-default nil
+(setq left-fringe-width  16
+      right-fringe-width  16
+      auto-save-default nil
       frame-resize-pixelwise t
       frame-title-format nil
       inhibit-startup-screen t
@@ -255,19 +307,6 @@ to work properly
       (setq xwidget-webkit-enable-plugins t)
   (defvar xwidget-webkit-enable-plugins t))
 #+end_src
-
-** Auto minor-mode for use-package
-
-#+BEGIN_SRC emacs-lisp
-(use-package auto-minor-mode)
-#+END_SRC
-
-** Ensure system-package
-
-#+BEGIN_SRC emacs-lisp
-(use-package system-packages)
-(use-package use-package-ensure-system-package)
-#+END_SRC
 
 ** Default trash behavior
 
@@ -409,9 +448,15 @@ everything reuse your currently selected window.
   (shackle-mode t))
 #+END_SRC
 
-
-
 * Packages
+
+** Bufler
+
+#+begin_src emacs-lisp
+(use-package bufler
+  :quelpa (bufler :fetcher github :repo "alphapapa/bufler.el"
+                  :files (:defaults (:exclude "helm-bufler.el"))))
+#+end_src
 
 ** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
 
@@ -664,18 +709,11 @@ introducing external dependencies (when feasible)
 #+begin_src emacs-lisp
 (use-package vertico
   :init
-  (vertico-mode 1)
   :custom
   (vertico-resize nil)
-  (vertico-cycle nil)
-  (vertico-multiform-commands
-   '((consult-imenu buffer)))
-
-  (vertico-multiform-categories
-   '((file grid)
-     (consult-grep buffer)))
+  (vertico-cycle t)
   :config
-  (vertico-multiform-mode))
+  (vertico-mode 1))
 #+end_src
 
 also helpful emacs config just for vertico
@@ -732,6 +770,7 @@ also helpful emacs config just for vertico
 ;; Example configuration for Consult
 (use-package consult
   :after projectile
+  :demand t
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -819,7 +858,7 @@ also helpful emacs config just for vertico
    :preview-key '(:debounce 0.2 any)
    consult-ripgrep consult-git-grep consult-grep
    consult-bookmark consult-recent-file consult-xref
-   consult--source-file consult--source-project-file consult--source-bookmark
+   consult--source-buffer consult--source-project-buffer consult--source-bookmark
    :preview-key (kbd "M-."))
 
   ;; Optionally configure the narrowing key.
@@ -1060,7 +1099,7 @@ syste.
   (org-startup-folded "showeverything")
   (org-startup-with-inline-images t)
   (org-src-preserve-indentation t)
-  (org-ellipsis "  " )
+  (org-ellipsis " … " )
   (org-pretty-entities t)
   (org-hide-emphasis-markers t)
   (org-agenda-block-separator "")
@@ -1123,7 +1162,8 @@ syste.
 
 ;; org-babel
 (org-babel-add-langs
- ((emacs-lisp . t)))
+ ((emacs-lisp . t)
+  (shell . t)))
 
 (use-package ob-restclient
   :config
@@ -1244,10 +1284,8 @@ fill those notes in with more details!"
   (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
 
 (use-package org-roam
-  :ensure t
-  :init
-  (setq org-roam-v2-ack t)
   :custom
+  (org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-directory "~/Dropbox/OrgRoam")
   (org-roam-completion-everywhere t)
   (org-roam-capture-templates
@@ -1258,16 +1296,24 @@ fill those notes in with more details!"
      ("p" "project" plain
       (file "~/Dropbox/OrgRoam/Templates/Project.org")
       :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Project")
-     :unnarrowed t)))
+      :unnarrowed t)))
+
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
+         ("C-c n g" . org-roam-graph)
          ("C-c n i" . org-roam-node-insert)
+         ("C-c n c" . org-roam-capture)
          ("C-c n I" . org-roam-node-insert-immediate)
+         ;; Dailies
+         ("C-c n j" . org-roam-dailies-capture-today)
+
          :map org-mode-map
          ("C-M-i"    . completion-at-point)
+
          :map org-roam-dailies-map
          ("Y" . org-roam-dailies-capture-yesterday)
          ("T" . org-roam-dailies-capture-tomorrow))
+
   :bind-keymap
   ("C-c n d" . org-roam-dailies-map)
   :custom-face
@@ -1430,12 +1476,44 @@ fill those notes in with more details!"
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository)))
 #+END_SRC
 
-** COMMENT Magit Delta
+** magit-todos ([[https://github.com/alphapapa/magit-todos][link]])
+
+#+begin_src emacs-lisp
+(use-package magit-todos
+  :after (magit)
+  :config
+  (magit-todos-mode 1))
+#+end_src
+
+** Magit Delta
 
 #+begin_src emacs-lisp
   (use-package magit-delta
     :ensure-system-package git-delta
     :hook (magit-mode . magit-delta-mode))
+#+end_src
+
+** git-gutter
+
+#+begin_src emacs-lisp
+(use-package git-gutter
+  :hook (text-mode . git-gutter-mode)
+  :config
+  (setq git-gutter:update-interval 1))
+
+(use-package git-gutter-fringe
+  :config
+  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
+#+end_src
+
+** hl-todo-mode ([[https://github.com/tarsius/hl-todo][link]])
+
+#+begin_src emacs-lisp
+(use-package hl-todo
+  :config
+  :hook (prog-mode . hl-todo-mode))
 #+end_src
 
 ** goto-line-preview
@@ -1444,20 +1522,6 @@ fill those notes in with more details!"
 (use-package goto-line-preview
   :bind ([remap goto-line] . goto-line-preview)
   :config)
-#+END_SRC
-
-** diff-hl
-
-#+BEGIN_SRC emacs-lisp
-(use-package  diff-hl
-  :after (magit)
-  :custom
-  (left-fringe-width  16)
-  (right-fringe-width 0)
-  :config
-  (diff-hl-update)
-  (global-diff-hl-mode 1)
-  (diff-hl-flydiff-mode 1))
 #+END_SRC
 
 ** unfill
@@ -1534,8 +1598,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package dired
   :ensure nil
-  :hook
-  (dired-mode auto-revert-mode)
   :custom
   (dired-dwim-target t)
   :config
@@ -1549,13 +1611,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :init
   (diredfl-global-mode 1))
 
-(use-package dired-git-info
-  :after dired
-  :commands (dired-git-info-mode)
-  :ensure t
-  :bind (:map dired-mode-map
-              (")" . dired-git-info-mode)))
-
 (use-package dired-quick-sort
   :after dired
   :custom
@@ -1567,15 +1622,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after dired
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
-
-(defun sudired ()
-  (interactive)
-  (require 'tramp)
-  (let ((dir (expand-file-name default-directory)))
-    (if (string-match "^/sudo:" dir)
-        (user-error "Already in sudo")
-      (dired (concat "/sudo::" dir)))))
-(define-key dired-mode-map "!" 'sudired)
 #+END_SRC
 
 ** Flycheck
@@ -1587,7 +1633,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :custom-face
   (flycheck-error ((t (:underline (:color "#e74c3c" :style wave)))))
   (flycheck-info ((t (:underline (:color "#b6e63e" :style wave)))))
-  :init
+  :config
   (global-flycheck-mode 1))
 #+END_SRC
 
@@ -1601,6 +1647,20 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
               ("C-c C-f" . json-mode-beautify)))
 #+END_SRC
 
+** jq
+
+#+BEGIN_SRC emacs-lisp
+(use-package jq-mode
+  :after (org-mode json-mode)
+  :commands (jq-mode jq-interactively)
+  :mode ("\\.jq$" . js-mode)
+  :bind (:map json-mode-map
+              ("C-c C-j" . jq-interactively))
+  :config
+  (org-babel-add-langs
+   ((jq . t))))
+#+END_SRC
+
 ** LSP Mode
 
 #+BEGIN_SRC emacs-lisp
@@ -1609,17 +1669,16 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :custom
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
-  (lsp-headerline-breadcrumb-enable nil)
   (lsp-enable-indentation nil)
   (lsp-enable-on-type-formatting nil)
-  (lsp-ui-sideline-enable nil)
-  (lsp-eslint-server-command '("node" "/Users/shfx/Projects/vscode-eslint/server/out/eslintServer.js" "--stdio"))
   (lsp-clients-typescript-init-opts
    '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
 
-  :hook (lsp-mode . lsp-enable-which-key-integration))
+  :hook (lsp-mode . lsp-enable-which-key-integration)
+  :custom-face
+  '((lsp-lsp-flycheck-info-unnecessary-face ((t (:underline (:color "#b6e63e" :style wave)))) t)))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1627,9 +1686,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :custom
   (lsp-ui-sideline-enable nil)
   (lsp-ui-sideline-show-hover nil)
-  (lsp-ui-doc-position 'at-point)
-  :config
-  (lsp-ui-doc-show))
+  (lsp-ui-doc-position 'at-point))
 
 (use-package lsp-tailwindcss
   :custom
@@ -1672,6 +1729,12 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 #+end_src
 
 ** File types
+*** .env
+
+#+begin_src emacs-lisp
+(use-package dotenv-mode
+  :mode ("\\.env\\..*\\'" . dotenv-mode))
+#+end_src
 
 *** Elisp
 
@@ -1679,17 +1742,6 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (use-package elisp
   :ensure nil
   :mode ("\\.el\\'" . emacs-lisp-mode))
-#+end_src
-
-*** Conf
-
-#+begin_src emacs-lisp
-  (use-package conf-mode
-    :mode
-    ("\\.env\\'" . conf-mode)
-    ("\\.env\\.default\\'" . conf-mode)
-    ("\\.env\\.example\\'" . conf-mode)
-    :ensure nil)
 #+end_src
 
 *** Markdown
@@ -1829,6 +1881,16 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
         python-shell-interpreter-args "-i --simple-prompt"))
 #+END_SRC
 
+*** Dockerfile and docker-compose.yml
+
+#+begin_src emacs-lisp
+(use-package dockerfile-mode
+  :mode "Dockerfile$")
+
+(use-package docker-compose-mode
+  :mode "docker-compose.yml.py$")
+#+end_src
+
 * Other
 
 #+BEGIN_SRC emacs-lisp
@@ -1842,5 +1904,4 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
-(put 'dired-find-alternate-file 'disabled nil)
 #+END_SRC
