@@ -41,7 +41,7 @@ Better list-package mode
 #+begin_src emacs-lisp
   (use-package quelpa
     :ensure nil
-    :config
+    :init
     (unless (package-installed-p 'quelpa)
       (with-temp-buffer
         (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
@@ -54,8 +54,7 @@ Better list-package mode
 #+begin_src emacs-lisp
   (use-package quelpa-use-package
     :ensure nil
-    :after quelpa
-    :config
+    :init
     (quelpa
      '(quelpa-use-package
        :fetcher git
@@ -213,7 +212,6 @@ not break the init of Emacs.
   (auto-save-default nil)
   (compilation-scroll-output t)
   (create-lockfiles nil)
-  (file-name-handler-alist nil)
   (frame-resize-pixelwise t)
   (frame-title-format nil)
   (inhibit-startup-echo-area-message user-login-name)
@@ -250,6 +248,7 @@ not break the init of Emacs.
   (cursor-in-non-selected-windows nil)
 
   :config
+  (pixel-scroll-precision-mode 1)
   (set-default 'truncate-lines t)
   (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
@@ -262,8 +261,8 @@ not break the init of Emacs.
   (menu-bar-mode 0)
   (save-place-mode 1)
   (windmove-default-keybindings 'super)
+  (windmove-swap-states-default-keybindings (list 'super 'control))
   (winner-mode 1)
-  (tab-bar-mode 1)
 
   ;; Better support for files with long lines
   (setq-default bidi-paragraph-direction 'left-to-right)
@@ -293,7 +292,7 @@ not break the init of Emacs.
 (setq y-or-n-p-map y-or-n-p-ret-yes-map)
 
 (global-unset-key (kbd "C-x C-c"))
-(global-unset-key (kbd "S-w"))
+(global-unset-key (kbd "s-w"))
 (global-unset-key (kbd "C-x C-z"))
 
 ;; Make shebang (#!) file executable when saved
@@ -454,21 +453,33 @@ Move your env variables to ~.zshenv~ befre setting this up
 #+begin_src emacs-lisp
 (use-package epa
   :if (eq system-type 'darwin)
-  :ensure-system-package (gpg pinentry-mac))
+  :ensure-system-package (gpg pinentry-mac)
+  :custom
+  (epa-file-encrypt-to '("shfx@shfx.pl"))
+  (password-cache-expiry (* 60 15))
+  (epa-file-select-keys nil)
+  (epg-pinentry-mode 'loopback))
 
 (use-package epa
-  :if (eq system-type 'gnu/linux))
+  :if (eq system-type 'gnu/linux)
+  :custom
+  (epa-file-encrypt-to '("shfx@shfx.pl"))
+  (password-cache-expiry (* 60 15))
+  (epa-file-select-keys nil)
+  (epg-pinentry-mode 'loopback))
 #+end_src
 
-when staring, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
+when starting, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
 
 #+begin_src sh
 gpg --list-keys
-echo "pinentry-program /usr/local/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.conf
+echo "pinentry-program /opt/homebrew/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.conf
 gpg --expert --full-generate-key
 #+end_src
 
-* Window management and frame management
+https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
+
+* Window and frame management
 
 ** Pooper (link)
 
@@ -511,8 +522,6 @@ everything reuse your currently selected window.
      (compilation-mode         :select nil :align below :size 0.25)
      (messages-buffer-mode     :select t   :align below :size 0.25)
      (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-     (help-mode                :select t   :align right :size 0.5)
-     (helpful-mode             :select t   :align right :size 0.5)
      ("*rg*"                   :select t   :other t)
      (" *Deletions*"           :select t   :align below :size 0.25)
      (" *Marked Files*"        :select t   :align below :size 0.25)
@@ -677,10 +686,9 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 (use-package orderless
   :custom
-  (completion-styles '(orderless))
-  (completion-category-defaults nil)
+  (completion-styles '(orderless basic))
   (completion-category-overrides
-   '((file (styles partial-completion)))
+   '((file (styles basic partial-completion)))
   (orderless-component-separator #'orderless-escapable-split-on-space)))
 #+end_src
 
@@ -1259,7 +1267,12 @@ Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
 (use-package corfu
-  ;; Optional customizations
+  :init
+  (defun corfu-lsp-setup ()
+    (setq-local completion-styles '(orderless)
+                completion-category-defaults nil))
+  (corfu-global-mode)
+  :hook (lsp-mode . corfu-lsp-setup)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
               ("C-p" . corfu-previous)
@@ -1273,9 +1286,8 @@ Consult users will also want the embark-consult package.
   (tab-always-indent 'complete)
   (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold nil)
-
   (corfu-auto t)
-  (corfu-auto-prefix 2)
+  (corfu-auto-prefix 1)
   (corfu-auto-delay 0.25)
 
   (corfu-min-width 80)
@@ -1286,12 +1298,11 @@ Consult users will also want the embark-consult package.
 
   (corfu-echo-documentation nil)
   (corfu-separator ?\s)
+  (corfu-quit-at-boundary 'separator)
   (corfu-quit-no-match 'separator)
 
   (corfu-preview-current 'insert)
-  (corfu-preselect-first t)
-  (lsp-completion-provider :none)
-  :init
+  (corfu-preselect-first nil)
   (corfu-global-mode))
 
 ;; Use dabbrev with Corfu!
@@ -1415,7 +1426,7 @@ syste.
 
   :config
   (org-babel-add-langs ((emacs-lisp .  t)))
-  (org-indent-mode nil)
+  (org-indent-mode 1)
   (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
   (org-babel-add-langs
    ((ditaa . t)))
@@ -1437,7 +1448,7 @@ syste.
      (not (string= lang "restclient"))))
   (org-hide-leading-stars t)
   (org-src-tab-acts-natively t)
-  (org-startup-indented nil)
+  (org-startup-indented t)
   (org-babel-min-lines-for-block-output 1)
   (org-speed-command-help t)
   (org-startup-folded "content")
@@ -1505,8 +1516,8 @@ syste.
     'org-tree-slide-content)
   (org-tree-slide-narrowing-control-profile))
 
-(use-package org-bullets
-  :hook (org-mode . org-bullets-mode))
+;; (use-package org-bullets
+;;   :hook (org-mode . org-bullets-mode))
 
 ;; org-babel
 (org-babel-add-langs
@@ -1735,6 +1746,8 @@ fill those notes in with more details!"
 (use-package helpful
   :bind (("C-h f"  . helpful-callable)
          ("C-h v"  . helpful-variable)
+         ("C-h k"  . helpful-key)
+         ("C-c C-d" . helpful-at-point)
          ("C-h k"  . helpful-key)))
 #+END_SRC
 
@@ -2008,8 +2021,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :custom
   (flycheck-idle-change-delay 1)
   :custom-face
-  (flycheck-error ((t (:underline (:color "#e74c3c" :style wave)))))
-  (flycheck-info ((t (:underline (:color "#b6e63e" :style wave)))))
+  (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
+  (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :config
   (global-flycheck-mode 1))
 #+END_SRC
@@ -2044,9 +2057,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :init
-  (defun my/lsp-mode-setup-completion ()
-    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-          '(orderless)))
   :hook (lsp-mode . lsp-enable-which-key-integration)
   :custom
   (lsp-completion-provider :none)
@@ -2058,10 +2068,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
    '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  :custom-face
-  '((lsp-lsp-flycheck-info-unnecessary-face ((t (:underline (:color "#b6e63e" :style wave)))) t))
   :config
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium[/\\\\]src\\'"))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium[/\\\\]src\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src[/\\\\]node_modules\\'"))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -2277,12 +2286,6 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 * Other
 
 #+BEGIN_SRC emacs-lisp
-;; TODO: Use general for keybindings
-(defun my-delete-trailing-whitespace ()
-  "Deleting trailing whitespaces."
-  (when (derived-mode-p 'prog-mode)
-    (delete-trailing-whitespace)))
-
 (message ".emacs loaded successfully.")
 
 (put 'downcase-region 'disabled nil)
