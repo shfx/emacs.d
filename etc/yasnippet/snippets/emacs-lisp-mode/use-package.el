@@ -2,5 +2,4 @@
 # name: use-package
 # key: use
 # --
-(use-package $0
-  :ensure t)
+(use-package $0)
