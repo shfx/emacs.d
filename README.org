@@ -294,6 +294,10 @@ not break the init of Emacs.
 (global-unset-key (kbd "C-x C-c"))
 (global-unset-key (kbd "s-w"))
 (global-unset-key (kbd "C-x C-z"))
+(global-unset-key (kbd "C-<wheel-up>"))
+(global-unset-key (kbd "C-<wheel-down>"))
+(global-unset-key (kbd "<mouse-2>"))
+
 
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
@@ -541,7 +545,6 @@ everything reuse your currently selected window.
 (use-package tab-bar
   :ensure nil
   :custom
-  (tab-bar-show t)
   ;; Do not show buttons.
   (tab-bar-new-button-show nil)
   (tab-bar-close-button-show nil)
@@ -1059,11 +1062,6 @@ the bottom of active window with directory of its buffer.
   "Detach from a `dtache' session."
   (interactive)
   (process-send-string vterm--process dtache--dtach-detach-character))
-
-(use-package vterm
-  :after consult
-  :custom
-  (vterm-always-compile-module t))
 
 (use-package vterm
   :after consult
