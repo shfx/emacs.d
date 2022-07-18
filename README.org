@@ -1819,7 +1819,8 @@ fill those notes in with more details!"
 (use-package magit
   :init
   :bind ("C-x g" . magit-status)
-  :hook (global-git-commit-mode . flyspell-mode)
+  :hook
+  (git-commit-mode . flyspell-mode)
   :custom
 
   (vc-handled-backends nil)
