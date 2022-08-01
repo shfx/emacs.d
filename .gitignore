@@ -39,3 +39,4 @@ url
 /eln-cache/
 /async-bytecomp.log
 /forge-database.sqlite
+/dtache.db

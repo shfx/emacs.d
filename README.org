@@ -208,6 +208,8 @@ not break the init of Emacs.
 
 (use-package emacs
   :ensure nil
+  :hook
+  (shell-mode ansi-color-for-comint-mode-on)
   :custom
   (auto-save-default nil)
   (compilation-scroll-output t)
@@ -260,9 +262,6 @@ not break the init of Emacs.
   (global-auto-revert-mode 1)
   (menu-bar-mode 0)
   (save-place-mode 1)
-  (windmove-default-keybindings 'super)
-  (windmove-swap-states-default-keybindings (list 'super 'control))
-  (winner-mode 1)
 
   ;; Better support for files with long lines
   (setq-default bidi-paragraph-direction 'left-to-right)
@@ -377,7 +376,6 @@ not break the init of Emacs.
             (if (current-file-is-config)
                 (check-if-config-valid))))
 #+end_src
-
 ** xwidget-webkit problem with emacsclient
 
 We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
@@ -387,6 +385,17 @@ to work properly
 (if (boundp 'xwidget-webkit-enable-plugins)
       (setq xwidget-webkit-enable-plugins t)
   (defvar xwidget-webkit-enable-plugins t))
+#+end_src
+
+** Windmove
+
+#+begin_src emacs-lisp
+(use-package windmove
+  :ensure nil
+  :init
+  (windmove-default-keybindings 'super)
+  (windmove-swap-states-default-keybindings (list 'super 'control))
+  (winner-mode 1))
 #+end_src
 
 ** Default trash behavior
@@ -483,6 +492,15 @@ gpg --expert --full-generate-key
 
 https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
 
+** Keycast
+
+#+begin_src emacs-lisp
+(use-package keycast
+  :init
+  (add-to-list 'global-mode-string '("" mode-line-keycast))
+  (keycast-mode))
+#+end_src
+
 * Window and frame management
 
 ** Pooper (link)
@@ -495,7 +513,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
          ("s-M-§" . popper-toggle-type)
          ("s-<escape>"   . popper-toggle-latest)
          ("M-<escape>" . popper-cycle)
-         ("s-M-<escape>" . popper-toggle-type))
+         ("C-M-<escape>" . popper-toggle-type))
   :custom
   (popper-reference-buffers
    '("\\*Messages\\*"
@@ -690,9 +708,8 @@ also helpful emacs config just for vertico
 (use-package orderless
   :custom
   (completion-styles '(orderless basic))
-  (completion-category-overrides
-   '((file (styles basic partial-completion)))
-  (orderless-component-separator #'orderless-escapable-split-on-space)))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
 ** Savehist
@@ -775,9 +792,6 @@ also helpful emacs config just for vertico
   ;; This adds thin lines, sorting and hides the mode line of the window.
   (advice-add #'register-preview :override #'consult-register-window)
 
-  ;; Optionally replace `completing-read-multiple' with an enhanced version.
-  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-
   ;; Use Consult to select xref locations with preview
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
@@ -820,6 +834,15 @@ also helpful emacs config just for vertico
               ("p" . consult-projectile))
   :custom
   (projectile-switch-project-action 'consult-projectile))
+#+end_src
+
+
+** Consult jump project
+
+#+begin_src emacs-lisp
+(use-package consult-jump-project
+  ;; :straight (consult-jump-project :type git :host github :repo "jdtsmith/consult-jump-project")
+  :bind ("C-x p j" . consult-jump-project))
 #+end_src
 
 ** Consult flycheck ([[https://github.com/minad/consult-flycheck][link]])
@@ -867,6 +890,7 @@ also helpful emacs config just for vertico
 * Remote
 
 ** Tramp
+
 #+begin_src emacs-lisp
 (use-package tramp
   :ensure nil
@@ -881,6 +905,13 @@ also helpful emacs config just for vertico
 #+end_src
 
 * Packages
+
+** Ledger
+
+#+begin_src emacs-lisp
+(use-package ledger-mode
+  :ensure-system-package ledger)
+#+end_src
 
 ** Bufler
 
@@ -1068,7 +1099,9 @@ the bottom of active window with directory of its buffer.
   :bind (:map vterm-mode-map
               ("<S-return>" . #'dtache-vterm-send-input)
               ("<C-return>" . #'dtache-vterm-attach)
-              ("C-c C-d" . #'dtache-vterm-detach)))
+              ("C-c C-d" . #'dtache-vterm-detach))
+  :custom
+  (vterm-always-compile-module t))
 
 (use-package multi-vterm
   :after vterm)
@@ -1125,11 +1158,38 @@ with version control systems.
   :bind ("C-=" . er/expand-region))
 #+END_SRC
 
+** launchctl
+
+#+begin_src emacs-lisp
+(use-package launchctl)
+#+end_src
+
 ** Restart Emacs
 
 #+BEGIN_SRC emacs-lisp
 (use-package restart-emacs)
 #+END_SRC
+
+** Paren
+
+#+begin_src emacs-lisp
+(use-package paren
+  :hook (after-init-hook . show-paren-mode)
+  :custom-face
+  (show-paren-match ((t
+                      (:weight ultra-bold :foreground "#b6e63e" :background "#3a4625"))))
+  :custom
+  (show-paren-style 'mixed)
+  (show-paren-when-point-in-periphery t)
+  (show-paren-when-point-inside-paren nil))
+#+end_src
+
+** Auto highlight symbol
+
+#+begin_src emacs-lisp
+(use-package auto-highlight-symbol
+  :hook (prog-mode . auto-highlight-symbol-mode))
+#+end_src
 
 ** All the icons ([[https://github.com/domtronn/all-the-icons.el][link]])
 
@@ -1265,12 +1325,13 @@ Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
 (use-package corfu
+  :demand t
   :init
   (defun corfu-lsp-setup ()
     (setq-local completion-styles '(orderless)
                 completion-category-defaults nil))
-  (corfu-global-mode)
-  :hook (lsp-mode . corfu-lsp-setup)
+  
+  :hook (lsp-completion-mode-hook . corfu-lsp-setup)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
               ("C-p" . corfu-previous)
@@ -1281,27 +1342,25 @@ Consult users will also want the embark-consult package.
               ("H-SPC" . corfu-insert-separator)
               ("SPC" . corfu-insert-separator))
   :custom
-  (tab-always-indent 'complete)
-  (tab-first-completion 'word-or-paren-or-punct)
   (completion-cycle-threshold nil)
   (corfu-auto t)
-  (corfu-auto-prefix 1)
   (corfu-auto-delay 0.25)
-
+  (corfu-auto-prefix 1)
+  (corfu-count 14)
+  (corfu-cycle nil)
+  (corfu-echo-documentation t)
   (corfu-min-width 80)
   (corfu-max-width corfu-min-width)
-  (corfu-count 14)
-  (corfu-scroll-margin 4)
-  (corfu-cycle nil)
-
-  (corfu-echo-documentation nil)
-  (corfu-separator ?\s)
-  (corfu-quit-at-boundary 'separator)
+  (corfu-preselect-first t)
+  (corfu-preview-current t)
+  (corfu-quit-at-boundary t)
   (corfu-quit-no-match 'separator)
-
-  (corfu-preview-current 'insert)
-  (corfu-preselect-first nil)
-  (corfu-global-mode))
+  (corfu-scroll-margin 4)
+  (corfu-separator ?\s)
+  (tab-always-indent 'complete)
+  (tab-first-completion 'word-or-paren-or-punct)
+  :config
+  (global-corfu-mode))
 
 ;; Use dabbrev with Corfu!
 (use-package dabbrev
@@ -1495,9 +1554,6 @@ syste.
 (use-package org-starless
   :hook (org-mode . org-starless-mode)
   :quelpa (org-starless :fetcher github :repo "TonCherAmi/org-starless"))
-
-(use-package org-contacts
-  :ensure nil)
 
 (use-package org-tree-slide
   :custom
@@ -1719,6 +1775,11 @@ fill those notes in with more details!"
 (use-package which-key
   :init
   (which-key-mode)
+  :config
+  (add-to-list 'which-key-replacement-alist '(("TAB" . nil) . ("↹" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("RET" . nil) . ("⏎" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣" . nil)))
   :custom
   ((which-key-sort-order #'which-key-prefix-then-key-order)
    (which-key-add-column-padding 1)
@@ -1857,6 +1918,15 @@ fill those notes in with more details!"
   (magit-todos-mode 1))
 #+end_src
 
+*** Conventional Commit
+
+#+begin_src emacs-lisp
+(use-package conventional-commit
+  :quelpa (conventional-commit :fetcher github :repo "akirak/conventional-commit.el")
+  :hook
+  (git-commit-mode . conventional-commit-setup))
+#+end_src
+
 *** browse-at-remote (link)
 
 #+begin_src emacs-lisp
@@ -1929,36 +1999,22 @@ fill those notes in with more details!"
   (yas-reload-all))
 #+END_SRC
 
-** Prescient
-
-#+begin_src emacs-lisp
-(use-package prescient
-  :config
-  (prescient-persist-mode))
-#+end_src
-
-** command-log
-
-#+BEGIN_SRC emacs-lisp
-(use-package command-log-mode)
-#+END_SRC
-
 ** keyfreq
 
 #+BEGIN_SRC emacs-lisp
 (use-package keyfreq
+  :custom
+  (keyfreq-excluded-commands
+   (list ignore
+         mwheel-scroll
+         self-insert-command
+         forward-char
+         left-char
+         right-char
+         backward-char
+         previous-line
+         next-line))
   :config
-  (setq keyfreq-excluded-commands
-        '(
-          mwheel-scroll
-          self-insert-command
-          forward-char
-          left-char
-          right-char
-          backward-char
-          previous-line
-          next-line))
-
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
 #+END_SRC
@@ -1993,7 +2049,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (cond ((string-equal system-type "darwin")
          (setq insert-directory-program "gls"
                dired-use-ls-dired t)
-         (setq dired-listing-switches "-alXv --group-directories-first"))))
+         (setq dired-listing-switches "-agho --group-directories-first"))))
 
 (use-package diredfl
   :after dired
@@ -2090,6 +2146,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 #+begin_src emacs-lisp
 (use-package dap-mode
+  :commands (dap-mode)
   :config
   (require 'dap-chrome)
   (dap-ui-mode 1)
@@ -2102,7 +2159,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          :request "laungh"
          :url "https://local.op-test.net/"
          :runtimeExecutable "/Applications/Opera GX.app/Contents/MacOS/Opera"
-         :webRoot "${workspaceFolder}/dist/"
+         :webRoot "${workspaceFolder}/.dist/"
          :userDataDir t
          :sourceMaps t
          ))
@@ -2113,7 +2170,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          :request "attach"
          :port 9222
          :url "https://local.op-test.net/"
-         :webRoot "${workspaceFolder}/dist/"
+         :webRoot "${workspaceFolder}/.dist/"
          :userDataDir t
          :sourceMaps t
          )))
@@ -2237,12 +2294,10 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   (apheleia-global-mode +1))
 
 (use-package web-mode
-  :after lsp-mode
   :mode
   ("\\.html\\'"
    "\\.tsx\\'"
    "\\.svelte\\'")
-
   :hook
   (web-mode . lsp-deferred)
   :custom
