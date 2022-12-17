@@ -296,7 +296,7 @@ not break the init of Emacs.
 (global-unset-key (kbd "C-<wheel-up>"))
 (global-unset-key (kbd "C-<wheel-down>"))
 (global-unset-key (kbd "<mouse-2>"))
-
+(global-unset-key (kbd "s-t"))
 
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
@@ -323,6 +323,28 @@ not break the init of Emacs.
 (global-set-key (kbd "M-s-<right>") 'tab-next)
 (global-set-key (kbd "M-s-<left>") 'tab-previous)
 #+END_SRC
+
+** Comint
+
+#+begin_src emacs-lisp
+(use-package comint
+  :ensure nil
+  :config
+  (add-to-list 'comint-output-filter-functions 'ansi-color-process-output))
+#+end_src
+
+** Compiation
+
+#+begin_src emacs-lisp
+(defun colorize-compilation-buffer ()
+  (let ((inhibit-read-only t))
+    (ansi-color-apply-on-region (point-min) (point-max))))
+
+(use-package compilation-mode
+  :ensure nil
+  :hook
+  (compilation-filter . colorize-compilation-buffer))
+#+end_src
 
 ** Alerter - notifications for macos
 
@@ -836,15 +858,6 @@ also helpful emacs config just for vertico
   (projectile-switch-project-action 'consult-projectile))
 #+end_src
 
-
-** Consult jump project
-
-#+begin_src emacs-lisp
-(use-package consult-jump-project
-  ;; :straight (consult-jump-project :type git :host github :repo "jdtsmith/consult-jump-project")
-  :bind ("C-x p j" . consult-jump-project))
-#+end_src
-
 ** Consult flycheck ([[https://github.com/minad/consult-flycheck][link]])
 
 #+begin_src emacs-lisp
@@ -866,25 +879,6 @@ also helpful emacs config just for vertico
 
 #+begin_src emacs-lisp
 (use-package pcmpl-args)
-#+end_src
-
-** dtache
-
-#+begin_src emacs-lisp
-(use-package dtache
-  :ensure-system-package dtach
-  :hook (after-init . dtache-setup)
-  :bind (([remap async-shell-command] . dtache-shell-command))
-  :config
-
-  (defun my/dtache-projectile-run-compilation (cmd &optional use-comint-mode)
-    "If CMD is a string execute it with `dtache-compile', optionally USE-COMINT-MODE."
-    (if (functionp cmd)
-        (funcall cmd)
-      (let ((dtache-session-origin 'projectile))
-        (dtache-compile cmd use-comint-mode))))
-
-  (advice-add 'projectile-run-compilation :override #'my/dtache-projectile-run-compilation))
 #+end_src
 
 * Remote
@@ -1229,8 +1223,8 @@ introducing external dependencies (when feasible)
     (projectile-register-project-type
      'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
      :project-file "desktop/BUILD.gn"
-     :configure "desktop/gn_opera.py --release --force product=\\\"gx\\\" use_jumbo_build=false rich_hints_test_build=true use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
-     :compile "ninja -j 150 -C chromium/src/out/Release opera"))
+     :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
+     :compile "autoninja -C chromium/src/out/Release opera"))
 #+END_SRC
 
 ** ibuffer-projectile ([[https://github.com/purcell/ibuffer-projectile][link]])
@@ -1324,13 +1318,20 @@ Consult users will also want the embark-consult package.
 ** Corfu ([[https://github.com/minad/corfu][link]])
 
 #+begin_src emacs-lisp
+(defun corfu-lsp-setup ()
+  (setq-local completion-styles '(orderless-fast)
+              completion-category-defaults nil))
+
+(defun orderless-fast-dispatch (word index total)
+  (and (= index 0) (= total 1) (length< word 4)
+       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
+
+(orderless-define-completion-style orderless-fast
+  (orderless-style-dispatchers '(orderless-fast-dispatch))
+  (orderless-matching-styles '(orderless-literal orderless-regexp)))
+
 (use-package corfu
   :demand t
-  :init
-  (defun corfu-lsp-setup ()
-    (setq-local completion-styles '(orderless)
-                completion-category-defaults nil))
-  
   :hook (lsp-completion-mode-hook . corfu-lsp-setup)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
@@ -1351,10 +1352,10 @@ Consult users will also want the embark-consult package.
   (corfu-echo-documentation t)
   (corfu-min-width 80)
   (corfu-max-width corfu-min-width)
-  (corfu-preselect-first t)
+  (corfu-preselect-first nil)
   (corfu-preview-current t)
   (corfu-quit-at-boundary t)
-  (corfu-quit-no-match 'separator)
+  (corfu-quit-no-match t)
   (corfu-scroll-margin 4)
   (corfu-separator ?\s)
   (tab-always-indent 'complete)
@@ -1506,10 +1507,10 @@ syste.
   (org-hide-leading-stars t)
   (org-src-tab-acts-natively t)
   (org-startup-indented t)
-  (org-babel-min-lines-for-block-output 1)
-  (org-speed-command-help t)
   (org-startup-folded "content")
   (org-startup-with-inline-images t)
+  (org-babel-min-lines-for-block-output 1)
+  (org-speed-command-help t)
   (org-src-preserve-indentation t)
   (org-ellipsis " … " )
   (org-pretty-entities t)
@@ -1700,23 +1701,19 @@ fill those notes in with more details!"
 (defun my/org-roam-refresh-agenda-list ()
   "Refreshes the agenda list adding Project notes to the list"
   (interactive)
-  (setq org-agenda-files (my/org-roam-list-notes-by-tag "Project")))
+  (setq org-agenda-files
+        (append org-agenda-files
+                (my/org-roam-list-notes-by-tag "Project")
+                (my/org-roam-list-notes-by-tag "Plant"))))
+
+(defun my/org-roam-template-dir-expand (file)
+  (expand-file-name (concat user-emacs-directory file)))
 
 (use-package org-roam
   :custom
   (org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-directory "~/Dropbox/OrgRoam")
   (org-roam-completion-everywhere t)
-  (org-roam-capture-templates
-   '(("d" "default" plain
-      "%?"
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
-      :unnarrowed t)
-     ("p" "project" plain
-      (file "~/Dropbox/OrgRoam/Templates/Project.org")
-      :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Project")
-      :unnarrowed t)))
-
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
@@ -1742,7 +1739,32 @@ fill those notes in with more details!"
   (org-roam-setup)
   (require 'org-roam-dailies)
   (org-roam-db-autosync-mode)
-  (my/org-roam-refresh-agenda-list))
+  (my/org-roam-refresh-agenda-list)
+  (setq org-roam-capture-templates
+        `(("d" "default" plain
+           "%?"
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n")
+           :unnarrowed t)
+          ("e" "elisp" plain
+           (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/elisp.org"))
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: elisp\n")
+           :unnarrowed t)
+          ("p" "project" plain
+           (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/project.org"))
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Project\n")
+           :unnarrowed t)
+          ("r" "proposal" plain
+           (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/proposal.org"))
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Proposal\n")
+           :unnarrowed t)
+          ("f" "food" plain
+           (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/food.org"))
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Food\n")
+           :unnarrowed t)
+          ("t" "plant" plain
+           (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/plant.org"))
+           :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Plant\n")
+           :unnarrowed t))))
 #+end_src
 
 *** Htmlize for org-mode
@@ -1820,6 +1842,14 @@ fill those notes in with more details!"
   (paradox-enable))
 #+END_SRC
 
+** pnpm-mode
+
+#+begin_src emacs-lisp
+(use-package pnpm-mode
+  :custom
+  (pnpm-mode-command-prefix "C-c s-n"))
+#+end_src
+
 ** Cycling between different var notations
 
 #+BEGIN_SRC emacs-lisp
@@ -1873,7 +1903,6 @@ fill those notes in with more details!"
 #+END_SRC
 
 ** Git
-
 *** magit - best git client ever
 
 #+BEGIN_SRC emacs-lisp
@@ -1908,6 +1937,13 @@ fill those notes in with more details!"
   :config
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository)))
 #+END_SRC
+
+*** magit-delta
+
+#+begin_src emacs-lisp
+(use-package magit-delta
+  :config)
+#+end_src
 
 *** magit-todos ([[https://github.com/alphapapa/magit-todos][link]])
 
@@ -2111,7 +2147,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+BEGIN_SRC emacs-lisp
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :init
   :hook (lsp-mode . lsp-enable-which-key-integration)
   :custom
   (lsp-completion-provider :none)
@@ -2124,8 +2159,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   :config
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium[/\\\\]src\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src[/\\\\]node_modules\\'"))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium/src\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src/node_modules\\'"))
 
 (use-package lsp-ui
   :after lsp-mode
