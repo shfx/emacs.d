@@ -257,7 +257,6 @@ not break the init of Emacs.
   (electric-pair-mode 0)
   (line-number-mode 1)
   (column-number-mode 1)
-  (global-linum-mode 0)
   (delete-selection-mode 1)
   (global-auto-revert-mode 1)
   (menu-bar-mode 0)
@@ -514,15 +513,6 @@ gpg --expert --full-generate-key
 
 https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
 
-** Keycast
-
-#+begin_src emacs-lisp
-(use-package keycast
-  :init
-  (add-to-list 'global-mode-string '("" mode-line-keycast))
-  (keycast-mode))
-#+end_src
-
 * Window and frame management
 
 ** Pooper (link)
@@ -530,11 +520,11 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
 #+begin_src emacs-lisp
 (use-package popper
   :ensure t ; or :straight t
-  :bind (("s-§"   . popper-toggle-latest)
-         ("M-§" . popper-cycle)
-         ("s-M-§" . popper-toggle-type)
+  :bind (("s-§"          . popper-toggle-latest)
+         ("M-§"          . popper-cycle)
+         ("s-M-§"        . popper-toggle-type)
          ("s-<escape>"   . popper-toggle-latest)
-         ("M-<escape>" . popper-cycle)
+         ("M-<escape>"   . popper-cycle)
          ("C-M-<escape>" . popper-toggle-type))
   :custom
   (popper-reference-buffers
@@ -548,6 +538,19 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   :config
   (popper-mode +1)
   (popper-echo-mode +1))
+#+end_src
+
+** Dimmer
+
+#+begin_src emacs-lisp
+(use-package dimmer
+  :custom
+  (dimmer-adjustment-mode :foreground)
+  (dimmer-fraction 0.2)
+  (dimmer-use-colorspace :cielab)
+  :config
+  (dimmer-configure-which-key)
+  (dimmer-mode t))
 #+end_src
 
 ** Shackle ([[https://github.com/wasamasa/shackle][link]])
@@ -600,7 +603,7 @@ everything reuse your currently selected window.
 (use-package tab-line
   :ensure nil
   :custom
-  (tab-line-separator nil)
+  (tab-line-separator "|")
   (tab-line-close-button-show nil)
   (tab-line-new-button-show nil))
 #+end_src
@@ -661,9 +664,9 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               ;; TODO: Check what `consult-location` is exactly
               (consult-location)
               (imenu buffer)
-              (library reverse indexed)
-              (org-roam-node reverse indexed)
-              (t reverse)))
+              (library indexed)
+              (org-roam-node indexed)
+              (t)))
            ;;
            (vertico-multiform-commands
             '(("flyspell-correct-*" grid reverse)
@@ -1523,12 +1526,6 @@ syste.
   (org-indent-indentation-per-level 0)
   (org-directory "~/Dropbox/org")
   (org-default-notes-file "notes.org")
-  (org-agenda-files
-   (list "inbox.org"
-         "links.org"
-         "todo.org"
-         "done.org"
-         "journal.org"))
   (org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (org-refile-allow-creating-parent-nodes 'confirm)
   (org-capture-templates
@@ -1779,6 +1776,44 @@ fill those notes in with more details!"
 (use-package org-cliplink
   :bind ("C-x p i" . org-cliplink))
 #+end_src
+
+*** org-roam-ui
+
+#+begin_src emacs-lisp
+(use-package org-roam-ui
+  :quelpa (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
+#+end_src
+
+** COMMENT Mini frame
+
+#+BEGIN_SRC emacs-lisp
+(use-package mini-frame
+  :init
+  (defvar mini-frame-ignore-commands nil)
+  :custom
+  (mini-frame-detach-on-hide nil)
+  (mini-frame-standalone 't)
+  (mini-frame-resize-min-height 10)
+  (mini-frame-show-parameters
+   '((top . 0.5)
+     (width . 0.5)
+     (left . 0.5)))
+  (mini-frame-ignore-commands '(evil-window-split
+                                evil-window-vsplit
+                                evil-ex))
+  :config
+  (mini-frame-mode +1))
+#+END_SRC
 
 ** Load theme
 
@@ -2065,7 +2100,8 @@ ripgrep frontend
   :custom
   (rg-custom-type-aliases
    '(("svelte" .    "*.svelte")
-     ("ts" .    "*.tsx?")))
+     ("ts" .    "*.tsx?")
+     ("env" .    "\.env.*")))
   :config
   (rg-enable-menu))
 #+END_SRC
