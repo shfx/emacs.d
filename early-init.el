@@ -7,9 +7,9 @@
 ;; Native compilation settings
 (when (featurep 'native-compile)
   ;; Silence compiler warnings as they can be pretty disruptive
-  (setq native-comp-async-report-warnings-errors nil)
+  (setq native-comp-async-report-warnings-errors :silent)
   ;; Make native compilation happens asynchronously
-  (setq native-comp-deferred-compilation t)
+  (setq native-comp-jit-compilation t)
   ;; Set the right directory to store the native compilation cache
   (add-to-list 'native-comp-eln-load-path (expand-file-name "var/eln-cache/" user-emacs-directory)))
 
@@ -25,6 +25,9 @@
 (push '(menu-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(fullscreen . maximized) initial-frame-alist)
+
+;; Disables modeline until theme is loaded
+(setq-default mode-line-format nil)
 
 (set-face-foreground 'vertical-border "#171819")
 

@@ -4,6 +4,12 @@
 
 Emacs configuration files written with the help of [[https://orgmode.org/][org-mode]] and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]]
 
+* Install xcode cli tools
+
+#+BEGIN_SRC shell
+xcode-select --install
+#+END_SRC
+
 * Install Emacs with ~homebrew~
 
 #+BEGIN_SRC shell
@@ -465,23 +471,6 @@ Set build-in module defaults to handle chrome as a default browser
   (browse-url-dwim-mode 1))
 #+END_SRC
 
-** Mac Only - initialize emacs with proper PATH
-
-Move your env variables to ~.zshenv~ befre setting this up
-
-#+BEGIN_SRC emacs-lisp
-(use-package exec-path-from-shell
-  :custom
-  (exec-path-from-shell-arguments nil)
-  :config
-  (when (or (memq window-system '(ns x))
-            (daemonp))
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "GOPATH")
-    (when (eq (length (getenv "NODE_PATH")) 0)
-      (setenv "NODE_PATH" "/usr/local/lib/node_modules"))))
-#+END_SRC
-
 ** EasyGP Assistant
 
 #+begin_src emacs-lisp
@@ -660,7 +649,8 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
            ;;
            (vertico-multiform-categories
             '((file reverse)
-              (consult-grep buffer)
+              (consult-grep reverse buffer)
+              (consult-buffer reverse indexed)
               ;; TODO: Check what `consult-location` is exactly
               (consult-location)
               (imenu buffer)
@@ -671,6 +661,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
            (vertico-multiform-commands
             '(("flyspell-correct-*" grid reverse)
               (org-refile grid reverse indexed)
+              (consult-buffer reverse indexed)
               (consult-yank-pop indexed)
               (consult-flycheck)
               (consult-lsp-diagnostics))))
@@ -730,11 +721,19 @@ also helpful emacs config just for vertico
 ** Orderless ([[https://github.com/oantolin/orderless][link]])
 
 #+begin_src emacs-lisp
+(defun orderless-fast-dispatch (word index total)
+  (and (= index 0) (= total 1) (length< word 4)
+       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
+
 (use-package orderless
   :custom
-  (completion-styles '(orderless basic))
+  (completion-styles '(orderless-fast))
   (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (completion-category-overrides '((file (styles . (partial-completion)))))
+  :config
+  (orderless-define-completion-style orderless-fast
+    (orderless-style-dispatchers '(orderless-fast-dispatch))
+    (orderless-matching-styles '(orderless-literal orderless-regexp))))
 #+end_src
 
 ** Savehist
@@ -810,8 +809,8 @@ also helpful emacs config just for vertico
   ;; Optionally configure the register formatting. This improves the register
   ;; preview for `consult-register', `consult-register-load',
   ;; `consult-register-store' and the Emacs built-ins.
-  (setq register-preview-delay 0
-        register-preview-function #'consult-register-format)
+  (setq register-preview-delay 0.5
+        register-preview-function #'sconsult-register-format)
 
   ;; Optionally tweak the register preview window.
   ;; This adds thin lines, sorting and hides the mode line of the window.
@@ -832,13 +831,13 @@ also helpful emacs config just for vertico
   ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
   ;; For some commands and buffer sources it is useful to configure the
   ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  (consult-customize
-   consult-theme
-   :preview-key '(:debounce 0.2 any)
-   consult-ripgrep consult-git-grep consult-grep
-   consult-bookmark consult-recent-file consult-xref
-   consult--source-buffer consult--source-project-buffer consult--source-bookmark
-   :preview-key (kbd "M-."))
+  ;;(consult-customize
+  ;; consult-theme
+  ;; :preview-key '(:debounce 0.2 any)
+  ;; consult-ripgrep consult-git-grep consult-grep
+  ;; consult-bookmark consult-recent-file consult-xref
+  ;; consult--source-buffer consult--source-project-buffer consult--source-bookmark
+  ;; :preview-key (kbd "M-."))
 
   ;; Optionally configure the narrowing key.
   ;; Both < and C-+ work reasonably well.
@@ -933,6 +932,16 @@ itself runs on.
 
 #+BEGIN_SRC emacs-lisp
 (use-package eshell
+  :hook
+  (eshell-mode .
+   (lambda ()
+     (setq-local
+      corfu-auto nil
+      corfu-quit-at-boundary t
+      corfu-quit-no-match t
+      corfu-separatvor nil)
+     (corfu-mode)))
+
   :custom
   (eshell-banner-message "")
   (eshell-scroll-to-bottom-on-input t)
@@ -1139,6 +1148,15 @@ with version control systems.
   :ensure t)
 #+END_SRC
 
+** Vertico posframe
+
+#+BEGIN_SRC emacs-lisp
+(use-package vertico-posframe
+  :ensure t
+  :config
+  (vertico-posframe-mode 1))
+#+END_SRC
+
 ** goggles (link)
 
 #+begin_src emacs-lisp
@@ -1321,21 +1339,18 @@ Consult users will also want the embark-consult package.
 ** Corfu ([[https://github.com/minad/corfu][link]])
 
 #+begin_src emacs-lisp
-(defun corfu-lsp-setup ()
-  (setq-local completion-styles '(orderless-fast)
-              completion-category-defaults nil))
-
-(defun orderless-fast-dispatch (word index total)
-  (and (= index 0) (= total 1) (length< word 4)
-       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
-
-(orderless-define-completion-style orderless-fast
-  (orderless-style-dispatchers '(orderless-fast-dispatch))
-  (orderless-matching-styles '(orderless-literal orderless-regexp)))
+(defun corfu-enable-always-in-minibuffer ()
+  "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+  (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
+              (bound-and-true-p vertico--input))
+    (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
+    (corfu-mode 1)))
 
 (use-package corfu
   :demand t
-  :hook (lsp-completion-mode-hook . corfu-lsp-setup)
+  :after orderless
+  :hook
+  (minibuffer-setup . corfu-enable-always-in-minibuffer)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
               ("C-p" . corfu-previous)
@@ -1348,17 +1363,17 @@ Consult users will also want the embark-consult package.
   :custom
   (completion-cycle-threshold nil)
   (corfu-auto t)
-  (corfu-auto-delay 0.25)
-  (corfu-auto-prefix 1)
+  (corfu-auto-delay 0)
+  (corfu-auto-prefix 0)
   (corfu-count 14)
   (corfu-cycle nil)
   (corfu-echo-documentation t)
   (corfu-min-width 80)
   (corfu-max-width corfu-min-width)
-  (corfu-preselect-first nil)
+  (corfu-preselect-first t)
   (corfu-preview-current t)
-  (corfu-quit-at-boundary t)
-  (corfu-quit-no-match t)
+  (corfu-quit-at-boundary :separator)
+  (corfu-quit-no-match :separator)
   (corfu-scroll-margin 4)
   (corfu-separator ?\s)
   (tab-always-indent 'complete)
@@ -1389,25 +1404,6 @@ Consult users will also want the embark-consult package.
   ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
 #+end_src
 
-** corfu-doc (link)
-
-#+begin_src emacs-lisp
-(use-package corfu-doc
-  :quelpa (corfu-doc :fetcher github :repo "galeo/corfu-doc")
-  :after corfu
-  :hook (corfu-mode . corfu-doc-mode)
-  :bind (:map corfu-map
-         ([remap corfu-show-documentation] . corfu-doc-toggle)
-         ("M-n" . corfu-doc-scroll-up)
-         ("M-p" . corfu-doc-scroll-down))
-  :custom
-  (corfu)
-  (corfu-doc-delay 0.5)
-  (corfu-doc-max-width 70)
-  (corfu-doc-max-height 20)
-  (corfu-echo-documentation nil))
-#+end_src
-
 ** kind-icon ([[https://github.com/jdtsmith/kind-icon][link]])
 
 #+begin_src emacs-lisp
@@ -1416,8 +1412,8 @@ Consult users will also want the embark-consult package.
   :custom
   (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
   (kind-icon-use-icons t)
-  (kind-icon-blend-background nil)
-  (kind-icon-blend-frac 0.08)
+  (kind-icon-blend-background t)
+  (kind-icon-blend-frac .05)
   ;; fix for no-littering package
   (svg-lib-icons-dir (no-littering-expand-var-file-name "svg-lib/cache/"))
   :config
@@ -2012,6 +2008,14 @@ fill those notes in with more details!"
      ("^gist\\.github\\.com$" . "gist"))))
 #+end_src
 
+*** gitlab-pipeline
+
+#+begin_src emacs-lisp
+(use-package gitlab-pipeline
+  :custom
+  (gitlab-pipeline-host "gitlab.services.ams.osa/api/v4"))
+#+end_src
+
 ** docker
 
 #+begin_src emacs-lisp
@@ -2181,17 +2185,26 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 ** LSP Mode
 
 #+BEGIN_SRC emacs-lisp
+(defun kb/corfu-setup-lsp ()
+  "Use orderless completion style with lsp-capf instead of the
+  default lsp-passthrough."
+  (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+        '(orderless)))
+
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :hook (lsp-mode . lsp-enable-which-key-integration)
+  :after (corfu orderless)
+  :hook
+  (lsp-mode . lsp-enable-which-key-integration)
+  (lsp-completion-mode . kb/corfu-setup-lsp)
   :custom
   (lsp-completion-provider :none)
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
   (lsp-enable-indentation nil)
-  (lsp-enable-on-type-formatting nil)
+  (lsp-enable-on-type-formatting t)
   (lsp-clients-typescript-init-opts
-   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
+   '(:includeCompletionsForModuleExports t :generateReturnInDocTemplate t))
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   :config
