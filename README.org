@@ -256,7 +256,7 @@ not break the init of Emacs.
   (cursor-in-non-selected-windows nil)
 
   :config
-  (pixel-scroll-precision-mode 1)
+  ;; (pixel-scroll-precision-mode 1)
   (set-default 'truncate-lines t)
   (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
@@ -648,9 +648,9 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
            (vertico-buffer-display-action '(display-buffer-reuse-window))
            ;;
            (vertico-multiform-categories
-            '((file reverse)
-              (consult-grep reverse buffer)
-              (consult-buffer reverse indexed)
+            '((file)
+              (consult-grep buffer)
+              (consult-buffer indexed)
               ;; TODO: Check what `consult-location` is exactly
               (consult-location)
               (imenu buffer)
@@ -659,9 +659,9 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               (t)))
            ;;
            (vertico-multiform-commands
-            '(("flyspell-correct-*" grid reverse)
-              (org-refile grid reverse indexed)
-              (consult-buffer reverse indexed)
+            '(("flyspell-correct-*" grid)
+              (org-refile grid indexed)
+              (consult-buffer indexed)
               (consult-yank-pop indexed)
               (consult-flycheck)
               (consult-lsp-diagnostics))))
@@ -727,7 +727,7 @@ also helpful emacs config just for vertico
 
 (use-package orderless
   :custom
-  (completion-styles '(orderless-fast))
+  (completion-styles '(orderless basic))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles . (partial-completion)))))
   :config
@@ -1147,16 +1147,7 @@ with version control systems.
 (use-package posframe
   :ensure t)
 #+END_SRC
-
-** Vertico posframe
-
-#+BEGIN_SRC emacs-lisp
-(use-package vertico-posframe
-  :ensure t
-  :config
-  (vertico-posframe-mode 1))
-#+END_SRC
-
+ 
 ** goggles (link)
 
 #+begin_src emacs-lisp
@@ -2195,16 +2186,17 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :commands (lsp lsp-deferred)
   :after (corfu orderless)
   :hook
-  (lsp-mode . lsp-enable-which-key-integration)
-  (lsp-completion-mode . kb/corfu-setup-lsp)
+  ((lsp-mode . lsp-enable-which-key-integration)
+   (lsp-completion-mode . kb/corfu-setup-lsp))
   :custom
   (lsp-completion-provider :none)
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
   (lsp-enable-indentation nil)
   (lsp-enable-on-type-formatting t)
-  (lsp-clients-typescript-init-opts
-   '(:includeCompletionsForModuleExports t :generateReturnInDocTemplate t))
+  (lsp-clients-typescript-prefer-use-project-ts-server t)
+  (lsp-clients-typescript-preferences
+   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   :config
@@ -2214,14 +2206,18 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package lsp-ui
   :after lsp-mode
   :hook (lsp-mode . lsp-ui-mode)
+  :bind
+  (:map lsp-ui-mode-map
+        (([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+         ([remap xref-find-references]  . lsp-ui-peek-find-references)))
   :custom
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-show-hover nil)
+  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-show-hover t)
   (lsp-ui-doc-position 'at-point))
 
-(use-package lsp-tailwindcss
-  :custom
-  (lsp-tailwindcss-add-on-mode t))
+;; (use-package lsp-tailwindcss
+;;   :custom
+;;   (lsp-tailwindcss-add-on-mode t))
 #+END_SRC
 
 ** DAP Mode
@@ -2258,6 +2254,23 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          :userDataDir t
          :sourceMaps t
          )))
+#+end_src
+
+** Treesitter
+
+#+begin_src emacs-lisp
+(use-package tree-sitter
+  :ensure t
+  :config
+  ;; activate tree-sitter on any buffer containing code for which it has a parser available
+  (global-tree-sitter-mode)
+  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
+  ;; by switching on and off
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+
+(use-package tree-sitter-langs
+  :ensure t
+  :after tree-sitter)
 #+end_src
 
 ** File types
@@ -2361,10 +2374,29 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (use-package typescript-mode
   :after lsp-mode
   :mode ("\\.ts$")
-  :custom
-  (typescript-indent-level 2)
   :hook
-  (typescript-mode . lsp-deferred))
+  (typescript-mode . lsp-deferred)
+  :config
+  (define-derived-mode typescriptreact-mode typescript-mode
+    "TypeScript TSX")
+  ;; use our derived mode for tsx files
+  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescriptreact-mode))
+  ;; by default, typescript-mode is mapped to the treesitter typescript parser
+  ;; use our derived mode to map both .tsx AND .ts -> typescriptreact-mode -> treesitter tsx
+  (add-to-list 'tree-sitter-major-mode-language-alist '(typescriptreact-mode . tsx)))
+
+;; https://github.com/orzechowskid/tsi.el/
+;; great tree-sitter-based indentation for typescript/tsx, css, json
+(use-package tsi
+  :after tree-sitter
+  :quelpa (tsi :fetcher github :repo "orzechowskid/tsi.el")
+  ;; define autoload definitions which when actually invoked will cause package to be loaded
+  :commands (tsi-typescript-mode tsi-json-mode tsi-css-mode)
+  :hook
+  (typescript-mode-hook . (lambda () (tsi-typescript-mode 1)))
+  (json-mode-hook . (lambda () (tsi-json-mode 1)))
+  (css-mode-hook . (lambda () (tsi-css-mode 1)))
+  (scss-mode-hook . (lambda () (tsi-scss-mode 1))))
 
 (use-package js2-mode
   :mode ("\\.[cm]*js$")
