@@ -13,13 +13,14 @@ xcode-select --install
 * Install Emacs with ~homebrew~
 
 #+BEGIN_SRC shell
-brew install emacs-plus@28 --with-mailutils --with-no-frame-refocus --with-xwidgets --with-native-comp
+brew tap d12frosted/emacs-plus
+brew install emacs-plus@29 --with-no-frame-refocus --with-xwidgets --with-imagemagick --with-native-comp --with-savchenkovaleriy-big-sur-icon 
 #+END_SRC
 
 To start a bg service, run:
 
 #+BEGIN_SRC xml
-brew services start d12frosted/emacs-plus/emacs-plus@28
+brew services start emacs-plus@29
 #+END_SRC
 
 * Tidy up .emacs.d mess
@@ -188,12 +189,6 @@ not break the init of Emacs.
 ** Setting default coding system
 
 #+BEGIN_SRC emacs-lisp
-(set-language-environment 'utf-8)
-(set-keyboard-coding-system 'utf-8-mac) ; For old Carbon emacs on OS X only
-(setq locale-coding-system 'utf-8)
-(set-default-coding-systems 'utf-8)
-(set-terminal-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
 #+END_SRC
 
@@ -204,7 +199,7 @@ not break the init of Emacs.
   :ensure nil
   :custom
   (desktop-save 'ask-if-new)
-  (desktop-restore-eager 5)
+  (desktop-restore-eager 0)
   (desktop-load-locked-desktop t)
   (desktop-auto-save-timeout 30)
   (desktop-base-lock-name "lock")
@@ -215,7 +210,7 @@ not break the init of Emacs.
 (use-package emacs
   :ensure nil
   :hook
-  (shell-mode ansi-color-for-comint-mode-on)
+  (shell-mode . ansi-color-for-comint-mode-on)
   :custom
   (auto-save-default nil)
   (compilation-scroll-output t)
@@ -403,6 +398,7 @@ not break the init of Emacs.
             (if (current-file-is-config)
                 (check-if-config-valid))))
 #+end_src
+
 ** xwidget-webkit problem with emacsclient
 
 We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
@@ -536,7 +532,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   :custom
   (dimmer-adjustment-mode :foreground)
   (dimmer-fraction 0.2)
-  (dimmer-use-colorspace :cielab)
+  (dimmer-use-colorspace :rgb)
   :config
   (dimmer-configure-which-key)
   (dimmer-mode t))
@@ -578,12 +574,9 @@ everything reuse your currently selected window.
   :ensure nil
   :custom
   ;; Do not show buttons.
-  (tab-bar-new-button-show nil)
-  (tab-bar-close-button-show nil)
-  (tab-bar-tab-hints t)
-  (tab-bar-separator (if (display-graphic-p)
-                              "    "
-                            " ")))
+  (tab-bar-new-button-show t)
+  (tab-bar-close-button-show t)
+  (tab-bar-tab-hints t))
 #+end_src
 
 ** TabLine
@@ -592,9 +585,9 @@ everything reuse your currently selected window.
 (use-package tab-line
   :ensure nil
   :custom
-  (tab-line-separator "|")
-  (tab-line-close-button-show nil)
-  (tab-line-new-button-show nil))
+  (tab-line-separator " | ")
+  (tab-line-close-button-show t)
+  (tab-line-new-button-show t))
 #+end_src
 
 * List filtering helpers
@@ -648,23 +641,20 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
            (vertico-buffer-display-action '(display-buffer-reuse-window))
            ;;
            (vertico-multiform-categories
-            '((file)
-              (consult-grep buffer)
+            '((consult-grep buffer)
               (consult-buffer indexed)
-              ;; TODO: Check what `consult-location` is exactly
-              (consult-location)
               (imenu buffer)
               (library indexed)
-              (org-roam-node indexed)
-              (t)))
+              (org-roam-node indexed)))
            ;;
            (vertico-multiform-commands
             '(("flyspell-correct-*" grid)
               (org-refile grid indexed)
-              (consult-buffer indexed)
-              (consult-yank-pop indexed)
+              (consult-buffer reverse indexed)
+              (consult-yank-pop reverse indexed)
               (consult-flycheck)
-              (consult-lsp-diagnostics))))
+              (consult-lsp-diagnostics)
+              (t reverse))))
   :config
   ;; Workaround for problem with `tramp' hostname completions. This overrides
   ;; the completion style specifically for remote files! See
@@ -679,7 +669,6 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
                '(basic-remote           ; Name of `completion-style'
                  mw/basic-remote-try-completion mw/basic-remote-all-completions nil))
 
-
   (vertico-mode 1)
   (vertico-multiform-mode 1))
 #+end_src
@@ -689,6 +678,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
+  :after vertico
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; Alternatively try `consult-completing-read-multiple'.
