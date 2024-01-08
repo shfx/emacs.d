@@ -356,7 +356,7 @@ not break the init of Emacs.
     (error "Can't find alerter executable")))
 #+end_src
 
-** Check on save if config is valid
+** COMMENT Check on save if config is valid
 
 #+begin_src emacs-lisp
 (setq check-if-config-valid-files '("init.el" "early-init.el" "README.org"))
@@ -501,25 +501,34 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
      "Output\\*$"
      "\\*Async Shell Command\\*"
      compilation-mode
-     vterm-mode))
+     vterm-mode
+     "\\*verminal"))
   (popper-mode-line '(:eval
                       (propertize " POP " 'face 'mode-line-emphasis)))
+  (popper-display-control t)
+  (popper-group-function #'popper-group-by-projectile)
   :config
   (popper-mode +1)
   (popper-echo-mode +1))
 #+end_src
 
-** Dimmer
+** all-the-icons for iBuffer
 
 #+begin_src emacs-lisp
-(use-package dimmer
+(use-package all-the-icons-ibuffer
+  :ensure t
+  :after all-the-icons
+  :hook (ibuffer-mode . all-the-icons-ibuffer-mode)
   :custom
-  (dimmer-adjustment-mode :foreground)
-  (dimmer-fraction 0.2)
-  (dimmer-use-colorspace :rgb)
-  :config
-  (dimmer-configure-which-key)
-  (dimmer-mode t))
+  (all-the-icons-ibuffer-icon-size 1.0)
+  (all-the-icons-ibuffer-human-readable-size t)
+  (all-the-icons-ibuffer-formats
+   '((mark
+      modified read-only locked " " (icon 2 2)
+      (name 18 18 :left :elide) " "
+      (size-h 9 -1 :right) " " (mode+ 16 16 :left) " "
+      filename-and-process+)
+     (mark " " (name 16 -1) " " filename))))
 #+end_src
 
 ** Shackle ([[https://github.com/wasamasa/shackle][link]])
@@ -535,18 +544,25 @@ everything reuse your currently selected window.
   (shackle-rules
    '(("*eshell*"               :select t   :other t)
      (flycheck-error-list-mode :select t   :align below :size 0.25)
+     ("*LSP Error List*"       :select t   :align below :size 0.25)
      (compilation-mode         :select nil :align below :size 0.25)
      (messages-buffer-mode     :select t   :align below :size 0.25)
      (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+     ("\\*vterminal.*"         :select t   :align below :size 0.25 :regexp t)
+     (vterm-mode               :select t   :align below :size 0.25)
+     (multi-vterm              :select t   :align below :size 0.25)
      ("*rg*"                   :select t   :other t)
      (" *Deletions*"           :select t   :align below :size 0.25)
      (" *Marked Files*"        :select t   :align below :size 0.25)
+     ("*system-packages*"      :select t   :align below :size 0.25)
      ("*Org Select*"           :same t)
      ("*Org Note*"             :select t   :align below :size 0.33)
      ("*Org Links*"            :select t   :align below :size 0.2)
      (" *Org todo*"            :select t   :align below :size 0.2)
      ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
      ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t)))
+  (shackle-default-rule
+   '(:select t))
   :config
   (shackle-mode t))
 #+END_SRC
@@ -632,13 +648,12 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               (org-roam-node indexed)))
            ;;
            (vertico-multiform-commands
-            '(("flyspell-correct-*" grid)
-              (org-refile grid indexed)
-              (consult-buffer reverse indexed)
-              (consult-yank-pop reverse indexed)
-              (consult-flycheck)
-              (consult-lsp-diagnostics)
-              (t reverse))))
+            '((consult-line
+               posframe
+               (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
+               (vertico-posframe-border-width . 10)
+               (vertico-posframe-fallback-mode . vertico-buffer-mode))
+              (t posframe))))
   :config
   ;; Workaround for problem with `tramp' hostname completions. This overrides
   ;; the completion style specifically for remote files! See
@@ -669,16 +684,15 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
-  :after vertico
+  :bind
+  ("s-," . (lambda () (interactive)
+             (find-file (concat user-emacs-directory "README.org"))))
   :init
   ;; Add prompt indicator to `completing-read-multiple'.
   ;; Alternatively try `consult-completing-read-multiple'.
   (defun crm-indicator (args)
     (cons (concat "[CRM] " (car args)) (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
-  :hook
-  (minibuffer-setup . cursor-intangible-mode)
 
   :custom
   ;; Do not allow the cursor in the minibuffer prompt
@@ -883,11 +897,42 @@ also helpful emacs config just for vertico
 
 * Packages
 
-** Ledger
-
+** Dashboard
 #+begin_src emacs-lisp
-(use-package ledger-mode
-  :ensure-system-package ledger)
+(use-package dashboard
+  :custom
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (dashboard-startup-banner 'logo)
+  (dashboard-items '((recents  . 5)
+                     (bookmarks . 5)
+                     (projects . 5)
+                     (agenda . 5)
+                     (registers . 5)))
+  (dashboard-display-icons-p t)
+  (dashboard-icon-type 'all-the-icons)
+  (dashboard-set-heading-icons t)
+  (dashboard-set-file-icons t)
+  (dashboard-modify-heading-icons '((recents . "file-text")
+                                    (bookmarks . "book")))
+  (dashboard-set-navigator t)
+  (dashboard-week-agenda t)
+  ;; Format: "(icon title help action face prefix suffix)"
+  (dashboard-navigator-buttons
+   `(((,(all-the-icons-octicon "mark-github" :height 1.0 :v-adjust 0.0)
+       "Homepage"
+       "Browse homepage"
+       (lambda (&rest _) (browse-url "homepage")))
+      (,(all-the-icons-octicon "star" :height 1.0 :v-adjust 0.0)
+       "Star" "Show stars" (lambda (&rest _) (show-stars)) warning)
+      ("?" "" "?/h" #'show-help nil "<" ">"))
+     ;; line 2
+     ((,(all-the-icons-faicon "linkedin" :height 1.0 :v-adjust 0.0)
+       "linkedin"
+       ""
+       (lambda (&rest _) (browse-url "homepage")))
+      ("⚑" nil "Show flags" (lambda (&rest _) (message "flag")) error))))
+  :config
+  (dashboard-setup-startup-hook))
 #+end_src
 
 ** Bufler
@@ -1051,6 +1096,16 @@ the bottom of active window with directory of its buffer.
   :bind (("C-c v" . multi-vterm)))
 #+END_SRC
 
+** Eat - an extension to eshell
+
+#+begin_src emacs-lisp
+(use-package eat
+  :custom
+  (eat-term-name "xterm")
+  :hook
+  (eshell-load . '(eat-eshell-visual-command-mode)))
+#+end_src
+
 ** Marginalia
 
 #+begin_src emacs-lisp
@@ -1128,13 +1183,6 @@ with version control systems.
   (show-paren-when-point-inside-paren nil))
 #+end_src
 
-** Auto highlight symbol
-
-#+begin_src emacs-lisp
-(use-package auto-highlight-symbol
-  :hook (prog-mode . auto-highlight-symbol-mode))
-#+end_src
-
 ** All the icons ([[https://github.com/domtronn/all-the-icons.el][link]])
 
 A utility package to collect various Icon Fonts and propertize them
@@ -1142,8 +1190,8 @@ within Emacs.
 
 #+BEGIN_SRC emacs-lisp
 (use-package all-the-icons
-  :custom
-  (inhibit-compacting-font-caches t))
+  :if (display-graphic-p)
+  :quelpa (all-the-icons :fetcher github :repo "domtronn/all-the-icons.el" :branch "svg" :files (:defaults "svg")))
 #+END_SRC
 
 ** Projectile ([[https://github.com/bbatsov/projectile][link]])
@@ -1296,7 +1344,7 @@ Consult users will also want the embark-consult package.
   (completion-cycle-threshold nil)
   (corfu-auto t)
   (corfu-auto-delay 0)
-  (corfu-auto-prefix 0)
+  (corfu-auto-prefix 1)
   (corfu-count 14)
   (corfu-cycle nil)
   (corfu-echo-documentation t)
@@ -1304,14 +1352,24 @@ Consult users will also want the embark-consult package.
   (corfu-max-width corfu-min-width)
   (corfu-preselect-first t)
   (corfu-preview-current t)
-  (corfu-quit-at-boundary :separator)
-  (corfu-quit-no-match :separator)
-  (corfu-scroll-margin 4)
+  (corfu-preselect 'valid)
   (corfu-separator ?\s)
+  (corfu-quit-at-boundary :separator)
+  (corfu-quit-no-match t)
+  (corfu-scroll-margin 4)
   (tab-always-indent 'complete)
   (tab-first-completion 'word-or-paren-or-punct)
+  (read-extended-command-predicate #'command-completion-default-include-p)
   :config
-  (global-corfu-mode))
+  (global-corfu-mode)
+  ;; The advices are only needed on Emacs 28 and older.
+  (when (< emacs-major-version 29)
+    ;; Silence the pcomplete capf, no errors or messages!
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
+
+    ;; Ensure that pcomplete does not write to the buffer
+    ;; and behaves as a pure `completion-at-point-function'.
+    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
 
 ;; Use dabbrev with Corfu!
 (use-package dabbrev
@@ -1360,6 +1418,17 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
+  :hook
+  (multiple-cursors-mode
+   .
+   (lambda ()
+     (if multiple-cursors-mode
+         (progn
+           (message "multiple cursor on")
+           (corfu-mode 0))
+       (progn
+         (message "multiple cursor off")
+         (corfu-mode 1)))))
   :bind
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this))
@@ -1516,6 +1585,12 @@ syste.
   (org-babel-add-langs
    ((deno . t))))
 
+(use-package ob-mermaid
+  :ensure-system-package (mmdc . "npm install -g @mermaid-js/mermaid-cli")
+  :config
+  (org-babel-add-langs
+   ((mermaid . t))))
+
 (use-package ob-async)
 
 (use-package org-super-agenda
@@ -1562,14 +1637,14 @@ syste.
      ;; After the last group, the agenda will display items that didn't
      ;; match any of these groups, with the default order position of 99
      ))
-  (org-super-agenda-mode))
+  (org-super-agenda-mode 1))
 
 (defun make-orgcapture-frame ()
   "Create a new frame and run org-capture."
   (interactive)
   (make-frame '((name . "remember") (width . 80) (height . 16)
                 (top . 400) (left . 300)
-                (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
+                ;; (font . "-apple-Monaco-medium-normal-normal-*-13-*-*-*-m-0-iso10646-1")
                 ))
   (select-frame-by-name "remember")
   (org-capture)
@@ -1834,16 +1909,18 @@ fill those notes in with more details!"
 
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
-  :after all-the-icons
-  :hook (after-init . doom-modeline-mode)
   :custom
+  (doom-modeline-hud t)
   (doom-modeline-icon t)
   (doom-modeline-major-mode-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-buffer-state-icon t)
   (doom-modeline-buffer-modification-icon t)
   (doom-modeline-minor-modes nil)
-  (doom-modeline-checker-simple-format t))
+  (doom-modeline-checker-simple-format t)
+  (doom-modeline-height 30)
+  :config
+  (doom-modeline-mode))
 #+END_SRC
 
 ** Git
@@ -1856,17 +1933,16 @@ fill those notes in with more details!"
   :hook
   (git-commit-mode . flyspell-mode)
   :custom
-
   (vc-handled-backends nil)
   (magit-process-finish-apply-ansi-colors t)
   (magit-refresh-status-buffer t)
   (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message))
-
+  (magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1)
+  (magit-bury-buffer-function 'magit-restore-window-configuration)
+  (magit-process-password-functions '(magit-process-password-auth-source))
   :config
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
-  (add-hook 'magit-process-find-password-functions
-            'magit-process-password-auth-source)
-
+  ;; TODO: add to magit-process-password-functions an auth source
   (transient-define-suffix magit-submodule-update-all ()
     "Update all submodules"
     :description "Update All (git submodule update --init --recursive)"
@@ -1879,15 +1955,9 @@ fill those notes in with more details!"
 (use-package forge
   :after magit
   :config
-  (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository)))
+  (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository))
+  (add-to-list 'forge-alist '("gitlab.service.osa" "gitlab.service.osa/api/v4" "gitlab.service.osa" forge-gitlab-repository)))
 #+END_SRC
-
-*** magit-delta
-
-#+begin_src emacs-lisp
-(use-package magit-delta
-  :config)
-#+end_src
 
 *** magit-todos ([[https://github.com/alphapapa/magit-todos][link]])
 
@@ -2009,6 +2079,7 @@ fill those notes in with more details!"
 
 #+BEGIN_SRC emacs-lisp
 (use-package yasnippet
+  :after lsp-mode
   :hook (prog-mode . yas-minor-mode))
 
 (use-package yasnippet-snippets
@@ -2099,6 +2170,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :config
   (global-flycheck-mode 1))
+
+(use-package flycheck-rust
+  :after flycheck)
 #+END_SRC
 
 ** restclient
@@ -2229,6 +2303,31 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          )))
 #+end_src
 
+** COMMENT Indent bars
+
+#+begin_src emacs-lisp
+(use-package indent-bars
+  :quelpa (indent-bars :fetcher github :repo "jdtsmith/indent-bars")
+  :custom
+  (indent-bars-treesit-support t)
+  (indent-bars-no-descend-string t)
+  (indent-bars-prefer-character nil)
+  (indent-bars-pattern ".")
+  (indent-bars-width-frac 0.1)
+  (indent-bars-pad-frac 0.1)
+  (indent-bars-zigzag nil)
+  (indent-bars-starting-column 0)
+  (indent-bars-color-by-depth nil)
+  (indent-bars-color '(highlight :face-bg t :blend 0.15))
+  (indent-bars-highlight-current-depth nil) ; pump up the BG blend on current
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+				      list list_comprehension
+				      dictionary dictionary_comprehension
+				      parenthesized_expression subscript)))
+  :hook (prog-mode . indent-bars-mode))
+#+end_src
+
 ** hl-block
 
 #+begin_src emacs-lisp
@@ -2239,6 +2338,19 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   (setq hl-block-single-level t) ;; Only one pair of brackets.
   (setq hl-block-style 'bracket) ;; Highlight only the brackets.
   :hook ((prog-mode) . hl-block-mode))
+#+end_src
+
+** ChatGPT
+
+#+begin_src emacs-lisp
+(defun shell-maker-welcome-message-ignore (config) "")
+
+(use-package chatgpt-shell
+  :custom
+  ;; (chatgpt-shell-openai-key "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")
+  (chatgpt-shell-openai-key  "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")
+  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore)
+)
 #+end_src
 
 ** Proced
