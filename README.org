@@ -197,18 +197,6 @@ not break the init of Emacs.
 ** Setting default display and editing options
 
 #+BEGIN_SRC emacs-lisp
-(use-package desktop
-  :ensure nil
-  :custom
-  (desktop-save 'ask-if-new)
-  (desktop-restore-eager 0)
-  (desktop-load-locked-desktop t)
-  (desktop-auto-save-timeout 30)
-  (desktop-base-lock-name "lock")
-  (desktop-files-not-to-save "^$")
-  :config
-  (desktop-save-mode 1))
-
 (use-package emacs
   :ensure nil
   :hook
@@ -1166,28 +1154,31 @@ provide a nice set of features operating on a project level without
 introducing external dependencies (when feasible)
 
 #+BEGIN_SRC emacs-lisp
-  (use-package projectile
-    :demand t
-    :bind-keymap
-    ("C-c p" . projectile-command-map)
-    :custom
-    (projectile-enable-caching t)
-    (projectile-sort-order 'recently-active)
-    :config
-    (projectile-mode)
-    ;; Projectile is testing in the reverse order so more specific must me at the end
-    (projectile-register-project-type
-     'npm '("package.json")
-     :compile "npm i"
-     :test "npm test"
-     :run "npm start"
-     :test-suffix ".spec.js")
+(use-package projectile
+  :demand t
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :custom
+  (projectile-enable-caching t)
+  (projectile-sort-order 'recently-active)
+  (projectile-ignored-projects '("/opt/homebrew"))
+  :config
+  (projectile-mode)
+  ;; Projectile is testing in the reverse order so more specific must me at the end
 
-    (projectile-register-project-type
-     'opera '("desktop/BUILD.gn" "desktop/gn_opera.py")
-     :project-file "desktop/BUILD.gn"
-     :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
-     :compile "autoninja -C chromium/src/out/Release opera"))
+  (projectile-register-project-type
+   'npm '("package.json")
+   :compile "npm i"
+   :test "npm test"
+   :run "npm start"
+   :test-suffix ".spec.js")
+
+  (projectile-register-project-type
+   'opera
+   '("desktop/BUILD.gn" "desktop/gn_opera.py")
+   :project-file "desktop/BUILD.gn"
+   :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
+   :compile "autoninja -C chromium/src/out/Release opera"))
 #+END_SRC
 
 ** ibuffer-projectile ([[https://github.com/purcell/ibuffer-projectile][link]])
