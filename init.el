@@ -50,9 +50,14 @@
   :init
   (setq package-check-signature 'allow-unsigned))
 
-;; Garbage Collector Magic Hack
+;; Overrides GC, adds big treshold when Emacs is used and then does GC
+;; when there is a slight pause in typing
 (use-package gcmh
+  :custom
+  (gcmh-verbose nil)
+  (gcmh-idle-delay 2)
   :config
+  (restore-post-init-settings)
   (gcmh-mode 1))
 
 ;; Install newer version of org-mode
