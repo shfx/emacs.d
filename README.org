@@ -2128,32 +2128,40 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 ** LSP Mode
 
 #+BEGIN_SRC emacs-lisp
-(defun kb/corfu-setup-lsp ()
+(defun my/corfu-setup-lsp ()
   "Use orderless completion style with lsp-capf instead of the
   default lsp-passthrough."
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
         '(orderless)))
+
+(setq lsp-use-plists "true")
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :after (corfu orderless)
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
-   (lsp-completion-mode . kb/corfu-setup-lsp))
+   (lsp-completion-mode . my/corfu-setup-lsp)
+   (dired-mode . lsp-dired-mode))
   :custom
   (lsp-completion-provider :none)
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
   (lsp-enable-indentation nil)
-  (lsp-enable-on-type-formatting t)
-  (lsp-clients-typescript-prefer-use-project-ts-server t)
+  (lsp-enable-on-type-formatting nil)
+  (lsp-typescript-format-enable nil)
+  (lsp-javascript-format-enable nil)
+  (lsp-diagnostics-modeline-scope :workspace)
+  (lsp-clients-typescript-prefer-use-project-ts-server nil)
   (lsp-clients-typescript-preferences
-   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate t))
+   '(:includeCompletionsForModuleExports t :generateReturnInDocTemplate t))
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
+  (lsp-eslint-working-directories `[(pattern ,(expand-file-name "Developer/*" (getenv "HOME")))])
   :config
   (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium/src\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src/node_modules\\'"))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src/node_modules\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "/opt/homebrew\\'"))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -2163,13 +2171,26 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
         (([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
          ([remap xref-find-references]  . lsp-ui-peek-find-references)))
   :custom
-  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-enable nil)
+  (lsp-ui-sideline-show-diagnostics t)
+  (lsp-ui-sideline-show-code-actions t)
   (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-position 'at-point))
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-doc-alignment 'window)
+  (lsp-ui-doc-show-with-cursor t)
+  (lsp-ui-doc-show-with-mouse t)
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-border "windowBackgroundColor"))
 
-;; (use-package lsp-tailwindcss
-;;   :custom
-;;   (lsp-tailwindcss-add-on-mode t))
+(use-package lsp-tailwindcss
+  :custom
+  (lsp-tailwindcss-add-on-mode t))
+
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp-deferred))))
 #+END_SRC
 
 ** DAP Mode
