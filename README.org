@@ -23,12 +23,6 @@ To start a bg service, run:
 brew services start emacs-plus@29
 #+END_SRC
 
-* Tidy up .emacs.d mess
-
-#+begin_src emacs-lisp
-(use-package no-littering)
-#+end_src
-
 * Better package management
 
 ** paradox ([[https://github.com/Malabarba/paradox/][link]])

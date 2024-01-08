@@ -3,32 +3,6 @@
           (expand-file-name "custom.el" server-socket-dir)
         (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 
-(require 'package)
-
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-        ("elpa" . "https://elpa.gnu.org/packages/")))
-
-;; Sets new subdir for each version so after an update we have to
-;; recompile all of the packages
-(setq package-user-dir
-      (locate-user-emacs-file
-       (concat
-        (file-name-as-directory "elpa")
-        emacs-version)))
-
-(package-initialize)
-(package-refresh-contents)
-
-;; Package management
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-;; All packages should be ensured unless stated othewise
-(require 'use-package)
-(setq use-package-always-ensure t)
-
 ;; Remove signature check before upgrating to new key
 (setq package-check-signature nil)
 
@@ -62,8 +36,8 @@
 
 ;; Install newer version of org-mode
 (use-package org
-  :pin elpa
-  :commands (org-mode org-capture org-agenda orgbl-mode)
+  :pin gnu
+  :commands (org-mode org-capture org-agenda)
   :mode (("\\.org$" . org-mode)))
 
 (use-package org-contrib

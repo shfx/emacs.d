@@ -1,6 +1,3 @@
-;; Prefer loading newest compiled .el file
-(setq load-prefer-newer noninteractive)
-
 ;; Native compilation settings
 (when (featurep 'native-compile)
   ;; Silence compiler warnings as they can be pretty disruptive
@@ -48,13 +45,40 @@
 
 (setq inhibit-default-init t)
 (setq site-run-file nil)
-(setq package-enable-at-startup nil)
 (setq frame-inhibit-implied-resize t)
 (setq byte-compile-warnings '(cl-functions))
 
 (fset #'x-apply-session-resources #'ignore)
+(setq load-prefer-newer t)
+
+(eval-when-compile
+  (require 'use-package))
+
+(setq use-package-always-ensure t)
+
+(setq package-user-dir
+      (locate-user-emacs-file
+       (concat
+        (file-name-as-directory "elpa")
+        emacs-version)))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
         ("gnu" . "https://elpa.gnu.org/packages/")))
+
+;; initialize after package-archives and package-user-dir are redefined
+(package-initialize)
+
+(package-read-all-archive-contents)
+
+(if (not package-archive-contents)
+    (progn
+      (message "Refreshing content")
+      (package-refresh-contents))
+  (progn
+    (message "Refreshing content async")
+    (package-refresh-contents t)))
+
+(use-package no-littering)
+
