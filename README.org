@@ -1055,54 +1055,13 @@ the bottom of active window with directory of its buffer.
 ** vterm
 
 #+BEGIN_SRC emacs-lisp
-(defun dtache-vterm-send-input (&optional detach)
-  "Create a `dtache' session."
-  (interactive)
-  (vterm-send-C-a)
-  (let* ((input (buffer-substring-no-properties (point) (vterm-end-of-line)))
-         (dtache-session-origin 'vterm)
-         (dtache-session-action
-          '(:attach dtache-shell-command-attach-session
-                    :view dtache-view-dwim
-                    :run dtache-shell-command))
-         (dtache-session-mode
-          (if detach 'create 'create-and-attach)))
-    (vterm-send-C-k)
-    (process-send-string vterm--process (dtache-dtach-command input t))
-    (vterm-send-C-e)
-    (vterm-send-return)))
-
-(defun dtache-vterm-attach (session)
-  "Attach to an active `dtache' session."
-  (interactive
-   (list
-    (let* ((host-name (car (dtache--host)))
-           (sessions
-            (thread-last (dtache-get-sessions)
-                         (seq-filter (lambda (it)
-                                       (string= (car (dtache--session-host it)) host-name)))
-                         (seq-filter (lambda (it) (eq 'active (dtache--determine-session-state it)))))))
-      (dtache-completing-read sessions))))
-  (let ((dtache-session-mode 'attach))
-    (process-send-string vterm--process (dtache-dtach-command session t))
-    (vterm-send-return)))
-
-(defun dtache-vterm-detach ()
-  "Detach from a `dtache' session."
-  (interactive)
-  (process-send-string vterm--process dtache--dtach-detach-character))
-
 (use-package vterm
-  :after consult
-  :bind (:map vterm-mode-map
-              ("<S-return>" . #'dtache-vterm-send-input)
-              ("<C-return>" . #'dtache-vterm-attach)
-              ("C-c C-d" . #'dtache-vterm-detach))
   :custom
   (vterm-always-compile-module t))
 
 (use-package multi-vterm
-  :after vterm)
+  :after vterm
+  :bind (("C-c v" . multi-vterm)))
 #+END_SRC
 
 ** Marginalia
