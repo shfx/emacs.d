@@ -85,13 +85,6 @@ Better list-package mode
   (system-packages-package-manager 'brew))
 #+END_SRC
 
-** use-package-ensure-system-package ([[https://github.com/waymondo/use-package-ensure-system-package][link]])
-
-#+begin_src emacs-lisp
-(use-package use-package-ensure-system-package
-  :after system-packages)
-#+end_src
-
 * Initialiation defaults
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
