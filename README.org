@@ -894,8 +894,6 @@ also helpful emacs config just for vertico
 
 #+begin_src emacs-lisp
 (use-package bufler
-  :quelpa (bufler :fetcher github :repo "alphapapa/bufler.el"
-                  :files (:defaults (:exclude "helm-bufler.el")))
   :bind
   ("C-x b" . bufler-switch-buffer)
   ("C-x C-b" . bufler-list)
