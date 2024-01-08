@@ -31,7 +31,6 @@
 (push '(menu-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars) default-frame-alist)
-(push '(font . "Monaco 14") default-frame-alist)
 (push '(foreground-color . "#d6d6d4") default-frame-alist)
 (push '(background-color . "#1c1e1f") default-frame-alist)
 (push '(ns-appearance . dark) default-frame-alist)
