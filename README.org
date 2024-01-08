@@ -2260,32 +2260,70 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 (use-package cider)
 #+end_src
 
+** Apheleia
+
+#+begin_src emacs-lisp
+(use-package apheleia
+  :config
+  (apheleia-global-mode +1))
+#+end_src
 ** Treesitter
+
+Enables tree-sitter in all programming languages supported. Should be
+loaded before any language package
 
 #+begin_src emacs-lisp
 (use-package tree-sitter
-  :ensure t
+  :custom-face
+  (font-lock-preprocessor-face ((t (:foreground "#9c91e4" :weight normal))))
   :config
+  (add-to-list
+   'treesit-language-source-alist
+   '(prisma "https://github.com/victorhqc/tree-sitter-prisma"))
   ;; activate tree-sitter on any buffer containing code for which it has a parser available
   (global-tree-sitter-mode)
   ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
   ;; by switching on and off
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(use-package tree-sitter-langs
-  :ensure t
-  :after tree-sitter)
+(defun my/ts-mode-p (mode)
+  (let* ((mode-name (symbol-name mode)))
+    (cond
+     ((string-suffix-p "ts-mode" mode-name) t)
+     (t nil))))
+
+(defun my/bring-previous-mode-hooks ()
+  (let ((mode-name (symbol-name major-mode)))
+    (if (not (my/ts-mode-p major-mode))
+        (error "Current mode does not contain -ts suffix: %s" mode-name)
+      (let* (
+             (non-ts-mode-name      (concat (string-remove-suffix "-ts" (string-remove-suffix "-mode" mode-name)) "-mode"))
+             (non-ts-mode-hook-name (concat non-ts-mode-name "-hook")))
+
+        (if (not (intern non-ts-mode-hook-name))
+            (message "There is no hook list named %s" non-ts-mode-hook-name)
+          (run-hooks (intern non-ts-mode-hook-name))
+          (message "Ran hook for %s" non-ts-mode-hook-name))))))
+
+(use-package treesit-auto
+  :hook
+  ((python-ts-mode js-ts-mode rustic-ts-mode json-ts-mode typescript-ts-mode) . #'my/bring-previous-mode-hooks)
+  :custom
+  (treesit-auto-install 'prompt)
+  :config
+  (global-treesit-auto-mode))
 #+end_src
 
-** File types
-*** .env
+#+end_src
+
+** .env
 
 #+begin_src emacs-lisp
 (use-package dotenv-mode
   :mode ("\\.env\\..*\\'" . dotenv-mode))
 #+end_src
 
-*** Elisp
+** Elisp
 
 #+begin_src emacs-lisp
 (use-package elisp
@@ -2293,7 +2331,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :mode ("\\.el\\'" . emacs-lisp-mode))
 #+end_src
 
-*** Markdown
+** Markdown
 
 #+BEGIN_SRC emacs-lisp
 (use-package markdown-mode
@@ -2314,20 +2352,20 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :after markdown-mode)
 #+END_SRC
 
-*** Htmlize for org-mode
+** Htmlize for org-mode
 
 #+BEGIN_SRC emacs-lisp
 (use-package htmlize)
 #+END_SRC
 
-*** YAML
+** YAML
 
 #+BEGIN_SRC emacs-lisp
 (use-package yaml-mode
   :mode "\\.yaml")
 #+END_SRC
 
-*** GO
+** GO
 
 #+BEGIN_SRC emacs-lisp
 (use-package go-mode
@@ -2339,7 +2377,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
               (local-set-key (kbd "M-.") 'godef-jump))))
 #+END_SRC
 
-*** JSON
+** JSON
 
 #+BEGIN_SRC emacs-lisp
 (use-package json-mode
@@ -2350,14 +2388,14 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 #+END_SRC
 
-*** CSS
+** CSS
 
 #+BEGIN_SRC emacs-lisp
 (use-package css-mode
   :mode "\\.css")
 #+END_SRC
 
-*** SCSS
+** SCSS
 
 #+BEGIN_SRC emacs-lisp
 (use-package scss-mode
@@ -2365,14 +2403,14 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :hook (scss-mode . lsp-deferred))
 #+END_SRC
 
-*** LUA
+** LUA
 
 #+BEGIN_SRC emacs-lisp
 (use-package lua-mode
   :mode ("\\.lua"))
 #+END_SRC
 
-*** JS
+** JS
 
 #+BEGIN_SRC emacs-lisp
 (use-package typescript-mode
@@ -2436,7 +2474,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
      ("case-extra-offset" . t))))
 #+END_SRC
 
-*** Py
+** Py
 
 #+BEGIN_SRC emacs-lisp
 (use-package python-mode
@@ -2447,7 +2485,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
         python-shell-interpreter-args "-i --simple-prompt"))
 #+END_SRC
 
-*** Dockerfile and docker-compose.yml
+** Dockerfile and docker-compose.yml
 
 #+begin_src emacs-lisp
 (use-package dockerfile-mode
