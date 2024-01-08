@@ -82,3 +82,10 @@
 
 (use-package no-littering)
 
+(use-package auto-compile
+  :custom
+  (auto-compile-display-buffer nil)
+  (auto-compile-mode-line-counter t)
+  :config
+  (auto-compile-on-load-mode)
+  (auto-compile-on-save-mode))
