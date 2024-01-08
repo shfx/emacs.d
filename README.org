@@ -1636,10 +1636,11 @@ fill those notes in with more details!"
   (expand-file-name (concat user-emacs-directory file)))
 
 (use-package org-roam
+  :after org
   :custom
   (org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
   (org-roam-directory "~/Dropbox/OrgRoam")
-  (org-roam-completion-everywhere t)
+  (org-roam-completion-everywhere nil)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-graph)
@@ -1691,6 +1692,17 @@ fill those notes in with more details!"
            (file ,(my/org-roam-template-dir-expand "etc/org-roam/templates/plant.org"))
            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Plant\n")
            :unnarrowed t))))
+
+(use-package websocket
+  :after org-roam)
+
+(use-package org-roam-ui
+  :after (org-roam websocket)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 #+end_src
 
 *** Htmlize for org-mode
@@ -1722,27 +1734,6 @@ fill those notes in with more details!"
         org-roam-ui-update-on-save t
         org-roam-ui-open-on-start t))
 #+end_src
-
-** COMMENT Mini frame
-
-#+BEGIN_SRC emacs-lisp
-(use-package mini-frame
-  :init
-  (defvar mini-frame-ignore-commands nil)
-  :custom
-  (mini-frame-detach-on-hide nil)
-  (mini-frame-standalone 't)
-  (mini-frame-resize-min-height 10)
-  (mini-frame-show-parameters
-   '((top . 0.5)
-     (width . 0.5)
-     (left . 0.5)))
-  (mini-frame-ignore-commands '(evil-window-split
-                                evil-window-vsplit
-                                evil-ex))
-  :config
-  (mini-frame-mode +1))
-#+END_SRC
 
 ** Load theme
 
