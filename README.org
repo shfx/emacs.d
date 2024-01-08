@@ -40,27 +40,35 @@ Better list-package mode
 ** quelpa ([[https://github.com/quelpa/quelpa][link]])
 
 #+begin_src emacs-lisp
-  (use-package quelpa
-    :ensure nil
-    :init
-    (unless (package-installed-p 'quelpa)
-      (with-temp-buffer
-        (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-        (eval-buffer)
-        (quelpa-self-upgrade))))
+(use-package quelpa
+  ;; It will install this package without using use-package
+  :ensure nil
+  :init
+  (unless (package-installed-p 'quelpa)
+    (with-temp-buffer
+      (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
+      (eval-buffer)
+      (quelpa-self-upgrade)))
+  :custom
+  (quelpa-dir (no-littering-expand-var-file-name "quelpa/"))
+  (quelpa-build-dir (expand-file-name "build" quelpa-dir))
+  (quelpa-melpa-dir (expand-file-name "melpa" quelpa-dir))
+  (quelpa-packages-dir (expand-file-name "packages" quelpa-dir)))
 #+end_src
 
 ** quelpa-use-package ([[https://github.com/quelpa/quelpa-use-package][link]])
 
 #+begin_src emacs-lisp
-  (use-package quelpa-use-package
-    :ensure nil
-    :init
-    (quelpa
-     '(quelpa-use-package
-       :fetcher git
-       :url "https://github.com/quelpa/quelpa-use-package.git"))
-    (require 'quelpa-use-package))
+(use-package quelpa-use-package
+  ;; It will install this package without using use-package
+  :ensure nil
+  :init
+  (quelpa
+   '(quelpa-use-package
+     :fetcher git
+     :repo "quelpa/quelpa-use-package"))
+  (require 'quelpa-use-package)
+  (quelpa-use-package-activate-advice))
 #+end_src
 
 ** auto-minor-mode ([[https://github.com/joewreschnig/auto-minor-mode][link]])
