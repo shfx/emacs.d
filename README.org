@@ -1924,11 +1924,33 @@ fill those notes in with more details!"
   :bind ("C-c C-g" . browse-at-remote)
   :custom
   (browse-at-remote-remote-type-regexps 
-   '(("^gitlab\\.services\\.ams\\.osa$" . "gitlab")
-     ("^github\\.com$" . "github")
-     ("^bitbucket\\.org$" . "bitbucket")
-     ("^gitlab\\.com$" . "gitlab")
-     ("^gist\\.github\\.com$" . "gist"))))
+   '(
+     (:host "^git\\.oslo\\.osa"               :type "oslo")
+     (:host "^gitlab\\.services\\.ams\\.osa$" :type "gitlab")
+     (:host "^gitlab\\.service\\.osa$"        :type "gitlab")
+     (:host "^github\\.com$"                  :type "github")
+     (:host "^bitbucket\\.org$"               :type "bitbucket")
+     (:host "^gitlab\\.com$"                  :type "gitlab")
+     (:host "^gist\\.github\\.com$"           :type "gist"))))
+
+(defun browse-at-remote-oslo-format-url (repo-url)
+  "Get a gnu formatted URL."
+  (let* ((parts (split-string repo-url "/var/git" t))
+   (domain (butlast parts))
+   (project (car (last parts))))
+    (string-join
+     (append domain (list project)) "/")))
+
+(defun browse-at-remote--format-region-url-as-oslo (repo-url location filename &optional linestart lineend)
+  "URL formatter for gnu."
+  (let ((repo-url (browse-at-remote-oslo-format-url repo-url)))
+    (cond
+     (linestart (format "%s/tree/%s?h=%s#n%d" repo-url filename location linestart))
+     (t (format "%s/tree/%s?h=%s" repo-url filename location)))))
+
+(defun browse-at-remote--format-commit-url-as-gnu (repo-url commithash)
+  "Commit URL formatted for gnu"
+  (format "%s/commit/?id=%s" (browse-at-remote-oslo-format-url repo-url) commithash))
 #+end_src
 
 *** gitlab-pipeline
