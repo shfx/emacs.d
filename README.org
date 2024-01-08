@@ -416,10 +416,11 @@ to work properly
 #+BEGIN_SRC emacs-lisp
 (use-package osx-trash
   :if (eq system-type 'darwin)
-  :ensure-system-package trash
+  :ensure-system-package macos-trash
   :init
   (osx-trash-setup)
   :custom
+  (osx-trash-command "trash -F")
   (delete-by-moving-to-trash t))
 #+END_SRC
 
