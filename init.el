@@ -6,19 +6,6 @@
 ;; Remove signature check before upgrating to new key
 (setq package-check-signature nil)
 
-;; Inject PATH from shell
-(use-package exec-path-from-shell
-  :custom
-  (exec-path-from-shell-arguments nil)
-  :config
-  (when (or (memq window-system '(ns x))
-            (daemonp))
-    (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "GOPATH")
-    (exec-path-from-shell-copy-env "LSP_USE_PLIST")
-    (when (eq (length (getenv "NODE_PATH")) 0)
-      (setenv "NODE_PATH" "/usr/local/lib/node_modules"))))
-
 ;; Updates public keyring and reverts package-check-signature
 (use-package gnu-elpa-keyring-update
   :init
@@ -33,6 +20,16 @@
   :config
   (restore-post-init-settings)
   (gcmh-mode 1))
+
+;; Inject PATH from shell
+(use-package exec-path-from-shell
+  :custom
+  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLIST" "GOPATH"))
+  :config
+  (when (or (memq window-system '(ns x))
+            (daemonp))
+    (exec-path-from-shell-initialize)))
+
 
 ;; Install newer version of org-mode
 (use-package org
