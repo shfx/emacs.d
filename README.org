@@ -1352,16 +1352,6 @@ Consult users will also want the embark-consult package.
   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 
-** K8s
-
-#+BEGIN_SRC emacs-lisp
-(use-package kubernetes
-  :commands (kubernetes-overview)
-  :custom
-  ((kubernetes-commands-display-buffer-function 'display-buffer)
-   (Kubernetes-Commands-display-buffer-select nil)))
-#+END_SRC
-
 ** Multiple Cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
 
 Multiple cursors for Emacs. This is some pretty crazy functionality,
@@ -2000,6 +1990,14 @@ fill those notes in with more details!"
   :config)
 #+END_SRC
 
+** pulsar
+
+#+begin_src emacs-lisp
+(use-package pulsar
+  :config
+  (pulsar-global-mode 1))
+#+end_src
+
 ** unfill
 
 #+BEGIN_SRC emacs-lisp
@@ -2208,6 +2206,58 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
          :userDataDir t
          :sourceMaps t
          )))
+#+end_src
+
+** hl-block
+
+#+begin_src emacs-lisp
+(use-package hl-block-mode
+  :commands (hl-block-mode)
+  :config
+  (setq hl-block-bracket nil)    ;; Match all brackets.
+  (setq hl-block-single-level t) ;; Only one pair of brackets.
+  (setq hl-block-style 'bracket) ;; Highlight only the brackets.
+  :hook ((prog-mode) . hl-block-mode))
+#+end_src
+
+** Proced
+
+#+begin_src emacs-lisp
+(use-package proced
+  :ensure nil
+  :defer t
+  :custom
+  (proced-enable-color-flag t)
+  (proced-tree-flag t))
+#+end_src
+
+** Copilot
+
+#+begin_src emacs-lisp
+(use-package copilot
+  :quelpa (copilot :fetcher github
+                   :repo "zerolfx/copilot.el"
+                   :branch "main"
+                   :files ("dist" "*.el"))
+  :bind
+  (:map copilot-completion-map (("<tab>" . copilot-accept-completion)
+                                ("TAB" . copilot-accept-completion)))
+  :hook
+  (prog-mode . copilot-mode))
+#+end_src
+
+** Battery
+
+#+begin_src emacs-lisp
+(use-package battery
+  :ensure nil
+  :hook (after-init . display-battery-mode))
+#+end_src
+
+** Cider
+
+#+begin_src emacs-lisp
+(use-package cider)
 #+end_src
 
 ** Treesitter
