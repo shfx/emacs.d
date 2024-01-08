@@ -2335,6 +2335,33 @@ loaded before any language package
   (global-treesit-auto-mode))
 #+end_src
 
+* Prog modes
+
+** el
+#+begin_src emacs-lisp
+(use-package emacs-lisp
+  :ensure nil
+  :bind
+  ((:map global-map
+         ("C-x C-e" . nil))
+   (:map emacs-lisp-mode-map
+         ("C-x C-e" . eval-last-sexp))))
+#+end_src
+
+** rust
+
+#+begin_src emacs-lisp
+(use-package rust-mode
+  :after flycheck-rust
+  :mode ("\\.rs" . rust-mode)
+  :hook ((flycheck-mode . flycheck-rust-setup)
+         (rust-mode . lsp-deferred)))
+#+end_src
+
+** rustic
+
+#+begin_src emacs-lisp
+(use-package rustic)
 #+end_src
 
 ** .env
@@ -2403,6 +2430,8 @@ loaded before any language package
 #+BEGIN_SRC emacs-lisp
 (use-package json-mode
   :mode "\\.json$"
+  :hook
+  (json-mode . lsp-deferred)
   :interpreter "json"
   :config
   (setq js-indent-level 2))
@@ -2435,47 +2464,22 @@ loaded before any language package
 
 #+BEGIN_SRC emacs-lisp
 (use-package typescript-mode
-  :after lsp-mode
-  :mode ("\\.ts$")
+  :after (lsp-mode)
+  :mode "\\.ts$"
   :hook
-  (typescript-mode . lsp-deferred)
-  :config
-  (define-derived-mode typescriptreact-mode typescript-mode
-    "TypeScript TSX")
-  ;; use our derived mode for tsx files
-  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescriptreact-mode))
-  ;; by default, typescript-mode is mapped to the treesitter typescript parser
-  ;; use our derived mode to map both .tsx AND .ts -> typescriptreact-mode -> treesitter tsx
-  (add-to-list 'tree-sitter-major-mode-language-alist '(typescriptreact-mode . tsx)))
-
-;; https://github.com/orzechowskid/tsi.el/
-;; great tree-sitter-based indentation for typescript/tsx, css, json
-(use-package tsi
-  :after tree-sitter
-  :quelpa (tsi :fetcher github :repo "orzechowskid/tsi.el")
-  ;; define autoload definitions which when actually invoked will cause package to be loaded
-  :commands (tsi-typescript-mode tsi-json-mode tsi-css-mode)
-  :hook
-  (typescript-mode-hook . (lambda () (tsi-typescript-mode 1)))
-  (json-mode-hook . (lambda () (tsi-json-mode 1)))
-  (css-mode-hook . (lambda () (tsi-css-mode 1)))
-  (scss-mode-hook . (lambda () (tsi-scss-mode 1))))
+  (typescript-mode . lsp-deferred))
 
 (use-package js2-mode
+  :after (lsp-mode)
   :mode ("\\.[cm]*js$")
-  :hook (js2-mode . lsp-deferred))
+  :hook ((js-base-mode) . lsp-deferred))
 
 (use-package eslintd-fix
-  :hook (js2-mode . eslintd-fix-mode))
-
-(use-package apheleia
-  :config
-  (apheleia-global-mode +1))
+  :hook ((js-base-mode) . eslintd-fix-mode))
 
 (use-package web-mode
   :mode
   ("\\.html\\'"
-   "\\.tsx\\'"
    "\\.svelte\\'")
   :hook
   (web-mode . lsp-deferred)
@@ -2501,9 +2505,15 @@ loaded before any language package
 (use-package python-mode
   :mode "\\.py"
   :interpreter "py"
+  :hook (python-mode . lsp-deferred)
   :config
   (setq python-shell-interpreter "ipython"
         python-shell-interpreter-args "-i --simple-prompt"))
+
+(use-package poetry
+  :after python-mode
+  :config
+  (poetry-tracking-mode))
 #+END_SRC
 
 ** Dockerfile and docker-compose.yml
