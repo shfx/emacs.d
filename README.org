@@ -662,6 +662,13 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
 
   (vertico-mode 1)
   (vertico-multiform-mode 1))
+
+(use-package vertico-posframe
+  :after vertico
+  :custom
+  (vertico-posframe-parameters
+      '((left-fringe . 8)
+        (right-fringe . 8))))
 #+end_src
 
 also helpful emacs config just for vertico
