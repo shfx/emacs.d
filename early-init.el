@@ -1,11 +1,16 @@
-;; Native compilation settings
 (when (featurep 'native-compile)
   ;; Silence compiler warnings as they can be pretty disruptive
-  (setq native-comp-async-report-warnings-errors :silent)
+  (setq-default native-comp-async-report-warnings-errors :silent)
   ;; Make native compilation happens asynchronously
-  (setq native-comp-jit-compilation t)
+  (setq-default native-comp-jit-compilation t)
+  ;; Disables native compilation for list of modes
+  (setq-default native-comp-jit-compilation-deny-list '("lsp-mode"))
   ;; Set the right directory to store the native compilation cache
-  (add-to-list 'native-comp-eln-load-path (expand-file-name "var/eln-cache/" user-emacs-directory)))
+  (when (fboundp 'startup-redirect-eln-cache)
+    (startup-redirect-eln-cache
+     (convert-standard-filename
+      (expand-file-name  "var/eln-cache/" user-emacs-directory)))))
+
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
@@ -48,7 +53,6 @@
 (setq frame-inhibit-implied-resize t)
 (setq byte-compile-warnings '(cl-functions))
 
-(fset #'x-apply-session-resources #'ignore)
 (setq load-prefer-newer t)
 
 (eval-when-compile
@@ -89,3 +93,5 @@
   :config
   (auto-compile-on-load-mode)
   (auto-compile-on-save-mode))
+
+(fset #'x-apply-session-resources #'ignore)
