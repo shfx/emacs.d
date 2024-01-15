@@ -45,56 +45,9 @@
 (set-face-foreground 'vertical-border "#171819")
 
 ;; Make the initial buffer load faster by setting its mode to fundamental-mode
-(setq initial-major-mode 'fundamental-mode)
-
+(setq initial-major-mode 'emacs-lisp-mode)
 (setq inhibit-default-init t)
 (setq site-run-file nil)
 (setq frame-inhibit-implied-resize t)
 (setq byte-compile-warnings '(cl-functions))
-
 (setq load-prefer-newer t)
-
-;; Packages
-
-(setq package-user-dir "var/packages")
-
-(eval-when-compile
-  (require 'use-package))
-
-(setq use-package-always-ensure t)
-
-(setq package-user-dir
-      (locate-user-emacs-file
-       (concat
-        (file-name-as-directory "elpa")
-        emacs-version)))
-
-(setq package-archives
-      '(("melpa" . "https://melpa.org/packages/")
-        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
-        ("gnu" . "https://elpa.gnu.org/packages/")))
-
-;; initialize after package-archives and package-user-dir are redefined
-(package-initialize)
-
-(package-read-all-archive-contents)
-
-(if (not package-archive-contents)
-    (progn
-      (message "Refreshing content")
-      (package-refresh-contents))
-  (progn
-    (message "Refreshing content async")
-    (package-refresh-contents t)))
-
-(use-package no-littering)
-
-(use-package auto-compile
-  :custom
-  (auto-compile-display-buffer nil)
-  (auto-compile-mode-line-counter t)
-  :config
-  (auto-compile-on-load-mode)
-  (auto-compile-on-save-mode))
-
-(fset #'x-apply-session-resources #'ignore)
