@@ -54,6 +54,10 @@
 
 (setq load-prefer-newer t)
 
+;; Packages
+
+(setq package-user-dir "var/packages")
+
 (eval-when-compile
   (require 'use-package))
 

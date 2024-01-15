@@ -1209,6 +1209,7 @@ introducing external dependencies (when feasible)
   (projectile-enable-caching t)
   (projectile-sort-order 'recently-active)
   (projectile-ignored-projects '("/opt/homebrew"))
+  (projectile-track-known-projects-automatically t)
   :config
   (projectile-mode)
   ;; Projectile is testing in the reverse order so more specific must me at the end
@@ -2222,10 +2223,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (lsp-auto-guess-root t)
   (lsp-keymap-prefix "C-c l")
   (lsp-enable-indentation nil)
+  (lsp-lens-enable t)
   (lsp-enable-on-type-formatting nil)
   (lsp-typescript-format-enable nil)
   (lsp-javascript-format-enable nil)
   (lsp-diagnostics-modeline-scope :workspace)
+  (lsp-diagnostic-clean-after-change t)
   (lsp-clients-typescript-prefer-use-project-ts-server nil)
   (lsp-clients-typescript-preferences
    '(:includeCompletionsForModuleExports t :generateReturnInDocTemplate t))
@@ -2233,9 +2236,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   (lsp-eslint-working-directories `[(pattern ,(expand-file-name "Developer/*" (getenv "HOME")))])
   :config
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium/src\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src/node_modules\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "/opt/homebrew\\'"))
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium[/\\\\]src\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src[/\\\\]node_modules\\'")
+  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]opt[/\\\\]homebrew\\'"))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -2267,7 +2270,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
                          (lsp-deferred))))
 #+END_SRC
 
-** DAP Mode
+** COMMENT DAP Mode
 
 Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
@@ -2347,8 +2350,8 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
 
 (use-package chatgpt-shell
   :custom
-  ;; (chatgpt-shell-openai-key "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")
-  (chatgpt-shell-openai-key  "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")
+  ;; (chatgpt-shell-openai-key "xxx")
+  ;;(chatgpt-shell-openai-key  "xxx")
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore)
 )
 #+end_src
@@ -2400,6 +2403,7 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :config
   (apheleia-global-mode +1))
 #+end_src
+
 ** Treesitter
 
 Enables tree-sitter in all programming languages supported. Should be
@@ -2407,6 +2411,7 @@ loaded before any language package
 
 #+begin_src emacs-lisp
 (use-package tree-sitter
+  :after treesit
   :custom-face
   (font-lock-preprocessor-face ((t (:foreground "#9c91e4" :weight normal))))
   :config
