@@ -61,12 +61,13 @@ Better list-package mode
 #+begin_src emacs-lisp
 (use-package quelpa-use-package
   ;; It will install this package without using use-package
+  :after quelpa
   :ensure nil
   :init
   (quelpa
    '(quelpa-use-package
      :fetcher git
-     :repo "quelpa/quelpa-use-package"))
+     :url "https://github.com/quelpa/quelpa-use-package.git"))
   (require 'quelpa-use-package)
   (quelpa-use-package-activate-advice))
 #+end_src
@@ -1925,6 +1926,7 @@ fill those notes in with more details!"
 #+END_SRC
 
 ** Git
+
 *** magit - best git client ever
 
 #+BEGIN_SRC emacs-lisp
