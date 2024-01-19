@@ -1935,6 +1935,7 @@ fill those notes in with more details!"
   :bind ("C-x g" . magit-status)
   :hook
   (git-commit-mode . flyspell-mode)
+  (after-save . magit-after-save-refresh-status)
   :custom
   (vc-handled-backends nil)
   (magit-process-finish-apply-ansi-colors t)
