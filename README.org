@@ -196,7 +196,7 @@ not break the init of Emacs.
   (shell-mode . ansi-color-for-comint-mode-on)
   :custom
   (auto-save-default nil)
-  (compilation-scroll-output t)
+  (compilation-scroll-output nil)
   (create-lockfiles nil)
   (frame-resize-pixelwise t)
   (frame-title-format nil)
