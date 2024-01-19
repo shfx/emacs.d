@@ -63,7 +63,8 @@
   (gcmh-verbose nil)
   (gcmh-idle-delay 2)
   :config
-  (restore-post-init-settings)
+  (when (functionp 'restore-post-init-settings)
+    (restore-post-init-settings))
   (gcmh-mode 1))
 
 ;; Inject PATH from shell
