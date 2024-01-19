@@ -1101,10 +1101,13 @@ the bottom of active window with directory of its buffer.
 
 #+begin_src emacs-lisp
 (use-package eat
+  :hook
+  (eshell-load . eat-eshell-visual-command-mode)
   :custom
   (eat-term-name "xterm")
-  :hook
-  (eshell-load . '(eat-eshell-visual-command-mode)))
+  (eshell-visual-commands nil)
+  :config
+  (eat-eshell-mode))
 #+end_src
 
 ** Marginalia
