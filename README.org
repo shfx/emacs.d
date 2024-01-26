@@ -704,7 +704,7 @@ also helpful emacs config just for vertico
   (read-extended-command-predicate
         #'command-completion-default-include-p)
   ;; Enable recursive minibuffers
-  (enable-recursive-minibuffers t))
+  (enable-recursive-minibuffers nil))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -965,17 +965,18 @@ itself runs on.
       corfu-quit-at-boundary t
       corfu-quit-no-match t
       corfu-separatvor nil)
-     (corfu-mode)))
+     (corfu-mode)
+     (setenv "TERM" "xterm-256color")))
+
 
   :custom
   (eshell-banner-message "")
-  (eshell-scroll-to-bottom-on-input t)
+  (eshell-scroll-to-bottom-on-input 'this)
   (eshell-error-if-no-glob t)
   (eshell-hist-ignoredups t)
   (eshell-save-history-on-exit t)
   (eshell-prefer-lisp-functions nil)
   (eshell-destroy-buffer-when-process-dies t)
-  (eshell-highlight-prompt nil)
 
   :config
   (setenv "PAGER" "cat")
@@ -987,26 +988,6 @@ itself runs on.
   (defun eshell/gst (&rest args)
     (magit-status (pop args) nil)
     (eshell/echo)))
-
-(use-package xterm-color
-  :after (eshell eshell-toggle)
-  :hook
-  (eshell-before-prompt . (lambda ()
-                            (setq xterm-color-preserve-properties t)))
-  (eshell-preoutput-filter-functions . xterm-co§§§§§§§§§§§§lor-filter)
-  (shell-mode . (lambda ()
-                  ;; Disable font-locking in this buffer to improve performance
-                  (font-lock-mode -1)
-                  ;; Prevent font-locking from being re-enabled in this buffer
-                  (make-local-variable 'font-lock-function)
-                  (setq font-lock-function (lambda (_) nil))
-                  (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter nil t)))
-  :custom
-  (comint-output-filter-functions
-   (remove 'ansi-color-process-output comint-output-filter-functions))
-  (eshell-output-filter-functions
-   (remove 'eshell-handle-ansi-color eshell-output-filter-functions))
-  :config)
 
 (use-package eshell-up
   :after eshell)
@@ -2041,8 +2022,8 @@ fill those notes in with more details!"
 #+begin_src emacs-lisp
 (use-package git-gutter
   :hook (text-mode . git-gutter-mode)
-  :config
-  (setq git-gutter:update-interval 1))
+  :custom
+  (git-gutter:update-interval 1))
 
 (use-package git-gutter-fringe
   :config
@@ -2383,7 +2364,9 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
                    :files ("dist" "*.el"))
   :bind
   (:map copilot-completion-map (("<tab>" . copilot-accept-completion)
-                                ("TAB" . copilot-accept-completion)))
+                                ("TAB" . copilot-accept-completion)
+                                ("C-TAB" . 'copilot-accept-completion-by-word)
+                                ("C-<tab>" . 'copilot-accept-completion-by-word)))
   :hook
   (prog-mode . copilot-mode))
 #+end_src
