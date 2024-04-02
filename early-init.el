@@ -3,13 +3,20 @@
   (setq-default native-comp-async-report-warnings-errors :silent)
   ;; Make native compilation happens asynchronously
   (setq-default native-comp-jit-compilation t)
-  ;; Disables native compilation for list of modes
-  (setq-default native-comp-jit-compilation-deny-list '("lsp-mode"))
   ;; Set the right directory to store the native compilation cache
   (when (fboundp 'startup-redirect-eln-cache)
     (startup-redirect-eln-cache
      (convert-standard-filename
       (expand-file-name  "var/eln-cache/" user-emacs-directory)))))
+
+;; This is needed by lps-mode
+(setenv "LSP_USE_PLISTS" "true")
+
+(setq package-user-dir
+      (locate-user-emacs-file
+       (concat
+        (file-name-as-directory "var/packages")
+        emacs-version)))
 
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 

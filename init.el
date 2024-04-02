@@ -5,18 +5,10 @@
 
 ;; Packages
 
-(setq package-user-dir "var/packages")
-
 (eval-when-compile
   (require 'use-package))
 
 (setq use-package-always-ensure t)
-
-(setq package-user-dir
-      (locate-user-emacs-file
-       (concat
-        (file-name-as-directory "elpa")
-        emacs-version)))
 
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -70,12 +62,11 @@
 ;; Inject PATH from shell
 (use-package exec-path-from-shell
   :custom
-  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLIST" "GOPATH"))
+  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
   :config
   (when (or (memq window-system '(ns x))
             (daemonp))
     (exec-path-from-shell-initialize)))
-
 
 ;; Install newer version of org-mode
 (use-package org
@@ -95,5 +86,5 @@
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
 
 (load custom-file t)
-(put 'dired-find-alternate-file 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)

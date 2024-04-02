@@ -133,14 +133,6 @@ Better list-package mode
    (server-start))
 #+end_src
 
-** Electric pairs only for prog-mode
-
-#+begin_src emacs-lisp
-(add-hook 'prog-mode-hook
-          (lambda ()
-            (electric-pair-mode 1)))
-#+end_src
-
 ** Focus new frame
 
 #+begin_src emacs-lisp
@@ -191,10 +183,13 @@ not break the init of Emacs.
 ** Setting default display and editing options
 
 #+BEGIN_SRC emacs-lisp
-(use-package emacs
+(use-package shell
   :ensure nil
   :hook
-  (shell-mode . ansi-color-for-comint-mode-on)
+  (shell-mode . ansi-color-for-comint-mode-on))
+
+(use-package emacs
+  :ensure nil
   :custom
   (auto-save-default nil)
   (compilation-scroll-output nil)
@@ -240,8 +235,8 @@ not break the init of Emacs.
   (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
   (electric-pair-mode 0)
-  (line-number-mode 1)
-  (column-number-mode 1)
+  (line-number-mode 0)
+  (column-number-mode 0)
   (delete-selection-mode 1)
   (global-auto-revert-mode 1)
   (menu-bar-mode 0)
@@ -507,7 +502,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (popper-mode-line '(:eval
                       (propertize " POP " 'face 'mode-line-emphasis)))
   (popper-display-control t)
-  (popper-group-function #'popper-group-by-projectile)
+  (popper-group-function nil)
   :config
   (popper-mode +1)
   (popper-echo-mode +1))
@@ -1154,18 +1149,14 @@ with version control systems.
 (use-package restart-emacs)
 #+END_SRC
 
-** Paren
+** Matching Paren Overlay
 
 #+begin_src emacs-lisp
-(use-package paren
-  :hook (after-init-hook . show-paren-mode)
-  :custom-face
-  (show-paren-match ((t
-                      (:weight ultra-bold :foreground "#b6e63e" :background "#3a4625"))))
-  :custom
-  (show-paren-style 'mixed)
-  (show-paren-when-point-in-periphery t)
-  (show-paren-when-point-inside-paren nil))
+(use-package matching-paren-overlay
+  :quelpa
+  (matching-paren-overlay
+   :fetcher git
+   :url "https://codeberg.org/acdw/matching-paren-overlay.el.git"))
 #+end_src
 
 ** All the icons ([[https://github.com/domtronn/all-the-icons.el][link]])
@@ -1191,10 +1182,16 @@ introducing external dependencies (when feasible)
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :custom
-  (projectile-enable-caching t)
+  (projectile-enable-caching nil)
   (projectile-sort-order 'recently-active)
-  (projectile-ignored-projects '("/opt/homebrew"))
-  (projectile-track-known-projects-automatically t)
+  (projectile-project-search-path '("~/Developer/"))
+  (projectile-ignored-projects `("~/"
+                                 "/opt/homebrew"
+                                 "/tmp/"
+                                 "/private/tmp/"
+                                 "~/Developer/work"
+                                 ,package-user-dir))
+  (projectile-track-known-projects-automatically nil)
   :config
   (projectile-mode)
   ;; Projectile is testing in the reverse order so more specific must me at the end
@@ -1210,7 +1207,15 @@ introducing external dependencies (when feasible)
    'opera
    '("desktop/BUILD.gn" "desktop/gn_opera.py")
    :project-file "desktop/BUILD.gn"
-   :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_goma=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
+   :run (concat "open $HOME/Developer/work/chromium/src/out/Release/Opera.app --args"
+                " --allow-running-insecure-content"
+                " --disable-web-security"
+                " --ignore-certificate-errors"
+                " --remote-debugging-port=9222"
+                " --sticky-site-url-override=https://gxcorner.games"
+                " --user-data-dir=$HOME/Developer/clean-profile/$(date +\"%Y-%m-%dT%H:%M:%S\")"
+                " --use-mock-keychain")
+   :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_remoteexec=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
    :compile "autoninja -C chromium/src/out/Release opera"))
 #+END_SRC
 
@@ -1305,27 +1310,29 @@ Consult users will also want the embark-consult package.
 ** Corfu ([[https://github.com/minad/corfu][link]])
 
 #+begin_src emacs-lisp
-(defun corfu-enable-always-in-minibuffer ()
-  "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-  (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
-              (bound-and-true-p vertico--input))
-    (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
-    (corfu-mode 1)))
-
 (use-package corfu
   :demand t
   :after orderless
-  :hook
-  (minibuffer-setup . corfu-enable-always-in-minibuffer)
+
+  :preface
+  (defun corfu-enable-always-in-minibuffer ()
+    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
+    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
+                (bound-and-true-p vertico--input))
+      (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
+      (corfu-mode 1)))
+
+  :hook (minibuffer-setup . corfu-enable-always-in-minibuffer)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
               ("C-p" . corfu-previous)
               ("<escape>" . corfu-quit)
               ("<return>" . corfu-insert)
-              ("M-d" . corfu-show-documentation)
+              ("M-d" . corfu-popupinfo-show)
               ("M-l" . corfu-show-location)
               ("H-SPC" . corfu-insert-separator)
               ("SPC" . corfu-insert-separator))
+
   :custom
   (completion-cycle-threshold nil)
   (corfu-auto t)
@@ -1346,6 +1353,7 @@ Consult users will also want the embark-consult package.
   (tab-always-indent 'complete)
   (tab-first-completion 'word-or-paren-or-punct)
   (read-extended-command-predicate #'command-completion-default-include-p)
+
   :config
   (global-corfu-mode)
   ;; The advices are only needed on Emacs 28 and older.
@@ -1451,8 +1459,6 @@ syste.
 (use-package org
   :hook
   (org-mode . turn-on-auto-fill)
-  (org-src-mode . (lambda ()
-                    (setq-local flycheck-disabled-checkers '(emacs-lisp-checkdoc))))
   :bind
   ("C-c l" . org-store-link)
   ("C-c a" . org-agenda)
@@ -1952,6 +1958,8 @@ fill those notes in with more details!"
 #+begin_src emacs-lisp
 (use-package magit-todos
   :after (magit)
+  :custom
+  (magit-todos-exclude-globs '(".git/"))
   :config
   (magit-todos-mode 1))
 #+end_src
@@ -2015,21 +2023,6 @@ fill those notes in with more details!"
 (use-package docker
   :ensure t
   :bind ("C-c d" . docker))
-#+end_src
-
-** git-gutter
-
-#+begin_src emacs-lisp
-(use-package git-gutter
-  :hook (text-mode . git-gutter-mode)
-  :custom
-  (git-gutter:update-interval 1))
-
-(use-package git-gutter-fringe
-  :config
-  (define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-  (define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom))
 #+end_src
 
 ** hl-todo-mode ([[https://github.com/tarsius/hl-todo][link]])
@@ -2150,17 +2143,30 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 ** Flycheck
 
 #+BEGIN_SRC emacs-lisp
+(use-package quick-peek)
+
 (use-package flycheck
   :custom
   (flycheck-idle-change-delay 1)
   :custom-face
   (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
   (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
+  :custom
+  (flycheck-disabled-checkers '(emacs-lisp-checkdoc))
   :config
   (global-flycheck-mode 1))
 
 (use-package flycheck-rust
   :after flycheck)
+
+(use-package flycheck-inline
+  :after (flycheck quick-peek)
+  :hook (flycheck-mode . flycheck-inline-mode)
+  :custom
+  (flycheck-inline-display-function
+   (lambda (msg pos err)
+     (quick-peek-show msg pos)))
+  (flycheck-inline-clear-function #'quick-peek-hide))
 #+END_SRC
 
 ** restclient
@@ -2206,26 +2212,50 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
    (lsp-completion-mode . my/corfu-setup-lsp)
    (dired-mode . lsp-dired-mode))
   :custom
-  (lsp-completion-provider :none)
+  (lsp-log-io nil)
+  (lsp-file-watch-threshold 4000)
+  (lsp-headerline-breadcrumb-enable t)
+  (lsp-headerline-breadcrumb-icons-enable nil)
+  (lsp-headerline-breadcrumb-segments '(file symbols))
   (lsp-auto-guess-root t)
-  (lsp-keymap-prefix "C-c l")
-  (lsp-enable-indentation nil)
-  (lsp-lens-enable t)
-  (lsp-enable-on-type-formatting nil)
-  (lsp-typescript-format-enable nil)
-  (lsp-javascript-format-enable nil)
-  (lsp-diagnostics-modeline-scope :workspace)
-  (lsp-diagnostic-clean-after-change t)
-  (lsp-clients-typescript-prefer-use-project-ts-server nil)
+  (lsp-enable-file-watchers nil)
   (lsp-clients-typescript-preferences
-   '(:includeCompletionsForModuleExports t :generateReturnInDocTemplate t))
+   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
+  (lsp-clients-typescript-prefer-use-project-ts-server t)
+  (lsp-completion-provider :none)
+  (lsp-diagnostic-clean-after-change t)
+  (lsp-diagnostics-modeline-scope :workspace)
+  (lsp-eslint-working-directories `[(pattern ,(expand-file-name "Developer/*" (getenv "HOME")))])
+  (lsp-enable-indentation nil)
+  (lsp-enable-on-type-formatting nil)
+  (lsp-javascript-display-enum-member-value-hints t)
+  (lsp-javascript-format-enable nil)
+  (lsp-keymap-prefix "C-c l")
+  (lsp-lens-enable t)
+  (lsp-typescript-format-enable nil)
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  (lsp-eslint-working-directories `[(pattern ,(expand-file-name "Developer/*" (getenv "HOME")))])
   :config
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]chromium[/\\\\]src\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]src[/\\\\]node_modules\\'")
-  (add-to-list 'lsp-file-watch-ignored-directories "[/\\\\]opt[/\\\\]homebrew\\'"))
+  (dolist (dir '("[/\\\\]\\.ccls-cache\\'"
+                 "[/\\\\]\\.mypy_cache\\'"
+                 "[/\\\\]\\.pytest_cache\\'"
+                 "[/\\\\]\\.cache\\'"
+                 "[/\\\\]\\.clwb\\'"
+                 "[/\\\\]__pycache__\\'"
+                 "[/\\\\]bazel-bin\\'"
+                 "[/\\\\]bazel-code\\'"
+                 "[/\\\\]bazel-genfiles\\'"
+                 "[/\\\\]bazel-out\\'"
+                 "[/\\\\]bazel-testlogs\\'"
+                 "[/\\\\]third_party\\'"
+                 "[/\\\\]third-party\\'"
+                 "[/\\\\]buildtools\\'"
+                 "[/\\\\]out\\'"
+                 "[/\\\\]build\\'"
+                 "[/\\\\]dist\\'"
+                 "[/\\\\].dist\\'"
+                 ))
+    (push dir lsp-file-watch-ignored-directories)))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -2235,16 +2265,18 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
         (([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
          ([remap xref-find-references]  . lsp-ui-peek-find-references)))
   :custom
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-sideline-show-diagnostics t)
-  (lsp-ui-sideline-show-code-actions t)
-  (lsp-ui-sideline-show-hover t)
+  (lsp-ui-doc-enable t)
   (lsp-ui-doc-position 'at-point)
   (lsp-ui-doc-alignment 'window)
-  (lsp-ui-doc-show-with-cursor t)
+  (lsp-ui-doc-show-with-cursor nil)
   (lsp-ui-doc-show-with-mouse t)
   (lsp-ui-doc-use-childframe t)
-  (lsp-ui-doc-border "windowBackgroundColor"))
+  (lsp-ui-doc-border "windowBacekgroundColor")
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-max-height 15)
+  (lsp-ui-doc-max-width 100)
+  (lsp-ui-sideline-enable nil)
+  (lsp-lens-enable nil))
 
 (use-package lsp-tailwindcss
   :custom
@@ -2257,77 +2289,18 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
                          (lsp-deferred))))
 #+END_SRC
 
-** COMMENT DAP Mode
-
-Run ~dap-chrome-setup~ after requiring ~dab-chrome~
+** Dabbrev
 
 #+begin_src emacs-lisp
-(use-package dap-mode
-  :commands (dap-mode)
+(use-package dabbrev
+  ;; Swap M-/ and C-M-/
+  :bind (("M-/" . dabbrev-completion)
+         ("C-M-/" . dabbrev-expand))
   :config
-  (require 'dap-chrome)
-  (dap-ui-mode 1)
-  (dap-tooltip-mode 1)
-  (dap-ui-controls-mode 1)
-  (dap-register-debug-template
-   "Opera GX Corner [laungh]"
-   (list :type "chrome"
-         :name "Opera GX Corner [laungh]"
-         :request "laungh"
-         :url "https://local.op-test.net/"
-         :runtimeExecutable "/Applications/Opera GX.app/Contents/MacOS/Opera"
-         :webRoot "${workspaceFolder}/.dist/"
-         :userDataDir t
-         :sourceMaps t
-         ))
-  (dap-register-debug-template
-   "Opera GX Corner [attach]"
-   (list :type "chrome"
-         :name "Opera GX Corner [attach]"
-         :request "attach"
-         :port 9222
-         :url "https://local.op-test.net/"
-         :webRoot "${workspaceFolder}/.dist/"
-         :userDataDir t
-         :sourceMaps t
-         )))
-#+end_src
-
-** COMMENT Indent bars
-
-#+begin_src emacs-lisp
-(use-package indent-bars
-  :quelpa (indent-bars :fetcher github :repo "jdtsmith/indent-bars")
-  :custom
-  (indent-bars-treesit-support t)
-  (indent-bars-no-descend-string t)
-  (indent-bars-prefer-character nil)
-  (indent-bars-pattern ".")
-  (indent-bars-width-frac 0.1)
-  (indent-bars-pad-frac 0.1)
-  (indent-bars-zigzag nil)
-  (indent-bars-starting-column 0)
-  (indent-bars-color-by-depth nil)
-  (indent-bars-color '(highlight :face-bg t :blend 0.15))
-  (indent-bars-highlight-current-depth nil) ; pump up the BG blend on current
-  (indent-bars-treesit-ignore-blank-lines-types '("module"))
-  (indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
-				      list list_comprehension
-				      dictionary dictionary_comprehension
-				      parenthesized_expression subscript)))
-  :hook (prog-mode . indent-bars-mode))
-#+end_src
-
-** hl-block
-
-#+begin_src emacs-lisp
-(use-package hl-block-mode
-  :commands (hl-block-mode)
-  :config
-  (setq hl-block-bracket nil)    ;; Match all brackets.
-  (setq hl-block-single-level t) ;; Only one pair of brackets.
-  (setq hl-block-style 'bracket) ;; Highlight only the brackets.
-  :hook ((prog-mode) . hl-block-mode))
+  (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+  ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
+  (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
 #+end_src
 
 ** ChatGPT
@@ -2379,18 +2352,14 @@ Run ~dap-chrome-setup~ after requiring ~dab-chrome~
   :hook (after-init . display-battery-mode))
 #+end_src
 
-** Cider
-
-#+begin_src emacs-lisp
-(use-package cider)
-#+end_src
-
 ** Apheleia
 
 #+begin_src emacs-lisp
 (use-package apheleia
   :config
-  (apheleia-global-mode +1))
+  (apheleia-global-mode +1)
+  (setf (alist-get 'prisma-mode apheleia-mode-alist)
+      '(prettier)))
 #+end_src
 
 ** Treesitter
@@ -2403,6 +2372,8 @@ loaded before any language package
   :after treesit
   :custom-face
   (font-lock-preprocessor-face ((t (:foreground "#9c91e4" :weight normal))))
+  :functions (global-tree-sitter-mode tree-sitter-hl-mode)
+  :defines treesit-language-source-alist
   :config
   (add-to-list
    'treesit-language-source-alist
@@ -2413,35 +2384,98 @@ loaded before any language package
   ;; by switching on and off
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
-(defun my/ts-mode-p (mode)
-  (let* ((mode-name (symbol-name mode)))
-    (cond
-     ((string-suffix-p "ts-mode" mode-name) t)
-     (t nil))))
-
-(defun my/bring-previous-mode-hooks ()
-  (let ((mode-name (symbol-name major-mode)))
-    (if (not (my/ts-mode-p major-mode))
-        (error "Current mode does not contain -ts suffix: %s" mode-name)
-      (let* (
-             (non-ts-mode-name      (concat (string-remove-suffix "-ts" (string-remove-suffix "-mode" mode-name)) "-mode"))
-             (non-ts-mode-hook-name (concat non-ts-mode-name "-hook")))
-
-        (if (not (intern non-ts-mode-hook-name))
-            (message "There is no hook list named %s" non-ts-mode-hook-name)
-          (run-hooks (intern non-ts-mode-hook-name))
-          (message "Ran hook for %s" non-ts-mode-hook-name))))))
-
 (use-package treesit-auto
-  :hook
-  ((python-ts-mode js-ts-mode rustic-ts-mode json-ts-mode typescript-ts-mode) . #'my/bring-previous-mode-hooks)
   :custom
   (treesit-auto-install 'prompt)
+  :functions global-treesit-auto-mode
+  :defines global-treesit-auto-modes
+  :preface
+  (defun my/ts-mode-p (mode)
+    (let* ((mode-name (symbol-name mode)))
+      (cond
+       ((string-suffix-p "ts-mode" mode-name) t)
+       (t nil))))
+
+  (defun my/bring-previous-mode-hooks ()
+    (let ((mode-name (symbol-name major-mode)))
+      (if (not (my/ts-mode-p major-mode))
+          (error "Current mode does not contain -ts suffix: %s" mode-name)
+        (let* (
+               (non-ts-mode-name      (concat (string-remove-suffix "-ts" (string-remove-suffix "-mode" mode-name)) "-mode"))
+               (non-ts-mode-hook-name (concat non-ts-mode-name "-hook")))
+
+          (if (not (intern non-ts-mode-hook-name))
+              (message "There is no hook list named %s" non-ts-mode-hook-name)
+            (run-hooks (intern non-ts-mode-hook-name))
+            (message "Ran hook for %s" non-ts-mode-hook-name))))))
+
+  (defun my/get-treesit-auto-modes ()
+    "Extracts all available treesit auto modes"
+    (unless global-treesit-auto-modes
+      (error "global-treesit-auto-modes vartable does not exist, can't transfer hooks from non treesit modes"))  
+    (seq-filter 'my/ts-mode-p global-treesit-auto-modes))
+
   :config
-  (global-treesit-auto-mode))
+
+  (global-treesit-auto-mode)
+
+  ;; add lambda function hook to list of emacs hooks
+  (dolist (mode (my/get-treesit-auto-modes))
+    (let* ((mode-name (symbol-name mode))
+           (hook-name (concat mode-name "-hook")))
+      (add-hook (intern hook-name) #'my/bring-previous-mode-hooks))))
+#+end_src
+
+** Combobulate
+
+#+begin_src emacs-lisp
+(use-package combobulate
+  :preface
+  ;; You can customize Combobulate's key prefix here.
+  ;; Note that you may have to restart Emacs for this to take effect!
+  (setq combobulate-key-prefix "C-c o")
+  :hook
+  ((python-ts-mode . combobulate-mode)
+   (js-ts-mode . combobulate-mode)
+   (html-ts-mode . combobulate-mode)
+   (css-ts-mode . combobulate-mode)
+   (yaml-ts-mode . combobulate-mode)
+   (typescript-ts-mode . combobulate-mode)
+   (json-ts-mode . combobulate-mode)
+   (tsx-ts-mode . combobulate-mode))
+  ;; Amend this to the directory where you keep Combobulate's source
+  ;; code.
+  :quelpa (combobulate-mode :fetcher github :repo "mickeynp/combobulate" :branch "master"))
 #+end_src
 
 * Prog modes
+
+** Prepare all prog modes
+
+#+begin_src emacs-lisp
+(use-package display-line-numbers
+  :ensure nil
+  :hook (prog-mode . display-line-numbers-mode)
+  :custom
+  (display-line-numbers-type 'relative)
+  :config
+  (toggle-indicate-empty-lines t))
+
+(use-package highlight-indentation
+  :hook (prog-mode . highlight-indentation-mode)
+  :quelpa (highlight-indentation :fetcher github :repo "antonj/Highlight-Indentation-for-Emacs")
+  :custom
+  (highlight-indentation-blank-lines nil))
+#+end_src
+
+** prisma
+
+#+begin_src emacs-lisp
+(use-package prisma-mode
+  :mode ("\\.prisma\\'" . prisma-mode)
+  :quelpa (prisma-mode :fetcher github :repo "pimeys/emacs-prisma-mode" :branch "main")
+  :hook (prisma-mode . lsp-deferred))
+#+end_src
 
 ** el
 #+begin_src emacs-lisp

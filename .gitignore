@@ -5,9 +5,6 @@
 /README.el
 /custom.el
 
-/elpa/**/*
-!/elpa/.dir-locals.el
-
 .DS_Store
 
 /var/
