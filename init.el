@@ -48,17 +48,6 @@
   :init
   (setq package-check-signature 'allow-unsigned))
 
-;; Overrides GC, adds big treshold when Emacs is used and then does GC
-;; when there is a slight pause in typing
-(use-package gcmh
-  :custom
-  (gcmh-verbose nil)
-  (gcmh-idle-delay 2)
-  :config
-  (when (functionp 'restore-post-init-settings)
-    (restore-post-init-settings))
-  (gcmh-mode 1))
-
 ;; Inject PATH from shell
 (use-package exec-path-from-shell
   :custom

@@ -2344,14 +2344,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (prog-mode . copilot-mode))
 #+end_src
 
-** Battery
-
-#+begin_src emacs-lisp
-(use-package battery
-  :ensure nil
-  :hook (after-init . display-battery-mode))
-#+end_src
-
 ** Apheleia
 
 #+begin_src emacs-lisp

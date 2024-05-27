@@ -21,7 +21,7 @@
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
-(defvar my/pre-init-gc-cons-threshold gc-cons-threshold)
+(defvar my/pre-init-gc-cons-threshold 100000000) ;; or gc-cons-threshold
 (defvar my/pre-init-gc-cons-percentage gc-cons-percentage)
 
 (setq file-name-handler-alist nil
@@ -32,7 +32,13 @@
   "Restore some values previously savet in early-init.el"
   (setq file-name-handler-alist my/pre-init-file-name-handler-alist
         gc-cons-threshold my/pre-init-gc-cons-threshold
-        gc-cons-percentage my/pre-init-gc-cons-percentage))
+        gc-cons-percentage my/pre-init-gc-cons-percentage)
+  (message "Restore previous GC threshold and file-name-handler-alist values"))
+
+(add-hook 'after-init-hook
+          (lambda ()
+            (when (functionp 'restore-post-init-settings)
+              (restore-post-init-settings))))
 
 ;; Set default-frame-alist before init.el
 (push '(menu-bar-lines . 0) default-frame-alist)
