@@ -8,6 +8,11 @@
 (eval-when-compile
   (require 'use-package))
 
+(use-package use-package-ensure-system-package
+  :ensure t
+  :custom
+  (async-shell-command-buffer 'new-buffer))
+
 (setq use-package-always-ensure t)
 
 (setq package-archives
@@ -76,4 +81,5 @@
 
 (load custom-file t)
 (put 'narrow-to-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
