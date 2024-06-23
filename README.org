@@ -14,7 +14,7 @@ xcode-select --install
 
 #+BEGIN_SRC shell
 brew tap d12frosted/emacs-plus
-brew install emacs-plus@29 --with-no-frame-refocus --with-xwidgets --with-imagemagick --with-native-comp --with-savchenkovaleriy-big-sur-icon
+brew install emacs-plus@29 --with-no-frame-refocus --with-xwidgets --with-imagemagick --with-native-comp --with-savchenkovaleriy-big-sur-icon --with-poll
 #+END_SRC
 
 To start a bg service, run:
@@ -228,7 +228,6 @@ not break the init of Emacs.
   (visible-bell t)
 
   :config
-  ;; (pixel-scroll-precision-mode 1)
   (set-default 'truncate-lines t)
   (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
@@ -257,7 +256,7 @@ not break the init of Emacs.
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
-;;http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
+;; http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
 (defconst y-or-n-p-ret-yes-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map y-or-n-p-map)
@@ -274,6 +273,11 @@ not break the init of Emacs.
 (global-unset-key (kbd "C-<wheel-down>"))
 (global-unset-key (kbd "<mouse-2>"))
 (global-unset-key (kbd "s-t"))
+
+;; TODO: find better replacement for those bindigns 
+(global-set-key (kbd "<pinch>") 'ignore)
+(global-set-key (kbd "<C-wheel-up>") 'ignore)
+(global-set-key (kbd "<C-wheel-down>") 'ignore)
 
 ;; Make shebang (#!) file executable when saved
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
@@ -561,8 +565,17 @@ everything reuse your currently selected window.
   :ensure nil
   :custom
   (tab-line-separator " | ")
-  (tab-line-close-button-show t)
-  (tab-line-new-button-show t))
+  (tab-line-close-button-show nil)
+  (tab-line-new-button-show nil))
+#+end_src
+
+* Debug Emacs
+
+** Explain Pause
+
+#+begin_src emacs-lisp
+(use-package explain-pause-mode
+  :quelpa (explain-pause-mode :fetcher github :repo "lastquestion/explain-pause-mode"))
 #+end_src
 
 * List filtering helpers
@@ -814,7 +827,12 @@ also helpful emacs config just for vertico
   (setq consult-narrow-key "<") ;; (kbd "C-+")
 
   (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root))
+  (setq consult-project-root-function #'projectile-project-root)
+
+  (defun consult-info-emacs ()
+    "Search through Emacs info pages."
+    (interactive)``
+    (consult-info "emacs" "efaq" "elisp" "cl" "compat")))
 #+end_src
 
 ** Consult Projectile ([[https://github.com/emacsmirror/consult-projectile][link]])
@@ -960,13 +978,13 @@ Packages
   :after (corfu orderless)
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
-   (lsp-completion-mode . my/corfu-setup-lsp)
-   (dired-mode . lsp-dired-mode))
+   (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
   (lsp-log-io nil)
   (lsp-file-watch-threshold 4000)
-  (lsp-headerline-breadcrumb-enable t)
+  (lsp-headerline-breadcrumb-enable nil)
   (lsp-headerline-breadcrumb-icons-enable nil)
+  (lsp-headerline-breadcrumb-enable-diagnostics nil) 
   (lsp-headerline-breadcrumb-segments '(file symbols))
   (lsp-auto-guess-root t)
   (lsp-enable-file-watchers nil)
@@ -1091,8 +1109,9 @@ Packages
                                 ("TAB" . copilot-accept-completion)
                                 ("C-TAB" . 'copilot-accept-completion-by-word)
                                 ("C-<tab>" . 'copilot-accept-completion-by-word)))
-  :hook
-  (prog-mode . copilot-mode))
+  ;;:hook
+  ;;(prog-mode . copilot-mode)
+  )
 #+end_src
 
 ** Apheleia
@@ -1121,6 +1140,9 @@ loaded before any language package
   (add-to-list
    'treesit-language-source-alist
    '(prisma "https://github.com/victorhqc/tree-sitter-prisma"))
+  (add-to-list
+   'treesit-language-source-alist
+   '(svelte "https://github.com/Himujjal/tree-sitter-svelte"))
   ;; activate tree-sitter on any buffer containing code for which it has a parser available
   (global-tree-sitter-mode)
   ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
@@ -1128,6 +1150,7 @@ loaded before any language package
   (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
 
 (use-package treesit-auto
+  :after tree-sitter
   :custom
   (treesit-auto-install 'prompt)
   :functions global-treesit-auto-mode
@@ -1160,6 +1183,7 @@ loaded before any language package
 
   :config
 
+  (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode)
 
   ;; add lambda function hook to list of emacs hooks
@@ -1167,6 +1191,13 @@ loaded before any language package
     (let* ((mode-name (symbol-name mode))
            (hook-name (concat mode-name "-hook")))
       (add-hook (intern hook-name) #'my/bring-previous-mode-hooks))))
+#+end_src
+
+** Treesit fold
+
+#+begin_src emacs-lisp
+(use-package treesit-fold
+  :quelpa (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
 #+end_src
 
 ** COMMENT Combobulate
@@ -1243,8 +1274,6 @@ loaded before any language package
                      (registers . 5)))
   (dashboard-display-icons-p t)
   (dashboard-icon-type 'all-the-icons)
-  (dashboard-set-heading-icons t)
-  (dashboard-set-file-icons t)
   (dashboard-modify-heading-icons '((recents . "file-text")
                                     (bookmarks . "book")))
   (dashboard-set-navigator t)
@@ -1470,8 +1499,11 @@ with version control systems.
 ** Expand region
 
 #+BEGIN_SRC emacs-lisp
-(use-package expand-region
-  :bind ("C-=" . er/expand-region))
+(use-package expreg
+  :ensure t
+  :bind
+  ("C-=" . expreg-expand)
+  ("C--" . expreg-contract))
 #+END_SRC
 
 ** launchctl
@@ -1500,17 +1532,39 @@ with version control systems.
 
 #+begin_src emacs-lisp
 (use-package emacs
-  :ensure-system-package font-jetbrains-mono
-  :config
-  (set-face-attribute 'default nil :font "JetBrains Mono" :height 150))
+  :if (not (file-exists-p "~/Library/Fonts/JetBrainsMonoNerdFont-Medium.ttf"))
+  :ensure nil
+  :ensure-system-package font-jetbrains-mono-nerd-(format "message" format-args)ont)
+
+(use-package emacs
+  :ensure nil
+  :custom-face (default ((t (:font "JetBrainsMono Nerd Font" :height 150)))))
 
 (use-package nerd-icons
-  :ensure-system-package font-jetbrains-mono-nerd-font
+  :defines nerd-icons-regexp-icon-alist
   :custom
-  (nerd-icons-apply-to-all t)
-  (nerd-icons-font-family "JetBrainsMono Nerd Font")
+  (nerd-icons-color-icons t)
   :config
-  )
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?test\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?test_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?spec\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?spec_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt)))
 
 (use-package nerd-icons-dired
   :hook (dired-mode . nerd-icons-dired-mode))
@@ -1533,41 +1587,6 @@ with version control systems.
 (use-package treemacs-nerd-icons
   :config
   (treemacs-load-theme "nerd-icons"))
-#+end_src
-
-** COMMENT All the icons + complementary ([[https://github.com/domtronn/all-the-icons.el][link]])
-
-A utility package to collect various Icon Fonts and propertize them
-within Emacs.
-
-#+BEGIN_SRC emacs-lisp
-(use-package all-the-icons
-  :if (display-graphic-p)
-  :quelpa (all-the-icons :fetcher github :repo "domtronn/all-the-icons.el" :branch "svg" :files (:defaults "svg"))
-  :custom
-  (image-cache-eviction-delay nil)
-  (all-the-icons-scale-factor 1.0))
-
-(use-package all-the-icons-completion
-  :after (marginalia all-the-icons)
-  :hook (marginalia-mode . all-the-icons-completion-marginalia-setup)
-  :config
-  (all-the-icons-completion-mode))
-
-(use-package all-the-icons-ibuffer
-  :ensure t
-  :after all-the-icons
-  :hook (ibuffer-mode . all-the-icons-ibuffer-mode)
-  :custom
-  (all-the-icons-ibuffer-icon-size 1.0)
-  (all-the-icons-ibuffer-human-readable-size t)
-  (all-the-icons-ibuffer-formats
-   '((mark
-      modified read-only locked " " (icon 2 2)
-      (name 18 18 :left :elide) " "
-      (size-h 9 -1 :right) " " (mode+ 16 16 :left) " "
-      filename-and-process+)
-     (mark " " (name 16 -1) " " filename))))
 #+end_src
 
 ** Projectile ([[https://github.com/bbatsov/projectile][link]])
@@ -1695,6 +1714,15 @@ targets."
                  (window-parameters (mode-line-format . none)))))
 #+end_src
 
+** highlight-global
+
+#+begin_src emacs-lisp
+(use-package highlight-global
+  :quelpa (highlight-global :fetcher github :repo "kaushalmodi/highlight-global")
+  :bind
+  ("C-s-h" . highlight-global-hl-frame-toggle))
+#+end_src
+
 ** Embark Consult ([[https://github.com/oantolin/embark/blob/master/embark-consult.el][link]])
 
 Consult users will also want the embark-consult package.
@@ -1750,12 +1778,15 @@ Consult users will also want the embark-consult package.
   (corfu-quit-at-boundary :separator)
   (corfu-quit-no-match t)
   (corfu-scroll-margin 4)
+  (corfu-popupinfo-delay '(0.3 . 0.1))
+  (corfu-popupinfo-hide nil)
   (tab-always-indent 'complete)
   (tab-first-completion 'word-or-paren-or-punct)
   (read-extended-command-predicate #'command-completion-default-include-p)
 
   :config
   (global-corfu-mode)
+  (corfu-popupinfo-mode)
   ;; The advices are only needed on Emacs 28 and older.
   (when (< emacs-major-version 29)
     ;; Silence the pcomplete capf, no errors or messages!
@@ -1776,16 +1807,10 @@ Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
 (use-package cape
-  ;; Bind dedicated completion commands
   :bind (("C-." . completion-at-point)
-         ("C-c /" . completion-fil)
-         ("C-c /" . completion-fil))
+         ("C-c /" . cape-dabbrev))
   :init
-  (add-to-list 'completion-at-point-functions #'cape-file)
-  (add-to-list 'completion-at-point-functions #'cape-keyword))
-
-  ;; (add-to-list 'completion-at-point-functions #'cape-tex)
-  ;; (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  (add-to-list 'completion-at-point-functions #'cape-file))
 #+end_src
 
 ** Multiple Cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
@@ -2173,6 +2198,24 @@ fill those notes in with more details!"
         org-roam-ui-open-on-start t))
 #+end_src
 
+*** Org Tidy
+
+#+begin_src emacs-lisp
+(use-package org-tidy
+  :hook
+  (org-mode . org-tidy-mode))
+#+end_src
+
+*** Org Download
+
+#+begin_src emacs-lisp
+(use-package org-download
+  :hook (dired-mode . org-download-enable)
+  :custom
+  (org-download-screenshot-method "screencapture -i %s"))
+
+#+end_src
+
 ** Load theme
 
 #+BEGIN_SRC emacs-lisp
@@ -2281,6 +2324,8 @@ fill those notes in with more details!"
 
 ** Modeline
 
+*** Doom Modeline
+
 #+BEGIN_SRC emacs-lisp
 (use-package doom-modeline
   :custom
@@ -2297,6 +2342,15 @@ fill those notes in with more details!"
   (doom-modeline-mode))
 #+END_SRC
 
+*** Hide Modeline
+
+Hides modeline whenever this minor mode is active
+
+#+begin_src emacs-lisp
+(use-package hide-mode-line
+  :commands hide-mode-line-mode)
+#+end_src
+
 ** Git
 
 *** magit - best git client ever
@@ -2307,7 +2361,6 @@ fill those notes in with more details!"
   :bind ("C-x g" . magit-status)
   :hook
   (git-commit-mode . flyspell-mode)
-  (after-save . magit-after-save-refresh-status)
   :custom
   (vc-handled-backends nil)
   (magit-process-finish-apply-ansi-colors t)
@@ -2531,9 +2584,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :ensure nil
   :hook (prog-mode . display-line-numbers-mode)
   :custom
-  (display-line-numbers-type 'relative)
-  :config
-  (toggle-indicate-empty-lines t))
+  (display-line-numbers-type 'relative))
 #+end_src
 
 ** prisma
@@ -2674,13 +2725,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package typescript-mode
   :after (lsp-mode)
   :mode "\\.ts$"
-  :hook
-  (typescript-mode . lsp-deferred))
+  :hook (typescript-mode . lsp-deferred))
 
 (use-package js2-mode
   :after (lsp-mode)
   :mode ("\\.[cm]*js$")
-  :hook ((js-base-mode) . lsp-deferred))
+  :hook (js-base-mode . lsp-deferred))
 
 (use-package eslintd-fix
   :hook ((js-base-mode) . eslintd-fix-mode))
@@ -2705,6 +2755,9 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
      ("lineup-quotes" . t)
      ("lineup-ternary" . nil)
      ("case-extra-offset" . t))))
+
+(use-package svelte-mode
+  :mode "\\.svelte\\'")
 #+END_SRC
 
 ** Py
