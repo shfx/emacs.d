@@ -6,20 +6,20 @@ Emacs configuration files written with the help of [[https://orgmode.org/][org-m
 
 * Install xcode cli tools
 
-#+BEGIN_SRC shell
+#+begin_src shell
 xcode-select --install
 #+END_SRC
 
 * Install Emacs with ~homebrew~
 
-#+BEGIN_SRC shell
+#+begin_src shell
 brew tap d12frosted/emacs-plus
 brew install emacs-plus@29 --with-no-frame-refocus --with-xwidgets --with-imagemagick --with-native-comp --with-savchenkovaleriy-big-sur-icon --with-poll
 #+END_SRC
 
 To start a bg service, run:
 
-#+BEGIN_SRC xml
+#+begin_src xml
 brew services start emacs-plus@29
 #+END_SRC
 
@@ -29,7 +29,7 @@ brew services start emacs-plus@29
 
 Better list-package mode
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package paradox
   :custom
   (paradox-github-token t)
@@ -74,13 +74,13 @@ Better list-package mode
 
 ** auto-minor-mode ([[https://github.com/joewreschnig/auto-minor-mode][link]])
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package auto-minor-mode)
 #+END_SRC
 
 ** system-package ([[https://github.com/emacs-straight/system-packages][link]])
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package system-packages
   :custom
   (system-packages-package-manager 'brew))
@@ -90,7 +90,7 @@ Better list-package mode
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package better-defaults
   :config
   (ido-mode 0))
@@ -115,7 +115,7 @@ Better list-package mode
 
 ** Measure startup time
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (add-hook 'emacs-startup-hook
           (lambda ()
             (message "*** Emacs loaded in %s with %d garbage collections."
@@ -123,7 +123,7 @@ Better list-package mode
                              (float-time
                               (time-subtract after-init-time before-init-time)))
                      gcs-done)))
-#+END_SRC
+#+end_src
 
 ** Starting the server if not already started
 
@@ -158,7 +158,7 @@ When running as a deamon emacs checks if custom.el is in safe place. Here were
 setting custom.el in ~/tmp~ dir and it will sometimes throw an
 errors. Here is a dirty hack.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defadvice server-ensure-safe-dir
     (around
      my-around-server-ensure-safe-dir
@@ -176,13 +176,13 @@ not break the init of Emacs.
 
 ** Setting default coding system
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (prefer-coding-system 'utf-8)
-#+END_SRC
+#+end_src
 
 ** Setting default display and editing options
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package shell
   :ensure nil
   :hook
@@ -303,7 +303,7 @@ not break the init of Emacs.
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (global-set-key (kbd "M-s-<right>") 'tab-next)
 (global-set-key (kbd "M-s-<left>") 'tab-previous)
-#+END_SRC
+#+end_src
 
 ** Comint
 
@@ -404,7 +404,7 @@ to work properly
 
 ** Default trash behavior
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package osx-trash
   :if (eq system-type 'darwin)
   :ensure-system-package macos-trash
@@ -413,11 +413,11 @@ to work properly
   :custom
   (osx-trash-command "trash -F")
   (delete-by-moving-to-trash t))
-#+END_SRC
+#+end_src
 
 ** System specific defaults
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (when (eq system-type 'darwin)
   (defvar ls-lisp-use-insert-directory-program)
   (defvar powerline-image-apple-rgb)
@@ -425,21 +425,21 @@ to work properly
   (setq powerline-image-apple-rgb t)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
-#+END_SRC
+#+end_src
 
 ** Disabling suspend-frame binding
 
 Very annoying binding, lets get rid of it.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (global-unset-key (kbd "C-z"))
-#+END_SRC
+#+end_src
 
 ** Browser Url
 
 Set build-in module defaults to handle chrome as a default browser
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package browse-url
   :custom
   (browse-url-browser-function 'browse-url-default-browser))
@@ -447,7 +447,7 @@ Set build-in module defaults to handle chrome as a default browser
 (use-package browse-url-dwim
   :config
   (browse-url-dwim-mode 1))
-#+END_SRC
+#+end_src
 
 ** EasyGP Assistant
 
@@ -517,7 +517,7 @@ behaving they way you'd like them to. By setting up simple rules you
 can for instance make Emacs always select help buffers for you or make
 everything reuse your currently selected window.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package shackle
   :custom
   (shackle-rules
@@ -544,7 +544,7 @@ everything reuse your currently selected window.
    '(:select t))
   :config
   (shackle-mode t))
-#+END_SRC
+#+end_src
 
 ** TabBar
 
@@ -893,7 +893,7 @@ Packages
 
 ** Flycheck
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package flycheck
   :hook (prog-mode . flycheck-mode)
   :custom-face
@@ -905,7 +905,7 @@ Packages
 
 (use-package flycheck-rust
   :after flycheck)
-#+END_SRC
+#+end_src
 
 ** Sideline
 
@@ -940,17 +940,17 @@ Packages
 
 ** restclient
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package restclient
   :defer t
   :mode (("\\.http\\'" . restclient-mode))
   :bind (:map restclient-mode-map
               ("C-c C-f" . json-mode-beautify)))
-#+END_SRC
+#+end_src
 
 ** jq
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package jq-mode
   :after (org-mode json-mode)
   :commands (jq-mode jq-interactively)
@@ -960,11 +960,11 @@ Packages
   :config
   (org-babel-add-langs
    ((jq . t))))
-#+END_SRC
+#+end_src
 
 ** LSP Mode
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun my/corfu-setup-lsp ()
   "Use orderless completion style with lsp-capf instead of the
   default lsp-passthrough."
@@ -1056,7 +1056,7 @@ Packages
   :hook (python-mode . (lambda ()
                          (require 'lsp-pyright)
                          (lsp-deferred))))
-#+END_SRC
+#+end_src
 
 ** Dabbrev
 
@@ -1313,7 +1313,7 @@ Bourne-like shells. So by re-writing common commands like ls and cp in
 Emacs-Lisp, Eshell will function identically on any environment Emacs
 itself runs on.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package eshell
   :hook
   (eshell-mode .
@@ -1364,11 +1364,11 @@ itself runs on.
                 (propertize " ❯" 'face 'eshell-prompt-face)
                 ;; needed for the input text to not have prompt face
                 (propertize " " 'face 'default)))))))
-#+END_SRC
+#+end_src
 
 ** Toogle undecorated frame
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defun toggle-frame-maximized-undecorated ()
   (interactive)
   (let* ((frame (selected-frame))
@@ -1387,7 +1387,7 @@ itself runs on.
         (set-frame-parameter frame 'undecorated t)
         (set-frame-height frame (- display-height 26) nil t)
         (set-frame-position frame initial-x 0)))))
-#+END_SRC
+#+end_src
 
 ** Scratch ([[https://github.com/ieure/scratch-el][link]])
 
@@ -1397,9 +1397,9 @@ notably useful when working on code in some language; you may grab
 code into a scratch buffer, and, by virtue of this extension, do so
 using the Emacs formatting rules for that language.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package scratch)
-#+END_SRC
+#+end_src
 
 ** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
 
@@ -1407,7 +1407,7 @@ Simple functionality to show/hide eshell/ansi-term (or almost any
 other buffer, see eshell-toggle-init-function description below) at
 the bottom of active window with directory of its buffer.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package eshell-toggle
   :after eshell
   :bind
@@ -1416,7 +1416,7 @@ the bottom of active window with directory of its buffer.
   (eshell-toggle-name-separator " ❯ ")
   (eshell-toggle-size-fraction 3)
   (eshell-toggle-use-projectile-root t))
-#+END_SRC
+#+end_src
 
 ** ESUP
 
@@ -1426,7 +1426,7 @@ the bottom of active window with directory of its buffer.
 
 ** vterm
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package vterm
   :custom
   (vterm-always-compile-module t))
@@ -1434,7 +1434,7 @@ the bottom of active window with directory of its buffer.
 (use-package multi-vterm
   :after vterm
   :bind (("C-c v" . multi-vterm)))
-#+END_SRC
+#+end_src
 
 ** Eat - an extension to eshell
 
@@ -1474,18 +1474,18 @@ editors to read the file format and adhere to defined
 styles. EditorConfig files are easily readable and they work nicely
 with version control systems.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package editorconfig
   :init
   (editorconfig-mode 1))
-#+END_SRC
+#+end_src
 
 ** Posframe
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package posframe
   :ensure t)
-#+END_SRC
+#+end_src
  
 ** goggles (link)
 
@@ -1498,13 +1498,13 @@ with version control systems.
 
 ** Expand region
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package expreg
   :ensure t
   :bind
   ("C-=" . expreg-expand)
   ("C--" . expreg-contract))
-#+END_SRC
+#+end_src
 
 ** launchctl
 
@@ -1514,9 +1514,9 @@ with version control systems.
 
 ** Restart Emacs
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package restart-emacs)
-#+END_SRC
+#+end_src
 
 ** Matching Paren Overlay
 
@@ -1595,7 +1595,7 @@ Projectile is a project interaction library for Emacs. Its goal is to
 provide a nice set of features operating on a project level without
 introducing external dependencies (when feasible)
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package projectile
   :demand t
   :bind-keymap
@@ -1636,7 +1636,7 @@ introducing external dependencies (when feasible)
                 " --use-mock-keychain")
    :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_remoteexec=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
    :compile "autoninja -C chromium/src/out/Release opera"))
-#+END_SRC
+#+end_src
 
 ** ibuffer-projectile ([[https://github.com/purcell/ibuffer-projectile][link]])
 
@@ -1819,7 +1819,7 @@ Multiple cursors for Emacs. This is some pretty crazy functionality,
 so yes, there are kinks. Don't be afraid tho, I've been using it since
 2011 with great success and much merriment.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package multiple-cursors
   :hook
   (multiple-cursors-mode
@@ -1835,7 +1835,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   :bind
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this))
-#+END_SRC
+#+end_src
 
 ** Org
 
@@ -1845,7 +1845,7 @@ Org mode is for keeping notes, maintaining TODO lists, planning
 projects, and authoring documents with a fast and effective plain-text
 syste.
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (defmacro org-babel-add-langs (langs)
   `(org-babel-do-load-languages
     'org-babel-load-languages
@@ -1929,9 +1929,9 @@ syste.
      ("j" "Journal" entry (file+olp+datetree "journal.org")
       "* %?\nEntered on %U\n  %i\n  %a")
      )))
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package org-habit
   :ensure nil)
 
@@ -2060,7 +2060,7 @@ syste.
       (frame-parameters . ((undecorated . t)
                            (skip-taskbar . t)
                            (sticky . t)))))))
-#+END_SRC
+#+end_src
 
 *** Org Roam
 
@@ -2170,9 +2170,9 @@ fill those notes in with more details!"
 
 *** Htmlize for org-mode
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package htmlize)
-#+END_SRC
+#+end_src
 
 *** org-cliplink ([[https://github.com/rexim/org-cliplink][link]])
 
@@ -2218,18 +2218,18 @@ fill those notes in with more details!"
 
 ** Load theme
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package doom-themes
   :config
   (load-theme 'doom-molokai t)
   (doom-themes-org-config)
   (doom-themes-visual-bell-config)
   (doom-themes-neotree-config))
-#+END_SRC
+#+end_src
 
 ** Key suffixes popup
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package which-key
   :init
   (which-key-mode)
@@ -2247,36 +2247,36 @@ fill those notes in with more details!"
    (which-key-side-window-max-width 0.33)
    (which-key-popup-type 'side-window)
    (which-key-sort-uppercase-first nil)))
-#+END_SRC
+#+end_src
 
 ** Editing forms in chrome
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package atomic-chrome
   :config
   (atomic-chrome-start-server))
-#+END_SRC
+#+end_src
 
 ** Better help dialogs
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package helpful
   :bind (("C-h f"  . helpful-callable)
          ("C-h v"  . helpful-variable)
          ("C-h k"  . helpful-key)
          ("C-c C-d" . helpful-at-point)
          ("C-h k"  . helpful-key)))
-#+END_SRC
+#+end_src
 
 ** Better list-package mode
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package paradox
   :custom
   (paradox-github-token t)
   :config
   (paradox-enable))
-#+END_SRC
+#+end_src
 
 ** pnpm-mode
 
@@ -2288,45 +2288,45 @@ fill those notes in with more details!"
 
 ** Cycling between different var notations
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package string-inflection
   :bind
   ("C-c C-u" . string-inflection-all-cycle))
-#+END_SRC
+#+end_src
 
 ** Open dash at point
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package dash-at-point
   :bind
   ("C-c d" . dash-at-point)
   ("C-c e" . dash-at-point-with-docset))
-#+END_SRC
+#+end_src
 
 ** Move lines using alt + arrows
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package move-text
   :config
   (move-text-default-bindings))
-#+END_SRC
+#+end_src
 
 ** Anzu - current match / all matches in modeline
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package anzu
   :init
   (global-anzu-mode +1)
   :bind
   ("M-%" . anzu-query-replace)
   ("C-M-%" . anzu-query-replace-regexp))
-#+END_SRC
+#+end_src
 
 ** Modeline
 
 *** Doom Modeline
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package doom-modeline
   :custom
   (doom-modeline-hud t)
@@ -2340,7 +2340,7 @@ fill those notes in with more details!"
   (doom-modeline-height 30)
   :config
   (doom-modeline-mode))
-#+END_SRC
+#+end_src
 
 *** Hide Modeline
 
@@ -2355,7 +2355,7 @@ Hides modeline whenever this minor mode is active
 
 *** magit - best git client ever
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package magit
   :init
   :bind ("C-x g" . magit-status)
@@ -2378,15 +2378,15 @@ Hides modeline whenever this minor mode is active
     (interactive)
     (magit-with-toplevel
       (magit-run-git-async "submodule" "update" "--init" "--recursive"))))
-#+END_SRC
+#+end_src
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package forge
   :after magit
   :config
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository))
   (add-to-list 'forge-alist '("gitlab.service.osa" "gitlab.service.osa/api/v4" "gitlab.service.osa" forge-gitlab-repository)))
-#+END_SRC
+#+end_src
 
 *** magit-todos ([[https://github.com/alphapapa/magit-todos][link]])
 
@@ -2470,11 +2470,11 @@ Hides modeline whenever this minor mode is active
 
 ** goto-line-preview
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package goto-line-preview
   :bind ([remap goto-line] . goto-line-preview)
   :config)
-#+END_SRC
+#+end_src
 
 ** pulsar
 
@@ -2486,14 +2486,14 @@ Hides modeline whenever this minor mode is active
 
 ** unfill
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package unfill
   :bind ([remap fill-paragraph] . unfill-toggle))
-#+END_SRC
+#+end_src
 
 ** Snippets
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package yasnippet
   :after lsp-mode
   :hook (prog-mode . yas-minor-mode))
@@ -2502,11 +2502,11 @@ Hides modeline whenever this minor mode is active
   :after yasnippet
   :config
   (yas-reload-all))
-#+END_SRC
+#+end_src
 
 ** keyfreq
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package keyfreq
   :custom
   (keyfreq-excluded-commands
@@ -2522,13 +2522,13 @@ Hides modeline whenever this minor mode is active
   :config
   (keyfreq-mode 1)
   (keyfreq-autosave-mode 1))
-#+END_SRC
+#+end_src
 
 ** rg
 
 ripgrep frontend
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package rg
   :ensure-system-package rg
   :custom
@@ -2538,7 +2538,7 @@ ripgrep frontend
      ("env" .    "\.env.*")))
   :config
   (rg-enable-menu))
-#+END_SRC
+#+end_src
 
 ** Dired
 
@@ -2546,7 +2546,7 @@ I've tried ~[[https://github.com/ralesi/ranger.el][ranger-mode~]] with it's simp
 
 With some additions of course, like [[https://github.com/purcell/diredfl][~diredfl~]] for colors and [[https://gitlab.com/xuhdev/dired-quick-sort][~dired-quick-sort~]] for better sorting with native ~gnu ls~
 
-#+BEGIN_SRC emacs-lisp
+#+begin_src emacs-lisp
 (use-package dired
   :ensure nil
   :custom
@@ -2574,7 +2574,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after dired
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
-#+END_SRC
+#+end_src
 
 * Prog modes
 ** Prepare all prog modes
@@ -2657,20 +2657,20 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 (use-package edit-indirect
   :after markdown-mode)
-#+END_SRC
+#+end_src
 
 ** Htmlize for org-mode
 
 #+begin_src emacs-lisp
 (use-package htmlize)
-#+END_SRC
+#+end_src
 
 ** YAML
 
 #+begin_src emacs-lisp
 (use-package yaml-mode
   :mode "\\.yaml")
-#+END_SRC
+#+end_src
 
 ** GO
 
@@ -2682,7 +2682,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
             (lambda ()
               (add-hook 'before-save-hook 'gofmt-before-save)
               (local-set-key (kbd "M-.") 'godef-jump))))
-#+END_SRC
+#+end_src
 
 ** JSON
 
@@ -2695,14 +2695,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :config
   (setq js-indent-level 2))
 
-#+END_SRC
+#+end_src
 
 ** CSS
 
 #+begin_src emacs-lisp
 (use-package css-mode
   :mode "\\.css")
-#+END_SRC
+#+end_src
 
 ** SCSS
 
@@ -2710,14 +2710,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 (use-package scss-mode
   :mode "\\.scss"
   :hook (scss-mode . lsp-deferred))
-#+END_SRC
+#+end_src
 
 ** LUA
 
 #+begin_src emacs-lisp
 (use-package lua-mode
   :mode ("\\.lua"))
-#+END_SRC
+#+end_src
 
 ** JS
 
@@ -2755,10 +2755,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
      ("lineup-quotes" . t)
      ("lineup-ternary" . nil)
      ("case-extra-offset" . t))))
-
-(use-package svelte-mode
-  :mode "\\.svelte\\'")
-#+END_SRC
+#+end_src
 
 ** Py
 
@@ -2775,7 +2772,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after python-mode
   :config
   (poetry-tracking-mode))
-#+END_SRC
+#+end_src
 
 ** Dockerfile and docker-compose.yml
 
@@ -2794,4 +2791,4 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
-#+END_SRC
+#+end_src
