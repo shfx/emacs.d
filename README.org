@@ -676,10 +676,13 @@ also helpful emacs config just for vertico
   ("s-," . (lambda () (interactive)
              (find-file (concat user-emacs-directory "README.org"))))
   :init
-  ;; Add prompt indicator to `completing-read-multiple'.
-  ;; Alternatively try `consult-completing-read-multiple'.
   (defun crm-indicator (args)
-    (cons (concat "[CRM] " (car args)) (cdr args)))
+    (cons (format "[CRM%s] %s"
+                  (replace-regexp-in-string
+                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                   crm-separator)
+                  (car args))
+          (cdr args)))
   (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
   :custom
@@ -704,19 +707,11 @@ also helpful emacs config just for vertico
 ** Orderless ([[https://github.com/oantolin/orderless][link]])
 
 #+begin_src emacs-lisp
-(defun orderless-fast-dispatch (word index total)
-  (and (= index 0) (= total 1) (length< word 4)
-       `(orderless-regexp . ,(concat "^" (regexp-quote word)))))
-
 (use-package orderless
-  :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles . (partial-completion)))))
-  :config
-  (orderless-define-completion-style orderless-fast
-    (orderless-style-dispatchers '(orderless-fast-dispatch))
-    (orderless-matching-styles '(orderless-literal orderless-regexp))))
+  :init
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
 #+end_src
 
 ** Savehist
@@ -1130,27 +1125,7 @@ Enables tree-sitter in all programming languages supported. Should be
 loaded before any language package
 
 #+begin_src emacs-lisp
-(use-package tree-sitter
-  :after treesit
-  :custom-face
-  (font-lock-preprocessor-face ((t (:foreground "#9c91e4" :weight normal))))
-  :functions (global-tree-sitter-mode tree-sitter-hl-mode)
-  :defines treesit-language-source-alist
-  :config
-  (add-to-list
-   'treesit-language-source-alist
-   '(prisma "https://github.com/victorhqc/tree-sitter-prisma"))
-  (add-to-list
-   'treesit-language-source-alist
-   '(svelte "https://github.com/Himujjal/tree-sitter-svelte"))
-  ;; activate tree-sitter on any buffer containing code for which it has a parser available
-  (global-tree-sitter-mode)
-  ;; you can easily see the difference tree-sitter-hl-mode makes for python, ts or tsx
-  ;; by switching on and off
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-
 (use-package treesit-auto
-  :after tree-sitter
   :custom
   (treesit-auto-install 'prompt)
   :functions global-treesit-auto-mode
@@ -1182,6 +1157,27 @@ loaded before any language package
     (seq-filter 'my/ts-mode-p global-treesit-auto-modes))
 
   :config
+
+  (add-to-list 'treesit-auto-langs 'svelte)
+
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'prisma
+                :ts-mode 'prisma-ts-mode
+                :remap '(prisma-mode)
+                :url "https://github.com/victorhqc/tree-sitter-prisma"
+                :revision "master"
+                :source-dir "src"
+                :ext "\\.prisma\\'"))
+
+  (add-to-list 'treesit-auto-recipe-list
+               (make-treesit-auto-recipe
+                :lang 'svelte
+                :ts-mode 'svelte-ts-mode
+                :remap 'svelte-mode
+                :url "https://github.com/Himujjal/tree-sitter-svelte"
+                :source-dir "./src"
+                :ext "\\.svelte\\'"))
 
   (treesit-auto-add-to-auto-mode-alist 'all)
   (global-treesit-auto-mode)
@@ -1463,6 +1459,20 @@ the bottom of active window with directory of its buffer.
   :config
   (marginalia-mode))
 #+end_src
+
+** diff-hl
+
+#+begin_src emacs-lisp
+(use-package diff-hl
+  :commands global-diff-hl-mode
+  :hook 
+  ((magit-pre-refresh . diff-hl-magit-pre-refresh)
+   (magit-post-refresh . diff-hl-magit-post-refresh)
+   (dired-mode . diff-hl-dired-mode))
+  :config
+  (global-diff-hl-mode))
+#+end_src
+
 
 ** Editor Config ([[https://github.com/editorconfig/editorconfig-emacs][link]])
 
