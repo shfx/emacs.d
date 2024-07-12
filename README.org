@@ -14,7 +14,7 @@ xcode-select --install
 
 #+begin_src shell
 brew tap d12frosted/emacs-plus
-brew install emacs-plus@29 --with-no-frame-refocus --with-xwidgets --with-imagemagick --with-native-comp --with-savchenkovaleriy-big-sur-icon --with-poll
+brew install emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon --with-poll
 #+END_SRC
 
 To start a bg service, run:
@@ -1104,8 +1104,6 @@ Packages
                                 ("TAB" . copilot-accept-completion)
                                 ("C-TAB" . 'copilot-accept-completion-by-word)
                                 ("C-<tab>" . 'copilot-accept-completion-by-word)))
-  ;;:hook
-  ;;(prog-mode . copilot-mode)
   )
 #+end_src
 
@@ -1544,7 +1542,7 @@ with version control systems.
 (use-package emacs
   :if (not (file-exists-p "~/Library/Fonts/JetBrainsMonoNerdFont-Medium.ttf"))
   :ensure nil
-  :ensure-system-package font-jetbrains-mono-nerd-(format "message" format-args)ont)
+  :ensure-system-package font-jetbrains-mono-nerd-font)
 
 (use-package emacs
   :ensure nil
@@ -2223,18 +2221,20 @@ fill those notes in with more details!"
   :hook (dired-mode . org-download-enable)
   :custom
   (org-download-screenshot-method "screencapture -i %s"))
-
 #+end_src
 
 ** Load theme
 
 #+begin_src emacs-lisp
-(use-package doom-themes
+(use-package kanagawa-theme
+  :ensure t
+  :custom
+  (kanagawa-theme-comment-italic nil)
+  (kanagawa-theme-keyword-italic nil)
   :config
-  (load-theme 'doom-molokai t)
-  (doom-themes-org-config)
-  (doom-themes-visual-bell-config)
-  (doom-themes-neotree-config))
+  (load-theme 'kanagawa t)
+  (make-face-unitalic 'all)
+  (make-face-unitalic 'italic))
 #+end_src
 
 ** Key suffixes popup
@@ -2567,11 +2567,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
          (setq insert-directory-program "gls"
                dired-use-ls-dired t)
          (setq dired-listing-switches "-agho --group-directories-first"))))
-
-(use-package diredfl
-  :after dired
-  :init
-  (diredfl-global-mode 1))
 
 (use-package dired-quick-sort
   :after dired
