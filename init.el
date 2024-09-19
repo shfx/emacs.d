@@ -15,13 +15,10 @@
 
 ;; Packages
 
+(package-initialize)
+
 (eval-when-compile
   (require 'use-package))
-
-(use-package use-package-ensure-system-package
-  :ensure t
-  :custom
-  (async-shell-command-buffer 'new-buffer))
 
 (setq use-package-always-ensure t)
 
@@ -30,11 +27,6 @@
         ("nongnu" . "https://elpa.nongnu.org/nongnu/")
         ("gnu" . "https://elpa.gnu.org/packages/")))
 
-;; initialize after package-archives and package-user-dir are redefined
-(package-initialize)
-
-(package-read-all-archive-contents)
-
 (if (not package-archive-contents)
     (progn
       (message "Refreshing content")
@@ -42,6 +34,11 @@
   (progn
     (message "Refreshing content async")
     (package-refresh-contents t)))
+
+(use-package use-package-ensure-system-package
+  :ensure t
+  :custom
+  (async-shell-command-buffer 'new-buffer))
 
 (use-package no-littering)
 

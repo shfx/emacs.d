@@ -49,16 +49,15 @@
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (push '(horizontal-scroll-bars . nil) default-frame-alist)
-(push '(foreground-color . "#DCD7BA") default-frame-alist)
-(push '(background-color . "#16161D") default-frame-alist)
 (push '(ns-appearance . dark) default-frame-alist)
 (push '(ns-transparent-titlebar . t) default-frame-alist)
-(push '(fullscreen . maximized) default-frame-alist )
+(push '(fullscreen . maximized) default-frame-alist)
+(push '(undecorated-round . t) default-frame-alist)
 
 ;; Disables modeline until theme is loaded
 (setq-default mode-line-format nil)
 
-(set-face-foreground 'vertical-border "#171819")
+(set-face-foreground 'vertical-border "#0c0c0f")
 
 ;; Make the initial buffer load faster by setting its mode to fundamental-mode
 (setq initial-major-mode 'emacs-lisp-mode)

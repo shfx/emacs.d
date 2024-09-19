@@ -247,6 +247,10 @@ not break the init of Emacs.
   (advice-add #'tty-run-terminal-initialization :override #'ignore)
   (advice-add #'display-startup-echo-area-message :override #'ignore))
 
+(use-package prog-mode
+  :ensure nil
+  :hook (prog-mode . electric-pair-mode))
+
 (setq remote-file-name-inhibit-cache nil)
 (setq vc-ignore-dir-regexp
       (format "%s\\|%s"
@@ -391,12 +395,14 @@ to work properly
   (defvar xwidget-webkit-enable-plugins t))
 #+end_src
 
-** Windmove
+** Framemove
 
 #+begin_src emacs-lisp
-(use-package windmove
-  :ensure nil
-  :init
+(use-package framemove
+  :quelpa (framemove :fetcher github :host github :repo "emacsmirror/framemove")
+  :custom
+  (framemove-hook-into-windmove t)
+  :config
   (windmove-default-keybindings 'super)
   (windmove-swap-states-default-keybindings (list 'super 'control))
   (winner-mode 1))
@@ -407,7 +413,6 @@ to work properly
 #+begin_src emacs-lisp
 (use-package osx-trash
   :if (eq system-type 'darwin)
-  :ensure-system-package macos-trash
   :init
   (osx-trash-setup)
   :custom
@@ -622,40 +627,26 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               ("C-<backspace>" . vertico-directory-delete-word)
               ("RET" . vertico-directory-enter))
 
-  :custom ((vertico-resize t)
-           (vertico-cycle t)
-           (vertico-grid-separator "        ")
-           (vertico-grid-lookahead 50)
-           (vertico-buffer-display-action '(display-buffer-reuse-window))
-           ;;
-           (vertico-multiform-categories
-            '((consult-grep buffer)
-              (consult-buffer indexed)
-              (imenu buffer)
-              (library indexed)
-              (org-roam-node indexed)))
-           ;;
-           (vertico-multiform-commands
-            '((consult-line
+  :custom
+  (vertico-resize t)
+  (vertico-cycle t)
+  (vertico-grid-separator "        ")
+  (vertico-grid-lookahead 50)
+  (vertico-buffer-display-action '(display-buffer-reuse-window))
+  (vertico-multiform-categories
+   '((consult-line
                posframe
                (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
                (vertico-posframe-border-width . 10)
                (vertico-posframe-fallback-mode . vertico-buffer-mode))
-              (t posframe))))
+     (consult-grep buffer)
+     (consult-ripgrep buffer)
+     (consult-buffer reverse indexed)
+     (imenu buffer)
+     (library indexed)
+     (org-roam-node posframe indexed)
+     (t posframe)))
   :config
-  ;; Workaround for problem with `tramp' hostname completions. This overrides
-  ;; the completion style specifically for remote files! See
-  ;; https://github.com/minad/vertico#tramp-hostname-completion
-  (defun mw/basic-remote-try-completion (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-try-completion string table pred point)))
-  (defun mw/basic-remote-all-completions (string table pred point)
-    (and (vertico--remote-p string)
-         (completion-basic-all-completions string table pred point)))
-  (add-to-list 'completion-styles-alist
-               '(basic-remote           ; Name of `completion-style'
-                 mw/basic-remote-try-completion mw/basic-remote-all-completions nil))
-
   (vertico-mode 1)
   (vertico-multiform-mode 1))
 
@@ -933,6 +924,19 @@ Packages
 
 * Packages
 
+** command-log
+
+#+begin_src emacs-lisp
+(use-package command-log
+  :quelpa (command-log
+           :fetcher github :repo "positron-solutions/command-log")
+  :custom
+  (command-log-mouse t)
+  (command-log-text t)
+  (command-log-merge-repeats t)
+  (command-log-filter-commands '(self-insert-command handle-switch-frame org-self-insert-command)))
+#+end_src
+
 ** restclient
 
 #+begin_src emacs-lisp
@@ -989,7 +993,6 @@ Packages
   (lsp-completion-provider :none)
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
-  (lsp-eslint-working-directories `[(pattern ,(expand-file-name "Developer/*" (getenv "HOME")))])
   (lsp-enable-indentation nil)
   (lsp-enable-on-type-formatting nil)
   (lsp-javascript-display-enum-member-value-hints t)
@@ -998,28 +1001,7 @@ Packages
   (lsp-lens-enable t)
   (lsp-typescript-format-enable nil)
   (lsp-yaml-schema-store-local-db
-   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  :config
-  (dolist (dir '("[/\\\\]\\.ccls-cache\\'"
-                 "[/\\\\]\\.mypy_cache\\'"
-                 "[/\\\\]\\.pytest_cache\\'"
-                 "[/\\\\]\\.cache\\'"
-                 "[/\\\\]\\.clwb\\'"
-                 "[/\\\\]__pycache__\\'"
-                 "[/\\\\]bazel-bin\\'"
-                 "[/\\\\]bazel-code\\'"
-                 "[/\\\\]bazel-genfiles\\'"
-                 "[/\\\\]bazel-out\\'"
-                 "[/\\\\]bazel-testlogs\\'"
-                 "[/\\\\]third_party\\'"
-                 "[/\\\\]third-party\\'"
-                 "[/\\\\]buildtools\\'"
-                 "[/\\\\]out\\'"
-                 "[/\\\\]build\\'"
-                 "[/\\\\]dist\\'"
-                 "[/\\\\].dist\\'"
-                 ))
-    (push dir lsp-file-watch-ignored-directories)))
+   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json")))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1045,12 +1027,6 @@ Packages
 (use-package lsp-tailwindcss
   :custom
   (lsp-tailwindcss-add-on-mode t))
-
-(use-package lsp-pyright
-  :ensure t
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-pyright)
-                         (lsp-deferred))))
 #+end_src
 
 ** Dabbrev
@@ -1332,10 +1308,6 @@ itself runs on.
 
   :config
   (setenv "PAGER" "cat")
-  (setenv "PATH"
-          (concat
-           "/usr/local/bin:/usr/local/sbin:"
-           (getenv "PATH")))
 
   (defun eshell/gst (&rest args)
     (magit-status (pop args) nil)
@@ -1491,8 +1463,7 @@ with version control systems.
 ** Posframe
 
 #+begin_src emacs-lisp
-(use-package posframe
-  :ensure t)
+(use-package posframe)
 #+end_src
  
 ** goggles (link)
@@ -1540,13 +1511,11 @@ with version control systems.
 
 #+begin_src emacs-lisp
 (use-package emacs
-  :if (not (file-exists-p "~/Library/Fonts/JetBrainsMonoNerdFont-Medium.ttf"))
+  :preface
+  (set-face-attribute 'default nil :font "JetBrains Mono" :height 150)
+  :if (not (file-exists-p "~//Library/Fonts/JetBrainsMono[wght].ttf"))
   :ensure nil
-  :ensure-system-package font-jetbrains-mono-nerd-font)
-
-(use-package emacs
-  :ensure nil
-  :custom-face (default ((t (:font "JetBrainsMono Nerd Font" :height 150)))))
+  :ensure-system-package font-jetbrains-mono)
 
 (use-package nerd-icons
   :defines nerd-icons-regexp-icon-alist
@@ -1595,6 +1564,75 @@ with version control systems.
 (use-package treemacs-nerd-icons
   :config
   (treemacs-load-theme "nerd-icons"))
+#+end_src
+
+** Load theme
+
+#+begin_src emacs-lisp
+(use-package kanagawa-theme
+  :after nerd-icons
+  :ensure t
+  :custom
+  (kanagawa-theme-comment-italic nil)
+  (kanagawa-theme-keyword-italic nil)
+  :custom-face
+  (vertical-border ((t (:foreground "#101014"))))
+  :config
+  (load-theme 'kanagawa t)
+
+  (defvar my/kanawaga-theme-italic-fonts
+    '(font-lock-string-face
+      font-lock-string-face
+      font-lock-comment-face
+      font-lock-comment-delimiter-face
+      flycheck-inline-error
+      flycheck-inline-info
+      flycheck-inline-warning
+      vertico-current
+      completions-annotations
+      tree-sitter-hl-face:function.builtin
+      tree-sitter-hl-face:property.definition
+      tree-sitter-hl-face:variable
+      tree-sitter-hl-face:variable.parameter
+      tree-sitter-hl-face:punctuation.bracket
+      tree-sitter-hl-face:punctuation.delimiter
+      tree-sitter-hl-face:keyword.compiler
+      font-lock-keyword-face))
+
+  (dolist (face my/kanawaga-theme-italic-fonts)
+    (when (facep face)
+      (make-face-unitalic face))))
+#+end_src
+
+** Ligatures
+
+#+begin_src emacs-lisp
+;; This assumes you've installed the package via MELPA.
+(use-package ligature
+  :functions ligature-set-ligatures global-ligature-mode
+  :config
+  ;; Enable the "www" ligature in every possible major mode
+  (ligature-set-ligatures 't '("www"))
+  ;; Enable traditional ligature support in eww-mode, if the
+  ;; `variable-pitch' face supports it
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  ;; Enable all Cascadia Code ligatures in programming modes
+  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
+                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
+                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
+                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
+                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
+                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
+                                       "\\\\" "://"))
+  ;; Enables ligature checks globally in all buffers. You can also do it
+  ;; per mode with `ligature-mode'.
+  (global-ligature-mode t))
 #+end_src
 
 ** Projectile ([[https://github.com/bbatsov/projectile][link]])
@@ -2223,20 +2261,6 @@ fill those notes in with more details!"
   (org-download-screenshot-method "screencapture -i %s"))
 #+end_src
 
-** Load theme
-
-#+begin_src emacs-lisp
-(use-package kanagawa-theme
-  :ensure t
-  :custom
-  (kanagawa-theme-comment-italic nil)
-  (kanagawa-theme-keyword-italic nil)
-  :config
-  (load-theme 'kanagawa t)
-  (make-face-unitalic 'all)
-  (make-face-unitalic 'italic))
-#+end_src
-
 ** Key suffixes popup
 
 #+begin_src emacs-lisp
@@ -2579,6 +2603,12 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after dired
   :bind (:map dired-mode-map
               ("TAB" . dired-subtree-toggle)))
+#+end_src
+
+** Emacs Everywhere
+
+#+begin_src emacs-lisp
+(use-package emacs-everywhere)
 #+end_src
 
 * Prog modes
