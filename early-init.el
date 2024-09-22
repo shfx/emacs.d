@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t;# -*- mode:conf; -*-
+
 (when (featurep 'native-compile)
   ;; Silence compiler warnings as they can be pretty disruptive
   (setq native-comp-async-report-warnings-errors 'silent)
@@ -16,11 +18,7 @@
 ;; This is needed by lps-mode
 (setenv "LSP_USE_PLISTS" "true")
 
-(setq package-user-dir
-      (locate-user-emacs-file
-       (concat
-        (file-name-as-directory "var/packages")
-        emacs-version)))
+(setq package-enable-at-startup nil)
 
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
@@ -53,6 +51,7 @@
 (push '(ns-transparent-titlebar . t) default-frame-alist)
 (push '(fullscreen . maximized) default-frame-alist)
 (push '(undecorated-round . t) default-frame-alist)
+(push '(internal-border-width . 8) default-frame-alist)
 
 ;; Disables modeline until theme is loaded
 (setq-default mode-line-format nil)
