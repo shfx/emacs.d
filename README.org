@@ -8,83 +8,48 @@ Emacs configuration files written with the help of [[https://orgmode.org/][org-m
 
 #+begin_src shell
 xcode-select --install
-#+END_SRC
+#+end_src
 
 * Install Emacs with ~homebrew~
 
 #+begin_src shell
 brew tap d12frosted/emacs-plus
-brew install emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon --with-poll
-#+END_SRC
+brew install emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon
+#+end_src
 
 To start a bg service, run:
 
 #+begin_src xml
 brew services start emacs-plus@29
-#+END_SRC
-
-* Better package management
-
-** paradox ([[https://github.com/Malabarba/paradox/][link]])
-
-Better list-package mode
-
-#+begin_src emacs-lisp
-(use-package paradox
-  :custom
-  (paradox-github-token t)
-  :config
-  (paradox-enable))
-#+END_SRC
-
-** quelpa ([[https://github.com/quelpa/quelpa][link]])
-
-#+begin_src emacs-lisp
-(use-package quelpa
-  ;; It will install this package without using use-package
-  :ensure nil
-  :init
-  (unless (package-installed-p 'quelpa)
-    (with-temp-buffer
-      (url-insert-file-contents "https://raw.githubusercontent.com/quelpa/quelpa/master/quelpa.el")
-      (eval-buffer)
-      (quelpa-self-upgrade)))
-  :custom
-  (quelpa-dir (no-littering-expand-var-file-name "quelpa/"))
-  (quelpa-build-dir (expand-file-name "build" quelpa-dir))
-  (quelpa-melpa-dir (expand-file-name "melpa" quelpa-dir))
-  (quelpa-packages-dir (expand-file-name "packages" quelpa-dir)))
 #+end_src
 
-** quelpa-use-package ([[https://github.com/quelpa/quelpa-use-package][link]])
+** To reinstall
+
+#+begin_src shell
+brew reinstall emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon
+#+end_src
+
+sometimes when you update macsos you need to make sure gcc and
+libgccjit is updated as well
+
+#+begin_src shell
+brew reinstall gcc libgccjit
+#+end_src
+
+Better package management
+
+** Enable lexical binding
 
 #+begin_src emacs-lisp
-(use-package quelpa-use-package
-  ;; It will install this package without using use-package
-  :after quelpa
-  :ensure nil
-  :init
-  (quelpa
-   '(quelpa-use-package
-     :fetcher git
-     :url "https://github.com/quelpa/quelpa-use-package.git"))
-  (require 'quelpa-use-package)
-  (quelpa-use-package-activate-advice))
+;;; -*- lexical-binding: t -*-
+(message "This is tangled README.el. lexical-binding has the value %S" lexical-binding)
 #+end_src
 
 ** auto-minor-mode ([[https://github.com/joewreschnig/auto-minor-mode][link]])
 
 #+begin_src emacs-lisp
 (use-package auto-minor-mode)
-#+END_SRC
-
-** system-package ([[https://github.com/emacs-straight/system-packages][link]])
-
-#+begin_src emacs-lisp
-(use-package system-packages
-  :custom
-  (system-packages-package-manager 'brew))
-#+END_SRC
+#+end_src
 
 * Initialiation defaults
 
@@ -94,7 +59,7 @@ Better list-package mode
 (use-package better-defaults
   :config
   (ido-mode 0))
-#+END_SRC
+#+end_src
 
 ** async ([[https://github.com/jwiegley/emacs-async][link]])
 
@@ -108,6 +73,7 @@ Better list-package mode
 
 #+begin_src emacs-lisp
 (use-package auth-source
+  :ensure nil
   :no-require t
   :custom
   (auth-sources '("~/.authinfo.gpg")))
@@ -207,12 +173,10 @@ not break the init of Emacs.
   (inhibit-startup-echo-area-message user-login-name)
   (inhibit-startup-message t)
   (inhibit-startup-screen t)
-  (left-fringe-width  16)
   (make-backup-files nil)
   (ns-right-alternate-modifier nil)
   (ns-use-proxy-icon nil)
   (pop-up-frames nil)
-  (right-fringe-width  16)
   (ring-bell-function 'ignore)
   (scroll-conservatively 101)
   (scroll-margin 0)
@@ -226,6 +190,7 @@ not break the init of Emacs.
   (use-dialog-box nil)
   (vc-handled-backends nil)
   (visible-bell t)
+  (global-auto-revert-non-file-buffers t)
 
   :config
   (set-default 'truncate-lines t)
@@ -238,6 +203,7 @@ not break the init of Emacs.
   (global-auto-revert-mode 1)
   (menu-bar-mode 0)
   (save-place-mode 1)
+  (recentf-mode 1)
 
   ;; Better support for files with long lines
   (setq-default bidi-paragraph-direction 'left-to-right)
@@ -331,6 +297,18 @@ not break the init of Emacs.
   (compilation-filter . colorize-compilation-buffer))
 #+end_src
 
+** Auto-compile
+
+#+begin_src emacs-lisp
+(use-package auto-compile
+  :custom
+  (auto-compile-display-buffer nil)
+  (auto-compile-mode-line-counter t)
+  :config
+  (auto-compile-on-load-mode)
+  (auto-compile-on-save-mode))
+#+end_src
+
 ** Alerter - notifications for macos
 
 #+begin_src emacs-lisp
@@ -399,7 +377,7 @@ to work properly
 
 #+begin_src emacs-lisp
 (use-package framemove
-  :quelpa (framemove :fetcher github :host github :repo "emacsmirror/framemove")
+  :ensure (framemove :fetcher github :host github :repo "emacsmirror/framemove")
   :custom
   (framemove-hook-into-windmove t)
   :config
@@ -413,9 +391,9 @@ to work properly
 #+begin_src emacs-lisp
 (use-package osx-trash
   :if (eq system-type 'darwin)
-  :init
-  (osx-trash-setup)
+  :defer 2
   :custom
+  (osx-trash-setup)
   (osx-trash-command "trash -F")
   (delete-by-moving-to-trash t))
 #+end_src
@@ -442,14 +420,14 @@ Very annoying binding, lets get rid of it.
 
 ** Browser Url
 
-Set build-in module defaults to handle chrome as a default browser
-
 #+begin_src emacs-lisp
 (use-package browse-url
+  :ensure nil
   :custom
   (browse-url-browser-function 'browse-url-default-browser))
 
 (use-package browse-url-dwim
+  :defer 2
   :config
   (browse-url-dwim-mode 1))
 #+end_src
@@ -458,20 +436,12 @@ Set build-in module defaults to handle chrome as a default browser
 
 #+begin_src emacs-lisp
 (use-package epa
-  :if (eq system-type 'darwin)
-  :ensure-system-package (gpg pinentry-mac)
+  :ensure-system-package pinentry-mac
+  :ensure nil
   :custom
-  (epa-file-encrypt-to '("shfx@shfx.pl"))
+  (epa-file-encrypt-to "shfx@shfx.pl")
   (password-cache-expiry (* 60 15))
-  (epa-file-select-keys nil)
-  (epg-pinentry-mode 'loopback))
-
-(use-package epa
-  :if (eq system-type 'gnu/linux)
-  :custom
-  (epa-file-encrypt-to '("shfx@shfx.pl"))
-  (password-cache-expiry (* 60 15))
-  (epa-file-select-keys nil)
+  (epa-file-select-keys t)
   (epg-pinentry-mode 'loopback))
 #+end_src
 
@@ -484,6 +454,15 @@ gpg --expert --full-generate-key
 #+end_src
 
 https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
+
+** Re-builder
+
+#+begin_src emacs-lisp
+(use-package re-builder
+  :ensure nil
+  :custom
+  (reb-re-syntax 'string))
+#+end_src
 
 * Window and frame management
 
@@ -580,7 +559,7 @@ everything reuse your currently selected window.
 
 #+begin_src emacs-lisp
 (use-package explain-pause-mode
-  :quelpa (explain-pause-mode :fetcher github :repo "lastquestion/explain-pause-mode"))
+  :ensure (explain-pause-mode :fetcher github :repo "lastquestion/explain-pause-mode"))
 #+end_src
 
 * List filtering helpers
@@ -709,8 +688,11 @@ also helpful emacs config just for vertico
 
 #+begin_src emacs-lisp
 (use-package savehist
+  :ensure nil
   :after no-littering
-  :init
+  :custom
+  (history-length 50)
+  :config
   (savehist-mode))
 #+end_src
 
@@ -719,8 +701,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 ;; Example configuration for Consult
 (use-package consult
-  :after projectile
-  :demand t
+  :defer 2
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -789,27 +770,8 @@ also helpful emacs config just for vertico
   (setq xref-show-xrefs-function #'consult-xref
         xref-show-definitions-function #'consult-xref)
 
-  ;; Configure other variables and modes in the :config section,
-  ;; after lazily loading the package.
   :config
-
-  ;; Optionally configure preview. The default value
-  ;; is 'any, such that any key triggers the preview.
-  ;; (setq consult-preview-key 'any)
-  ;; (setq consult-preview-key (kbd "M-."))
-  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-  ;; For some commands and buffer sources it is useful to configure the
-  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-  ;;(consult-customize
-  ;; consult-theme
-  ;; :preview-key '(:debounce 0.2 any)
-  ;; consult-ripgrep consult-git-grep consult-grep
-  ;; consult-bookmark consult-recent-file consult-xref
-  ;; consult--source-buffer consult--source-project-buffer consult--source-bookmark
-  ;; :preview-key (kbd "M-."))
-
-  ;; Optionally configure the narrowing key.
-  ;; Both < and C-+ work reasonably well.
+  (setq consult-preview-key "M-.")
   (setq consult-narrow-key "<") ;; (kbd "C-+")
 
   (autoload 'projectile-project-root "projectile")
@@ -825,8 +787,6 @@ also helpful emacs config just for vertico
 
 #+begin_src emacs-lisp
 (use-package consult-projectile
-  :demand t
-  :after (consult projectile)
   :bind-keymap ("C-c p" . projectile-command-map)
   :bind (:map projectile-command-map
               ("p" . consult-projectile))
@@ -837,7 +797,8 @@ also helpful emacs config just for vertico
 ** Consult flycheck ([[https://github.com/minad/consult-flycheck][link]])
 
 #+begin_src emacs-lisp
-(use-package consult-flycheck)
+(use-package consult-flycheck
+  :after (consult flycheck))
 #+end_src
 
 ** Consult Dir ([[https://github.com/karthink/consult-dir][link]])
@@ -881,6 +842,7 @@ Packages
 
 #+begin_src emacs-lisp
 (use-package flycheck
+  :defer 1
   :hook (prog-mode . flycheck-mode)
   :custom-face
   (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
@@ -890,13 +852,14 @@ Packages
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
 (use-package flycheck-rust
-  :after flycheck)
+  :after (flycheck rust-mode))
 #+end_src
 
 ** Sideline
 
 #+begin_src emacs-lisp
 (use-package sideline
+  :after (flycheck lsp)
   :defines sideline-backends-right
   :custom
   (sideline-backends-left-skip-current-line t)
@@ -909,13 +872,12 @@ Packages
   (sideline-display-backend-name nil))
 
 (use-package sideline-flycheck
-  :after sideline
   :hook (flycheck-mode . sideline-flycheck-setup)
   :config
   (add-to-list 'sideline-backends-right 'sideline-flycheck))
 
 (use-package sideline-lsp
-  :after sideline
+  :after lsp
   :custom
   (sideline-lsp-code-actions-prefix "")
   :config
@@ -928,7 +890,7 @@ Packages
 
 #+begin_src emacs-lisp
 (use-package command-log
-  :quelpa (command-log
+  :ensure (command-log
            :fetcher github :repo "positron-solutions/command-log")
   :custom
   (command-log-mouse t)
@@ -997,7 +959,7 @@ Packages
   (lsp-enable-on-type-formatting nil)
   (lsp-javascript-display-enum-member-value-hints t)
   (lsp-javascript-format-enable nil)
-  (lsp-keymap-prefix "C-c l")
+  (lsp-keymap-prefix "s-l")
   (lsp-lens-enable t)
   (lsp-typescript-format-enable nil)
   (lsp-yaml-schema-store-local-db
@@ -1025,6 +987,7 @@ Packages
   (lsp-lens-enable nil))
 
 (use-package lsp-tailwindcss
+  :after lsp
   :custom
   (lsp-tailwindcss-add-on-mode t))
 #+end_src
@@ -1033,6 +996,7 @@ Packages
 
 #+begin_src emacs-lisp
 (use-package dabbrev
+  :ensure nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand))
@@ -1049,8 +1013,16 @@ Packages
 (defun shell-maker-welcome-message-ignore (config) "")
 
 (use-package chatgpt-shell
+  :commands
+  (chatgpt-shell
+   chatgpt-shell-prompt
+   chatgpt-shell-send-region
+   chatgpt-shell-explain-code
+   chatgpt-shell-refactor-code
+   chatgpt-shell-view-at-point
+   chatgpt-shell-search-history)
   :custom
-  ;; (chatgpt-shell-openai-key "xxx")
+  ;;(chatgpt-shell-openai-key "xxx")
   ;;(chatgpt-shell-openai-key  "xxx")
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore)
 )
@@ -1071,7 +1043,7 @@ Packages
 
 #+begin_src emacs-lisp
 (use-package copilot
-  :quelpa (copilot :fetcher github
+  :ensure (copilot :fetcher github
                    :repo "zerolfx/copilot.el"
                    :branch "main"
                    :files ("dist" "*.el"))
@@ -1167,7 +1139,7 @@ loaded before any language package
 
 #+begin_src emacs-lisp
 (use-package treesit-fold
-  :quelpa (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
+  :ensure (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
 #+end_src
 
 ** COMMENT Combobulate
@@ -1189,17 +1161,16 @@ loaded before any language package
    (tsx-ts-mode . combobulate-mode))
   ;; Amend this to the directory where you keep Combobulate's source
   ;; code.
-  :quelpa (combobulate-mode :fetcher github :repo "mickeynp/combobulate" :branch "master"))
+  :ensure (combobulate-mode :fetcher github :repo "mickeynp/combobulate" :branch "master"))
 #+end_src
 
 ** Project Tasks
 
 #+begin_src emacs-lisp
 (use-package project-tasks
+  :after project
   :defer t
-
   :commands (project-tasks)
-
   :init
   ;; Show project-tasks when switching projects
   (add-to-list 'project-switch-commands '(project-tasks "tasks") t)
@@ -1269,7 +1240,6 @@ loaded before any language package
 #+begin_src emacs-lisp
 (use-package bufler
   :bind
-  ("C-x b" . bufler-switch-buffer)
   ("C-x C-b" . bufler-list)
   :custom
   (bufler-workspace-switch-buffer-sets-workspace t))
@@ -1285,29 +1255,26 @@ itself runs on.
 
 #+begin_src emacs-lisp
 (use-package eshell
+  :ensure nil
+  :commands (eshell)
   :hook
-  (eshell-mode .
-   (lambda ()
-     (setq-local
-      corfu-auto nil
-      corfu-quit-at-boundary t
-      corfu-quit-no-match t
-      corfu-separatvor nil)
-     (corfu-mode)
-     (setenv "TERM" "xterm-256color")))
-
+  (eshell-mode . (lambda ()
+                   (setq-local
+                    corfu-auto nil
+                    corfu-quit-at-boundary t
+                    corfu-quit-no-match t
+                    corfu-separatvor nil)
+                   (corfu-mode)))
 
   :custom
   (eshell-banner-message "")
-  (eshell-scroll-to-bottom-on-input 'this)
+  (eshell-scroll-to-bottom-on-input 'all)
   (eshell-error-if-no-glob t)
   (eshell-hist-ignoredups t)
-  (eshell-save-history-on-exit t)
-  (eshell-prefer-lisp-functions nil)
-  (eshell-destroy-buffer-when-process-dies t)
 
   :config
   (setenv "PAGER" "cat")
+  (setenv "TERM" "xterm-256color")
 
   (defun eshell/gst (&rest args)
     (magit-status (pop args) nil)
@@ -1321,7 +1288,7 @@ itself runs on.
   :custom
   ((eshell-prompt-regexp "^.*❯ ")
    (eshell-prompt-function
-    (lambda nil
+    (lambda ()
       (let ((base/dir (shrink-path-prompt default-directory)))
         (concat (propertize (car base/dir)
                             'face 'font-lock-comment-face)
@@ -1501,7 +1468,7 @@ with version control systems.
 
 #+begin_src emacs-lisp
 (use-package matching-paren-overlay
-  :quelpa
+  :ensure
   (matching-paren-overlay
    :fetcher git
    :url "https://codeberg.org/acdw/matching-paren-overlay.el.git"))
@@ -1511,10 +1478,10 @@ with version control systems.
 
 #+begin_src emacs-lisp
 (use-package emacs
+  :ensure nil
   :preface
   (set-face-attribute 'default nil :font "JetBrains Mono" :height 150)
   :if (not (file-exists-p "~//Library/Fonts/JetBrainsMono[wght].ttf"))
-  :ensure nil
   :ensure-system-package font-jetbrains-mono)
 
 (use-package nerd-icons
@@ -1561,7 +1528,32 @@ with version control systems.
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 
+#+end_src
+
+** Treemacs
+
+#+begin_src emacs-lisp
+(use-package treemacs
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag))
+  :config
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always))
+
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
+
 (use-package treemacs-nerd-icons
+  :after treemacs
   :config
   (treemacs-load-theme "nerd-icons"))
 #+end_src
@@ -1569,39 +1561,13 @@ with version control systems.
 ** Load theme
 
 #+begin_src emacs-lisp
-(use-package kanagawa-theme
-  :after nerd-icons
+(use-package kanagawa-themes
   :ensure t
   :custom
-  (kanagawa-theme-comment-italic nil)
-  (kanagawa-theme-keyword-italic nil)
-  :custom-face
-  (vertical-border ((t (:foreground "#101014"))))
+  (kanagawa-themes-comment-italic nil)
+  (kanagawa-themes-keyword-italic nil)
   :config
-  (load-theme 'kanagawa t)
-
-  (defvar my/kanawaga-theme-italic-fonts
-    '(font-lock-string-face
-      font-lock-string-face
-      font-lock-comment-face
-      font-lock-comment-delimiter-face
-      flycheck-inline-error
-      flycheck-inline-info
-      flycheck-inline-warning
-      vertico-current
-      completions-annotations
-      tree-sitter-hl-face:function.builtin
-      tree-sitter-hl-face:property.definition
-      tree-sitter-hl-face:variable
-      tree-sitter-hl-face:variable.parameter
-      tree-sitter-hl-face:punctuation.bracket
-      tree-sitter-hl-face:punctuation.delimiter
-      tree-sitter-hl-face:keyword.compiler
-      font-lock-keyword-face))
-
-  (dolist (face my/kanawaga-theme-italic-fonts)
-    (when (facep face)
-      (make-face-unitalic face))))
+  (load-theme 'kanagawa-wave t))
 #+end_src
 
 ** Ligatures
@@ -1764,7 +1730,7 @@ targets."
 
 #+begin_src emacs-lisp
 (use-package highlight-global
-  :quelpa (highlight-global :fetcher github :repo "kaushalmodi/highlight-global")
+  :ensure (highlight-global :fetcher github :repo "kaushalmodi/highlight-global")
   :bind
   ("C-s-h" . highlight-global-hl-frame-toggle))
 #+end_src
@@ -1813,13 +1779,13 @@ Consult users will also want the embark-consult package.
   (corfu-auto-delay 0)
   (corfu-auto-prefix 1)
   (corfu-count 14)
-  (corfu-cycle nil)
+  (corfu-cycle t)
   (corfu-echo-documentation t)
   (corfu-min-width 80)
   (corfu-max-width corfu-min-width)
   (corfu-preselect-first t)
   (corfu-preview-current t)
-  (corfu-preselect 'valid)
+  (corfu-preselect 'prompt)
   (corfu-separator ?\s)
   (corfu-quit-at-boundary :separator)
   (corfu-quit-no-match t)
@@ -1832,6 +1798,7 @@ Consult users will also want the embark-consult package.
 
   :config
   (global-corfu-mode)
+  (corfu-history-mode)
   (corfu-popupinfo-mode)
   ;; The advices are only needed on Emacs 28 and older.
   (when (< emacs-major-version 29)
@@ -1844,6 +1811,7 @@ Consult users will also want the embark-consult package.
 
 ;; Use dabbrev with Corfu!
 (use-package dabbrev
+  :ensure nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
          ("C-M-/" . dabbrev-expand)))
@@ -1912,6 +1880,8 @@ syste.
   (alist-unique (append alist values)))
 
 (use-package org
+  :ensure nil
+  :mode (("\\.org$" . org-mode))
   :hook
   (org-mode . turn-on-auto-fill)
   :bind
@@ -1930,9 +1900,7 @@ syste.
    '(org-protocol
      org-habit
      org-mouse
-     org-tempo
-     org-mac-iCal
-     org-panel))
+     org-tempo))
   (org-blank-before-new-entry
    '((heading . t)
      (plain-list-item . nil)))
@@ -1983,7 +1951,7 @@ syste.
 
 (use-package org-starless
   :hook (org-mode . org-starless-mode)
-  :quelpa (org-starless :fetcher github :repo "TonCherAmi/org-starless"))
+  :ensure (org-starless :fetcher github :repo "TonCherAmi/org-starless"))
 
 (use-package org-tree-slide
   :custom
@@ -2009,6 +1977,7 @@ syste.
   (shell . t)))
 
 (use-package ob-restclient
+  :defer 2
   :custom
   (org-babel-default-header-args:restclient
    '((:results . "raw")
@@ -2019,6 +1988,7 @@ syste.
 
 (use-package ob-js
   :ensure nil
+  :commands (org-mode)
   :config
   (org-babel-add-langs
    ((js . t)))
@@ -2026,6 +1996,7 @@ syste.
   (add-to-list 'org-babel-tangle-lang-exts '("js" . "js")))
 
 (use-package ob-deno
+  :defer 2
   :config
   (org-babel-add-langs
    ((deno . t))))
@@ -2039,7 +2010,7 @@ syste.
 (use-package ob-async)
 
 (use-package org-super-agenda
-  :init
+  :defer 2
   :custom
   (org-super-agenda-groups
    ;; Each group has an implicit boolean OR operator between its selectors.
@@ -2202,16 +2173,6 @@ fill those notes in with more details!"
            :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+date: %U\n#+category: ${title}\n#+filetags: Plant\n")
            :unnarrowed t))))
 
-(use-package websocket
-  :after org-roam)
-
-(use-package org-roam-ui
-  :after (org-roam websocket)
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
 #+end_src
 
 *** Htmlize for org-mode
@@ -2231,17 +2192,17 @@ fill those notes in with more details!"
 
 #+begin_src emacs-lisp
 (use-package org-roam-ui
-  :quelpa (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-  :after org-roam
-  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-  ;;         a hookable mode anymore, you're advised to pick something yourself
-  ;;         if you don't care about startup time, use
-  :hook (after-init . org-roam-ui-mode)
+  :ensure (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :defer 2
+  :after (org-roam websocket)
+  ;;         if you don't care about startup time, use  
+  :custom
+  (org-roam-ui-sync-theme t)
+  (org-roam-ui-follow t)
+  (org-roam-ui-update-on-save t)
+  (org-roam-ui-open-on-start t)
   :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+  (org-roam-ui-mode 1))
 #+end_src
 
 *** Org Tidy
@@ -2300,16 +2261,6 @@ fill those notes in with more details!"
          ("C-h k"  . helpful-key)
          ("C-c C-d" . helpful-at-point)
          ("C-h k"  . helpful-key)))
-#+end_src
-
-** Better list-package mode
-
-#+begin_src emacs-lisp
-(use-package paradox
-  :custom
-  (paradox-github-token t)
-  :config
-  (paradox-enable))
 #+end_src
 
 ** pnpm-mode
@@ -2390,8 +2341,10 @@ Hides modeline whenever this minor mode is active
 *** magit - best git client ever
 
 #+begin_src emacs-lisp
+(use-package transient)
+
 (use-package magit
-  :init
+  :after transient
   :bind ("C-x g" . magit-status)
   :hook
   (git-commit-mode . flyspell-mode)
@@ -2437,7 +2390,7 @@ Hides modeline whenever this minor mode is active
 
 #+begin_src emacs-lisp
 (use-package conventional-commit
-  :quelpa (conventional-commit :fetcher github :repo "akirak/conventional-commit.el")
+  :ensure (conventional-commit :fetcher github :repo "akirak/conventional-commit.el")
   :hook
   (git-commit-mode . conventional-commit-setup))
 #+end_src
@@ -2564,7 +2517,7 @@ ripgrep frontend
 
 #+begin_src emacs-lisp
 (use-package rg
-  :ensure-system-package rg
+  :ensure-system-package (rg . ripgrep)
   :custom
   (rg-custom-type-aliases
    '(("svelte" .    "*.svelte")
@@ -2627,7 +2580,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+begin_src emacs-lisp
 (use-package prisma-mode
   :mode ("\\.prisma\\'" . prisma-mode)
-  :quelpa (prisma-mode :fetcher github :repo "pimeys/emacs-prisma-mode" :branch "main")
+  :ensure (prisma-mode :fetcher github :repo "pimeys/emacs-prisma-mode" :branch "main")
   :hook (prisma-mode . lsp-deferred))
 #+end_src
 
@@ -2655,7 +2608,8 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 ** rustic
 
 #+begin_src emacs-lisp
-(use-package rustic)
+(use-package rustic
+  :after rust-mode)
 #+end_src
 
 ** .env
@@ -2694,12 +2648,6 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :after markdown-mode)
 #+end_src
 
-** Htmlize for org-mode
-
-#+begin_src emacs-lisp
-(use-package htmlize)
-#+end_src
-
 ** YAML
 
 #+begin_src emacs-lisp
@@ -2736,6 +2684,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+begin_src emacs-lisp
 (use-package css-mode
+  :ensure nil
   :mode "\\.css")
 #+end_src
 

@@ -12,10 +12,9 @@
 (setopt switch-to-buffer-obey-display-actions t)
 (setopt mouse-wheel-tilt-scroll t)
 (setopt mouse-wheel-flip-direction t)
-(blink-cursor-mode -1)
 (setopt display-line-numbers-width 3)
 
-;; Packages
+;; Elpaca
 
 (defvar elpaca-installer-version 0.7)
 (defvar elpaca-directory
@@ -63,50 +62,66 @@
 
 (add-hook 'after-init-hook #'elpaca-process-queues)
 
-(require 'use-package)
-
 (elpaca `(,@elpaca-order))
+
+(require 'use-package)
 
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
 
+;; ;; Uncomment this to see the list of loaded packages
+;; (setq use-package-verbose 
 (setq use-package-always-ensure t)
-(setq use-package-verbose t);
 
-(use-package no-littering)
+(use-package no-littering
+  :ensure (:wait t)
+  :demand t)
 
-(use-package auto-compile
-  :custom
-  (auto-compile-display-buffer nil)
-  (auto-compile-mode-line-counter t)
-  :config
-  (auto-compile-on-load-mode)
-  (auto-compile-on-save-mode))
-
-(fset #'x-apply-session-resources #'ignore)
-
-;; Remove signature check before upgrating to new key
 (setq package-check-signature nil)
 
 ;; Updates public keyring and reverts package-check-signature
 (use-package gnu-elpa-keyring-update
+  :ensure (:wait t)
   :init
   (setq package-check-signature 'allow-unsigned))
 
-;; Inject PATH from shell
-(use-package exec-path-from-shell
+(use-package system-packages
+  :ensure (:wait t)
+  :demand t
   :custom
-  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
-  :config
-  (when (or (memq window-system '(ns x))
-            (daemonp))
-    (exec-path-from-shell-initialize)))
+  (system-packages-package-manager 'brew))
 
 ;; ;; Track max-specpdl-size exceded error by uncommenting this
 ;; (setq max-specpdl-size 5)
 ;; (setq debug-on-error t)
 
+(use-package org
+  :ensure (:wait t)
+  :demand t)
+
+(use-package org-contrib
+  :ensure (:wait t)
+  :after org)
+
+(fset #'x-apply-session-resources #'ignore)
+
+
+;; Inject PATH from shell
+(use-package exec-path-from-shell
+  :custom
+  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
+  (exec-path-from-shell-arguments nil)
+  :config
+  (when (or (memq window-system '(ns x))
+            (daemonp))
+    (exec-path-from-shell-initialize)))
+
 ;; Load org literal config config
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
-(add-hook 'elpaca-after-init-hook (lambda ()
-                                    (load custom-file 'noerror 'nomessage)))
+
+;; Load custom-file after all packages have ben initialized
+(add-hook 'elpaca-after-init-hook
+          (lambda ()
+            (load custom-file 'noerror 'nomessage)))
+
+(put 'dired-find-alternate-file 'disabled nil)

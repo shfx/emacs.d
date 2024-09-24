@@ -5,6 +5,7 @@
   (setq native-comp-async-report-warnings-errors 'silent)
   (setq byte-compile-warnings '(not obsolete))
   (setq warning-suppress-log-types '((comp) (bytecomp)))
+  (setq warning-minimum-level 'error)
   ;; Make native compilation happens asynchronously
   (setq native-comp-jit-compilation t)
   ;; Set the right directory to store the native compilation cache
