@@ -812,12 +812,7 @@ also helpful emacs config just for vertico
          ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
-** pcmpl-args
-
-#+begin_src emacs-lisp
-(use-package pcmpl-args)
 #+end_src
-
 * Remote
 
 ** Tramp
@@ -1563,11 +1558,21 @@ with version control systems.
 #+begin_src emacs-lisp
 (use-package kanagawa-themes
   :ensure t
+  :custom-face
+  (markdown-header-delimiter-face ((t (:inherit markdown-header-face))))
   :custom
   (kanagawa-themes-comment-italic nil)
   (kanagawa-themes-keyword-italic nil)
   :config
-  (load-theme 'kanagawa-wave t))
+  (load-theme 'kanagawa-wave t)
+
+  (dolist (face '(vertico-current
+                  flycheck-inline-info
+                  flycheck-inline-error
+                  flycheck-inline-warning
+                  completions-annotations))
+    (when (facep face)
+      (make-face-unitalic face))))
 #+end_src
 
 ** Ligatures
@@ -2573,6 +2578,14 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :hook (prog-mode . display-line-numbers-mode)
   :custom
   (display-line-numbers-type 'relative))
+#+end_src
+
+** bash
+
+#+begin_src emacs-lisp
+(use-package bash-mode
+  :ensure nil
+  :hook (bash-mode . lsp-deferred))
 #+end_src
 
 ** prisma
