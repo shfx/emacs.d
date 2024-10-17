@@ -2558,6 +2558,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   :custom
   (dired-dwim-target t)
   (dired-vc-rename-file t)
+  (dired-auto-revert-buffer t)
   :config
   (cond ((string-equal system-type "darwin")
          (setq insert-directory-program "gls"
