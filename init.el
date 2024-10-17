@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t;-*-
+;;; -*- lexical-binding: t -*-
 
 (setopt custom-file
         (if (boundp 'server-socket-dir)
@@ -64,6 +64,8 @@
 
 (elpaca `(,@elpaca-order))
 
+(elpaca-wait)
+
 (require 'use-package)
 
 (elpaca elpaca-use-package
@@ -110,7 +112,7 @@
 (use-package exec-path-from-shell
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
-  (exec-path-from-shell-arguments nil)
+  (exec-path-from-shell-arguments '("-l"))
   :config
   (when (or (memq window-system '(ns x))
             (daemonp))

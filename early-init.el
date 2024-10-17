@@ -1,18 +1,18 @@
-;; -*- lexical-binding: t;# -*- mode:conf; -*-
+;;; -*- lexical-binding: t -*-
 
 (when (featurep 'native-compile)
+  ;; Set the right directory to store the native compilation cache
+  (when (fboundp 'startup-redirect-eln-cache)
+    (startup-redirect-eln-cache
+     (convert-standard-filename
+      (expand-file-name  "var/eln-cache/" user-emacs-directory))))
   ;; Silence compiler warnings as they can be pretty disruptive
   (setq native-comp-async-report-warnings-errors 'silent)
   (setq byte-compile-warnings '(not obsolete))
   (setq warning-suppress-log-types '((comp) (bytecomp)))
   (setq warning-minimum-level 'error)
   ;; Make native compilation happens asynchronously
-  (setq native-comp-jit-compilation t)
-  ;; Set the right directory to store the native compilation cache
-  (when (fboundp 'startup-redirect-eln-cache)
-    (startup-redirect-eln-cache
-     (convert-standard-filename
-      (expand-file-name  "var/eln-cache/" user-emacs-directory)))))
+  (setq native-comp-jit-compilation t))
 
 (setq inhibit-startup-echo-area-message (user-login-name))
 
