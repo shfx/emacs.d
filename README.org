@@ -1066,6 +1066,11 @@ Enables tree-sitter in all programming languages supported. Should be
 loaded before any language package
 
 #+begin_src emacs-lisp
+(use-package treesit
+  :ensure nil
+  :custom
+  (treesit-font-lock-level 4))
+
 (use-package treesit-auto
   :custom
   (treesit-auto-install 'prompt)
@@ -1901,6 +1906,7 @@ syste.
   (org-babel-add-langs
    ((ditaa . t)))
   :custom
+  (org-src-window-setup 'current-window)
   (org-modules
    '(org-protocol
      org-habit
@@ -1933,6 +1939,18 @@ syste.
   (org-default-notes-file "notes.org")
   (org-refile-targets '((org-agenda-files :maxlevel . 1)))
   (org-refile-allow-creating-parent-nodes 'confirm)
+  (org-auto-align-tags nil)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
+  (org-agenda-tags-column 0)
+  (org-agenda-block-separator ?─)
+  (org-agenda-time-grid
+   '((daily today require-timed)
+     (800 1000 1200 1400 1600 1800 2000))
+   " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
+  (org-agenda-current-time-string "◀── now ─────────────────────────────────────────────────")
+
   (org-capture-templates
    '(("a" "Appointment" entry (file  "gcal.org" )
       "* %?\n\n%^T\n\n:PROPERTIES:\n\n:END:\n\n")
@@ -1962,19 +1980,15 @@ syste.
   :custom
   (org-tree-slide-skip-outline-level 4)
   (org-tree-slide-skip-done nil)
+  :bind
+  ("<f8>" . org-tree-slide-mode)
+  ("S-<f8>" . org-tree-slide-skip-done-toggle)
+  (:map org-tree-slide-mode-map
+        ("<f9>" . org-tree-slide-move-previous-tree)
+        ("<f10>" . org-tree-slide-move-next-tree)
+        ("<f11>" . org-tree-slide-content))
   :config
-  (global-set-key (kbd "<f8>") 'org-tree-slide-mode)
-  (global-set-key (kbd "S-<f8>") 'org-tree-slide-skip-done-toggle)
-  (define-key org-tree-slide-mode-map (kbd "<f9>")
-    'org-tree-slide-move-previous-tree)
-  (define-key org-tree-slide-mode-map (kbd "<f10>")
-    'org-tree-slide-move-next-tree)
-  (define-key org-tree-slide-mode-map (kbd "<f11>")
-    'org-tree-slide-content)
   (org-tree-slide-narrowing-control-profile))
-
-;; (use-package org-bullets
-;;   :hook (org-mode . org-bullets-mode))
 
 ;; org-babel
 (org-babel-add-langs
