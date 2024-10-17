@@ -957,7 +957,8 @@ Packages
   (lsp-lens-enable t)
   (lsp-typescript-format-enable nil)
   (lsp-yaml-schema-store-local-db
-   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json")))
+   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
+  (lsp-yaml-custom-tags '("!reference sequence")))
 
 (use-package lsp-ui
   :after lsp-mode
