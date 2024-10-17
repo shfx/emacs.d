@@ -812,7 +812,6 @@ also helpful emacs config just for vertico
          ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
-#+end_src
 * Remote
 
 ** Tramp
