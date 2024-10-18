@@ -1018,9 +1018,8 @@ Packages
    chatgpt-shell-search-history)
   :custom
   ;;(chatgpt-shell-openai-key "xxx")
-  ;;(chatgpt-shell-openai-key  "xxx")
-  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore)
-)
+  (chatgpt-shell-openai-key (cadr (auth-source-user-and-password "chatgpt" "shfx")))
+  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
 #+end_src
 
 ** Proced
@@ -1254,39 +1253,74 @@ Emacs-Lisp, Eshell will function identically on any environment Emacs
 itself runs on.
 
 #+begin_src emacs-lisp
+(use-package pcmpl-args)
+(use-package pcmpl-homebrew)
+
 (use-package eshell
   :ensure nil
-  :commands (eshell)
+  :after corfu
+  :functions
+  (eshell-previous-matching-input-from-input
+   eshell-next-matching-input-from-input)
+  :defines eshell-hist-mode-map
   :hook
-  (eshell-mode . (lambda ()
-                   (setq-local
-                    corfu-auto nil
-                    corfu-quit-at-boundary t
-                    corfu-quit-no-match t
-                    corfu-separatvor nil)
-                   (corfu-mode)))
-
+  (eshell-mode
+   . (lambda ()
+       (setq-local
+        corfu-auto nil
+        corfu-quit-at-boundary t
+        corfu-quit-no-match t
+        corfu-separatvor nil)
+       (corfu-mode)))
+  (eshell-hist-mode
+   . (lambda ()
+       (define-key eshell-hist-mode-map (kbd "<up>") 'previous-line)
+       (define-key eshell-hist-mode-map (kbd "<down>") 'next-line)
+       (define-key eshell-hist-mode-map (kbd "C-<up>") 'eshell-previous-matching-input-from-input)
+       (define-key eshell-hist-mode-map (kbd "C-<down>") 'eshell-next-matching-input-from-input)))
   :custom
+  (eshell-visual-commands nil)
   (eshell-banner-message "")
   (eshell-scroll-to-bottom-on-input 'all)
   (eshell-error-if-no-glob t)
   (eshell-hist-ignoredups t)
-
   :config
   (setenv "PAGER" "cat")
-  (setenv "TERM" "xterm-256color")
+  (setenv "TERM" "xterm-256color"))
 
-  (defun eshell/gst (&rest args)
-    (magit-status (pop args) nil)
-    (eshell/echo)))
+(use-package eat
+  :hook
+  (eshell-load . eat-eshell-mode)
+  :custom
+  (eat-term-name "xterm"))
 
-(use-package eshell-up
-  :after eshell)
+(defun eshell/gst (&rest args)
+  (magit-status (pop args) nil)
+  (eshell/echo))
+
+(use-package multi-eshell
+  :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
+  :bind (("s-s" . multi-eshell)
+         ("s-n" . multi-eshell-switch)
+         ("s-p" . multi-eshell-go-back))
+  :custom
+  (multi-eshell-shell-function '(eshell))
+  (multi-eshell-name "*eshell*"))
+
+(defun corfu-send-shell (&rest _)
+  "Send completion candidate when inside comint/eshell."
+  (cond
+   ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+    (eshell-send-input))
+   ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+    (comint-send-input))))
+
+(advice-add #'corfu-insert :after #'corfu-send-shell)
 
 (use-package shrink-path
   :after eshell
   :custom
-  ((eshell-prompt-regexp "^.*❯ ")
+  ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
    (eshell-prompt-function
     (lambda ()
       (let ((base/dir (shrink-path-prompt default-directory)))
@@ -1367,19 +1401,6 @@ the bottom of active window with directory of its buffer.
 (use-package multi-vterm
   :after vterm
   :bind (("C-c v" . multi-vterm)))
-#+end_src
-
-** Eat - an extension to eshell
-
-#+begin_src emacs-lisp
-(use-package eat
-  :hook
-  (eshell-load . eat-eshell-visual-command-mode)
-  :custom
-  (eat-term-name "xterm")
-  (eshell-visual-commands nil)
-  :config
-  (eat-eshell-mode))
 #+end_src
 
 ** Marginalia
