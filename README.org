@@ -1262,7 +1262,7 @@ itself runs on.
   :functions
   (eshell-previous-matching-input-from-input
    eshell-next-matching-input-from-input)
-  :defines eshell-hist-mode-map
+  :defines (eshell-mode-map eshell-hist-mode-map)
   :hook
   (eshell-mode
    . (lambda ()
@@ -1274,10 +1274,21 @@ itself runs on.
        (corfu-mode)))
   (eshell-hist-mode
    . (lambda ()
-       (define-key eshell-hist-mode-map (kbd "<up>") 'previous-line)
-       (define-key eshell-hist-mode-map (kbd "<down>") 'next-line)
-       (define-key eshell-hist-mode-map (kbd "C-<up>") 'eshell-previous-matching-input-from-input)
-       (define-key eshell-hist-mode-map (kbd "C-<down>") 'eshell-next-matching-input-from-input)))
+       (unbind-key (kbd "<up>") eshell-hist-mode-map)
+       (unbind-key (kbd "<down>") eshell-hist-mode-map)
+       (unbind-key (kbd "M-r") eshell-hist-mode-map)
+       (define-key eshell-hist-mode-map
+                   (kbd "C-<up>")
+                   'eshell-previous-matching-input-from-input)
+       (define-key eshell-hist-mode-map
+                   (kbd "C-<down>")
+                   'eshell-next-matching-input-from-input)))
+  :bind
+  (:map eshell-mode-map
+        ("<up>" . previous-line)
+        ("<down>" . next-line)
+        ("<down>" . next-line)
+        ("M-r" . consult-history))
   :custom
   (eshell-visual-commands nil)
   (eshell-banner-message "")
