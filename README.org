@@ -1882,6 +1882,18 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   ("C-<" . mc/mark-previous-like-this))
 #+end_src
 
+** Phi Search - isearch replacement
+
+#+begin_src emacs-lisp
+(use-package phi-search
+  :bind
+  ("C-s" . phi-search)
+  ("C-r" . phi-search-backward)
+  ("M-%" . phi-replace-query)
+  :custom
+  (phi-search-use-modeline nil))
+#+end_src
+
 ** Org
 
 *** org-mode ([[https://orgmode.org/][link]])
