@@ -6,21 +6,22 @@
     (startup-redirect-eln-cache
      (convert-standard-filename
       (expand-file-name  "var/eln-cache/" user-emacs-directory))))
-  ;; Silence compiler warnings as they can be pretty disruptive
   (setq native-comp-async-report-warnings-errors 'silent)
-  (setq byte-compile-warnings '(not obsolete))
-  (setq warning-suppress-log-types '((comp) (bytecomp)))
-  (setq warning-minimum-level 'error)
   ;; Make native compilation happens asynchronously
   (setq native-comp-jit-compilation t))
 
+(setq byte-compile-warnings '(not obsolete))
+(setq warning-suppress-log-types '((comp) (bytecomp)))
+(setq warning-minimum-level 'error)
 (setq inhibit-startup-echo-area-message (user-login-name))
 
-;; This is needed by lps-mode
-(setenv "LSP_USE_PLISTS" "true")
-
+(setq initial-major-mode 'emacs-lisp-mode)
+(setq inhibit-default-init t)
+(setq site-run-file nil)
+(setq frame-resize-pixelwise t)
+(setq frame-inhibit-implied-resize t)
+(setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
-
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
@@ -59,10 +60,7 @@
 
 (set-face-foreground 'vertical-border "#0c0c0f")
 
-;; Make the initial buffer load faster by setting its mode to fundamental-mode
-(setq initial-major-mode 'emacs-lisp-mode)
-(setq inhibit-default-init t)
-(setq site-run-file nil)
-(setq frame-inhibit-implied-resize t)
-(setq byte-compile-warnings '(cl-functions))
-(setq load-prefer-newer t)
+;; This is needed by lps-mode
+(setenv "LSP_USE_PLISTS" "true")
+
+
