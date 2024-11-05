@@ -8,21 +8,41 @@
       (expand-file-name  "var/eln-cache/" user-emacs-directory))))
   (setq native-comp-async-report-warnings-errors 'silent)
   ;; Make native compilation happens asynchronously
-  (setq native-comp-jit-compilation t))
+  (setq native-comp-jit-compilation t)
+  (setq package-native-compile t))
 
+(set-language-environment "UTF-8")
+
+(setq auto-mode-case-fold nil)
+(setq bidi-inhibit-bpa t)
+(setq byte-compile-verbose nil)
 (setq byte-compile-warnings '(not obsolete))
-(setq warning-suppress-log-types '((comp) (bytecomp)))
-(setq warning-minimum-level 'error)
-(setq inhibit-startup-echo-area-message (user-login-name))
-
-(setq initial-major-mode 'emacs-lisp-mode)
-(setq inhibit-default-init t)
-(setq site-run-file nil)
-(setq frame-resize-pixelwise t)
+(setq default-input-method nil)
 (setq frame-inhibit-implied-resize t)
+(setq frame-resize-pixelwise t)
+(setq inhibit-compacting-font-caches t)
+(setq inhibit-default-init t)
+(setq inhibit-splash-screen t)
+(setq inhibit-startup-buffer-menu t)
+(setq inhibit-startup-echo-area-message user-login-name)
+(setq inhibit-startup-screen t)
+(setq inhibit-x-resources t)
+(setq initial-buffer-choice nil)
+(setq initial-major-mode 'fundamental-mode)
+(setq initial-scratch-message nil)
 (setq load-prefer-newer t)
 (setq package-enable-at-startup nil)
+(setq package-quickstart nil)
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
+(setq site-run-file nil)
+(setq use-dialog-box nil)
+(setq use-file-dialog nil)
+(setq warning-minimum-level 'error)
+(setq warning-suppress-log-types '((comp) (bytecomp)))
+(setq scroll-bar-mode nil)
+
+(setq-default bidi-display-reordering 'left-to-right
+              bidi-paragraph-direction 'left-to-right)
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
 (defvar my/pre-init-gc-cons-threshold 100000000) ;; or gc-cons-threshold
