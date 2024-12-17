@@ -511,42 +511,6 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (popper-echo-mode +1))
 #+end_src
 
-** Shackle ([[https://github.com/wasamasa/shackle][link]])
-
-*Shackle* gives you the means to put an end to popped up buffers not
-behaving they way you'd like them to. By setting up simple rules you
-can for instance make Emacs always select help buffers for you or make
-everything reuse your currently selected window.
-
-#+begin_src emacs-lisp
-(use-package shackle
-  :custom
-  (shackle-rules
-   '(("*eshell*"               :select t   :other t)
-     (flycheck-error-list-mode :select t   :align below :size 0.25)
-     ("*LSP Error List*"       :select t   :align below :size 0.25)
-     (compilation-mode         :select nil :align below :size 0.25)
-     (messages-buffer-mode     :select t   :align below :size 0.25)
-     (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-     ("\\*vterminal.*"         :select t   :align below :size 0.25 :regexp t)
-     (vterm-mode               :select t   :align below :size 0.25)
-     (multi-vterm              :select t   :align below :size 0.25)
-     ("*rg*"                   :select t   :other t)
-     (" *Deletions*"           :select t   :align below :size 0.25)
-     (" *Marked Files*"        :select t   :align below :size 0.25)
-     ("*system-packages*"      :select t   :align below :size 0.25)
-     ("*Org Select*"           :same t)
-     ("*Org Note*"             :select t   :align below :size 0.33)
-     ("*Org Links*"            :select t   :align below :size 0.2)
-     (" *Org todo*"            :select t   :align below :size 0.2)
-     ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-     ("*Org Src.*"             :select t   :align right :size 0.5  :regexp t)))
-  (shackle-default-rule
-   '(:select t))
-  :config
-  (shackle-mode t))
-#+end_src
-
 ** TabBar
 
 #+begin_src emacs-lisp
@@ -2774,17 +2738,25 @@ return windowTitle"))
 
 #+begin_src emacs-lisp
 (use-package rust-mode
-  :after flycheck-rust
-  :mode ("\\.rs" . rust-mode)
-  :hook ((flycheck-mode . flycheck-rust-setup)
-         (rust-mode . lsp-deferred)))
+  :custom
+  (rust-mode-treesitter-derive t)
+  :config
+  (setq auto-mode-alist (assoc-delete-all "\\.rs\\'" auto-mode-alist)))
 #+end_src
 
 ** rustic
 
 #+begin_src emacs-lisp
 (use-package rustic
-  :after rust-mode)
+  :after (rust-mode)
+  :mode ("\\.rs\\'" . rustic-mode)
+  :preface
+  (defun rustic-mode-auto-save-hook ()
+    "Enable auto-saving in rustic-mode buffers."
+    (when buffer-file-name
+      (setq-local compilation-ask-about-save nil)))
+  :hook
+  (rustic-mode-hook . rustic-mode-auto-save-hook))
 #+end_src
 
 ** .env
@@ -2800,6 +2772,12 @@ return windowTitle"))
 (use-package elisp
   :ensure nil
   :mode ("\\.el\\'" . emacs-lisp-mode))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package highlight-defined
+  :hook
+  (emacs-lisp-mode . highlight-defined-mode))
 #+end_src
 
 ** Markdown
