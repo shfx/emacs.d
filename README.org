@@ -433,6 +433,26 @@ Very annoying binding, lets get rid of it.
 (global-unset-key (kbd "C-z"))
 #+end_src
 
+** Hardtimes
+
+#+begin_src emacs-lisp
+(use-package hardtime
+  :ensure (hardtime :fetcher github :repo "ichernyshovvv/hardtime.el")
+  :config
+  (hardtime-mode))
+#+end_src
+
+** Inhibit mouse
+
+Disable all mouse input
+
+#+begin_src emacs-lisp
+(use-package inhibit-mouse
+  :ensure (inhibit-mouse :fetcher github :repo "jamescherti/inhibit-mouse.el")
+  :config
+  (inhibit-mouse-mode))
+#+end_src
+
 ** Browser Url
 
 #+begin_src emacs-lisp
@@ -2505,6 +2525,9 @@ Hides modeline whenever this minor mode is active
   (([remap ispell-word] . flyspell-correct-at-point)
    (:map flyspell-mode-map
          ("C-;" . flyspell-correct-wrapper))))
+
+(use-package flyspell-correct-popup
+  :after flyspell-correct)
 
 (use-package flyspell-lazy
   :defer t
