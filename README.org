@@ -1782,8 +1782,7 @@ targets."
   :demand t
   :bind
   (("s-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+   ("C-h b" . embark-bindings)) ;; alternative for `describe-bindings'
 
   :custom
   (embark-indicators
@@ -2454,7 +2453,10 @@ Hides modeline whenever this minor mode is active
 
 (use-package flyspell-correct
   :defer t
-  :bind ([remap ispell-word] . flyspell-correct-at-point))
+  :bind
+  (([remap ispell-word] . flyspell-correct-at-point)
+   (:map flyspell-mode-map
+         ("C-;" . flyspell-correct-wrapper))))
 
 (use-package flyspell-lazy
   :defer t
