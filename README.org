@@ -1274,112 +1274,160 @@ Bourne-like shells. So by re-writing common commands like ls and cp in
 Emacs-Lisp, Eshell will function identically on any environment Emacs
 itself runs on.
 
+PS. some config stolen from https://github.com/gopar/.emacs.d
+
 #+begin_src emacs-lisp
 (use-package eshell
-  :ensure nil
   :after corfu
-  :functions
-  (eshell-previous-matching-input-from-input
-   eshell-next-matching-input-from-input)
+  :ensure nil
+  :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
   :defines (eshell-mode-map eshell-hist-mode-map)
+
+  :preface
+  (defun me/eshell-input-filter (input)
+    "Do not save on the following:
+       - empty lines
+       - commands that start with a space, `ls`/`l`/`lsd`"
+    (and
+     (eshell-input-filter-default input)
+     (eshell-input-filter-initial-space input)
+     (not (string-prefix-p "ls " input))
+     (not (string-prefix-p "lsd " input))
+     (not (string-prefix-p "l " input))))
+
+  (defun me/adviced-eshell-add-input-to-history (orig-fun &rest r)
+    "Cd to relative paths aren't that useful in history. Change to absolute paths."
+    (require 'seq)
+    (let* ((input (nth 0 r))
+           (args (progn
+                   (set-text-properties 0 (length input) nil input)
+                   (split-string input))))
+      (if (and (equal "cd" (nth 0 args))
+               (not (seq-find (lambda (item)
+                                ;; Don't rewrite "cd /ssh:" in history.
+                                (string-prefix-p "/ssh:" item))
+                              args))
+               (not (seq-find (lambda (item)
+                                ;; Don't rewrite "cd -" in history.
+                                (string-equal "-" item))
+                              args)))
+          (apply orig-fun (list (format "cd %s"
+                                        (expand-file-name (concat default-directory
+                                                                  (nth 1 args))))))
+        (apply orig-fun r))))
+
+  (defun corfu-send-shell (&rest _)
+    "Send completion candidate when inside comint/eshell."
+    (cond
+     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+      (eshell-send-input))
+     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+      (comint-send-input))))
+
+  (defun me/eshell-corfu-setup ()
+    (setq-local
+     corfu-auto nil
+     corfu-quit-at-boundary t
+     corfu-quit-no-match t
+     corfu-separatvor nil))
+
+  :custom
+  (eshell-banner-message "")
+  (eshell-error-if-no-glob t)
+  (eshell-hist-ignoredups t)
+  (eshell-history-size 1024)
+  (eshell-input-filter 'me/eshell-input-filter)
+  (eshell-last-dir-ring-size 32)
+  (eshell-last-dir-unique t)
+  (eshell-pushd-dunique t)
+  (eshell-scroll-to-bottom-on-input t)
+  (eshell-visual-commands nil)
+
   :hook
-  (eshell-mode
-   . (lambda ()
-       (setq-local
-        corfu-auto nil
-        corfu-quit-at-boundary t
-        corfu-quit-no-match t
-        corfu-separatvor nil)
-       (corfu-mode)))
-  (eshell-hist-mode
-   . (lambda ()
-       (unbind-key (kbd "<up>") eshell-hist-mode-map)
-       (unbind-key (kbd "<down>") eshell-hist-mode-map)
-       (unbind-key (kbd "M-r") eshell-hist-mode-map)
-       (define-key eshell-hist-mode-map
-                   (kbd "C-<up>")
-                   'eshell-previous-matching-input-from-input)
-       (define-key eshell-hist-mode-map
-                   (kbd "C-<down>")
-                   'eshell-next-matching-input-from-input)))
+  (eshell-mode . me/eshell-corfu-setup)
+
+  (eshell-hist-mode . (lambda ()
+                        (unbind-key (kbd "<up>") eshell-hist-mode-map)
+                        (unbind-key (kbd "<down>") eshell-hist-mode-map)
+                        (unbind-key (kbd "M-r") eshell-hist-mode-map)
+                        (define-key eshell-hist-mode-map
+                                    (kbd "C-<up>")
+                                    'eshell-previous-matching-input-from-input)
+                        (define-key eshell-hist-mode-map
+                                    (kbd "C-<down>")
+                                    'eshell-next-matching-input-from-input)))
   :bind
   (:map eshell-mode-map
         ("<up>" . previous-line)
         ("<down>" . next-line)
         ("<down>" . next-line)
         ("M-r" . consult-history))
-  :custom
-  (eshell-visual-commands nil)
-  (eshell-banner-message "")
-  (eshell-scroll-to-bottom-on-input 'all)
-  (eshell-error-if-no-glob t)
-  (eshell-hist-ignoredups t)
+
   :config
   (setenv "PAGER" "cat")
-  (setenv "TERM" "xterm-256color"))
+  (setenv "TERM" "xterm-256color")
+  (advice-add #'eshell-add-input-to-history :around
+              #'me/adviced-eshell-add-input-to-history)
+  (advice-add #'corfu-insert :after
+              #'corfu-send-shell))
 
-(use-package eat
-  :hook
-  (eshell-load . eat-eshell-mode)
-  :custom
-  (eat-term-name "xterm"))
+  (use-package eat
+    :hook
+    (eshell-load . eat-eshell-mode)
+    :custom
+    (eat-term-name "xterm"))
 
-(use-package pcmpl-args
-  :after eshell)
+  (use-package pcmpl-args
+    :after eshell)
 
-(use-package pcmpl-homebrew
-  :after eshell)
+  (use-package pcmpl-homebrew
+    :after eshell)
 
-(defun eshell/gst (&rest args)
-  (magit-status (pop args) nil)
-  (eshell/echo))
+  (defun eshell/gst (&rest args)
+    (magit-status (pop args) nil)
+    (eshell/echo))
 
-(defun eshell/ccat (file)
-  "Like `cat' but output with Emacs syntax highlighting."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (let ((buffer-file-name file))
-      (delay-mode-hooks
-        (set-auto-mode)
-        (if (fboundp 'font-lock-ensure)
-            (font-lock-ensure)
-          (with-no-warnings
-            (font-lock-fontify-buffer)))))
-    (buffer-string)))
+  (defun eshell/ccat (file)
+    "Like `cat' but output with Emacs syntax highlighting."
+    (with-temp-buffer
+      (insert-file-contents file)
+      (let ((buffer-file-name file))
+        (delay-mode-hooks
+          (set-auto-mode)
+          (if (fboundp 'font-lock-ensure)
+              (font-lock-ensure)
+            (with-no-warnings
+              (font-lock-fontify-buffer)))))
+      (buffer-string)))
 
-(use-package multi-eshell
-  :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
-  :bind (("s-s" . multi-eshell)
-         ("s-n" . multi-eshell-switch)
-         ("s-p" . multi-eshell-go-back))
-  :custom
-  (multi-eshell-shell-function '(eshell))
-  (multi-eshell-name "*eshell*"))
+  (use-package multi-eshell
+    :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
+    :bind (("s-s" . multi-eshell)
+           ;; ("s-n" . multi-eshell-switch)
+           ("s-p" . multi-eshell-go-back))
+    :custom
+    (multi-eshell-shell-function '(eshell))
+    (multi-eshell-name "*eshell*"))
 
-(defun corfu-send-shell (&rest _)
-  "Send completion candidate when inside comint/eshell."
-  (cond
-   ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-    (eshell-send-input))
-   ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-    (comint-send-input))))
-
-(advice-add #'corfu-insert :after #'corfu-send-shell)
-
-(use-package shrink-path
-  :after eshell
-  :custom
-  ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
-   (eshell-prompt-function
-    (lambda ()
-      (let ((base/dir (shrink-path-prompt default-directory)))
-        (concat (propertize (car base/dir)
-                            'face 'font-lock-comment-face)
-                (propertize (cdr base/dir)
-                            'face 'font-lock-constant-face)
-                (propertize " ❯" 'face 'eshell-prompt-face)
-                ;; needed for the input text to not have prompt face
-                (propertize " " 'face 'default)))))))
+  (use-package shrink-path
+    :preface
+    (defun me/eshell-set-outline-regexp ()
+      (setq-local
+       outline-regexp eshell-prompt-regexp))
+    :hook
+    (eshell-mode . me/eshell-set-outline-regexp)
+    :custom
+    ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
+     (eshell-prompt-function
+      (lambda ()
+        (let ((base/dir (shrink-path-prompt default-directory)))
+          (concat (propertize (car base/dir)
+                              'face 'font-lock-comment-face)
+                  (propertize (cdr base/dir)
+                              'face 'font-lock-constant-face)
+                  (propertize " ❯" 'face 'eshell-prompt-face)
+                  ;; needed for the input text to not have prompt face
+                  (propertize " " 'face 'default)))))))
 #+end_src
 
 ** Toogle undecorated frame
