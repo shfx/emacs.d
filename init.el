@@ -15,11 +15,11 @@
 (setopt display-line-numbers-width 3)
 
 (setq-default cursor-in-non-selected-windows nil)
-(setq-default indicate-buffer-boundaries nil)
 (setq-default indicate-empty-lines nil)
 (setq-default truncate-lines t)
 (setq-default word-wrap t)
 
+(setq indicate-buffer-boundaries nil)
 (setq ad-redefinition-action 'accept)
 (setq auto-revert-stop-on-user-input nil)
 (setq auto-revert-verbose t)
@@ -123,7 +123,7 @@
 
 ;; Elpaca
 
-(defvar elpaca-installer-version 0.7)
+(defvar elpaca-installer-version 0.8)
 (defvar elpaca-directory
   (locate-user-emacs-file
    (concat

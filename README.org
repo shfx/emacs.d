@@ -159,8 +159,6 @@ not break the init of Emacs.
   :custom
   (apropos-do-all t)
   (auto-save-default nil)
-  (bidi-inhibit-bpa t)
-  (compilation-scroll-output nil)
   (completion-ignore-case t)
   (create-lockfiles nil)
   (cursor-in-non-selected-windows nil)
@@ -186,14 +184,11 @@ not break the init of Emacs.
   (pop-up-frames nil)
   (read-buffer-completion-ignore-case t)
   (ring-bell-function 'ignore)
-  (scroll-conservatively 101)
   (scroll-margin 0)
   (scroll-preserve-screen-position t)
   (scroll-step 1)
   (show-paren-mode 1)
   (show-trailing-whitespace nil)
-  (split-height-threshold nil)
-  (split-width-threshold 170)
   (switch-to-buffer-in-dedicated-window nil)
   (switch-to-buffer-obey-display-actions t)
   (transient-mark-mode t)
@@ -201,6 +196,9 @@ not break the init of Emacs.
   (vc-handled-backends nil)
   (visible-bell t)
   (x-stretch-cursor t)
+  (undo-limit         50000000)
+  (undo-strong-limit 100000000)
+  (undo-outer-limit  300000000)
 
   :config
   (set-default 'truncate-lines t)
@@ -475,6 +473,8 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   :custom
   (reb-re-syntax 'string))
 #+end_src
+
+* Initialiation defaults
 
 * Window and frame management
 
@@ -856,9 +856,6 @@ Packages
   :custom
   (flycheck-idle-change-delay 0)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-
-(use-package flycheck-rust
-  :after (flycheck rust-mode))
 #+end_src
 
 ** Sideline
@@ -948,13 +945,11 @@ Packages
    (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
   (lsp-log-io nil)
+  (lsp-completion-default-behaviour :insert)
   (lsp-file-watch-threshold 4000)
   (lsp-headerline-breadcrumb-enable nil)
-  (lsp-headerline-breadcrumb-icons-enable nil)
-  (lsp-headerline-breadcrumb-enable-diagnostics nil) 
-  (lsp-headerline-breadcrumb-segments '(file symbols))
   (lsp-auto-guess-root t)
-  (lsp-enable-file-watchers nil)
+  (lsp-enable-file-watchers t)
   (lsp-clients-typescript-preferences
    '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
   (lsp-clients-typescript-prefer-use-project-ts-server t)
@@ -962,15 +957,18 @@ Packages
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
   (lsp-enable-indentation nil)
-  (lsp-enable-on-type-formatting nil)
+  (lsp-enable-on-type-formatting t)
   (lsp-javascript-display-enum-member-value-hints t)
   (lsp-javascript-format-enable nil)
   (lsp-keymap-prefix "s-l")
-  (lsp-lens-enable t)
+  (lsp-lens-enable nil)
   (lsp-typescript-format-enable nil)
   (lsp-yaml-schema-store-local-db
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  (lsp-yaml-custom-tags '("!reference sequence")))
+  (lsp-yaml-custom-tags '("!reference sequence"))
+  (lsp-rust-analyzer-cargo-watch-command "clippy")
+  (lsp-eldoc-render-all t)
+  (lsp-inlay-hint-enable nil))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -991,10 +989,11 @@ Packages
   (lsp-ui-doc-max-height 15)
   (lsp-ui-doc-max-width 100)
   (lsp-ui-sideline-enable nil)
-  (lsp-lens-enable nil))
+  (lsp-ui-peek-always-show t)
+  (lsp-ui-sideline-show-hover nil))
 
 (use-package lsp-tailwindcss
-  :after lsp
+  :after lsp-mode
   :custom
   (lsp-tailwindcss-add-on-mode t))
 #+end_src
@@ -1014,12 +1013,20 @@ Packages
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
 #+end_src
 
+** Shell Maker
+
+#+begin_src emacs-lisp
+(use-package shell-maker
+  :ensure (shell-maker :fetcher github :repo "xenodium/shell-maker"))
+#+end_src
+
 ** ChatGPT
 
 #+begin_src emacs-lisp
 (defun shell-maker-welcome-message-ignore (config) "")
 
 (use-package chatgpt-shell
+  :after shell-maker
   :preface
   (defun shfx-chatgpt-dwim ()
     "Run dwim in any buffer with "
@@ -1107,7 +1114,7 @@ loaded before any language package
   (defun my/bring-previous-mode-hooks ()
     (let ((mode-name (symbol-name major-mode)))
       (if (not (my/ts-mode-p major-mode))
-          (error "Current mode does not contain -ts suffix: %s" mode-name)
+          (warn "Current mode does not contain -ts suffix: %s" mode-name)
         (let* (
                (non-ts-mode-name      (concat (string-remove-suffix "-ts" (string-remove-suffix "-mode" mode-name)) "-mode"))
                (non-ts-mode-hook-name (concat non-ts-mode-name "-hook")))
@@ -1931,18 +1938,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
   ("C-<" . mc/mark-previous-like-this))
 #+end_src
 
-** Phi Search - isearch replacement
-
-#+begin_src emacs-lisp
-(use-package phi-search
-  :bind
-  ("C-s" . phi-search)
-  ("C-r" . phi-search-backward)
-  ("M-%" . phi-replace-query)
-  :custom
-  (phi-search-use-modeline nil))
-#+end_src
-
 ** Org
 
 *** org-mode ([[https://orgmode.org/][link]])
@@ -2442,8 +2437,6 @@ Hides modeline whenever this minor mode is active
 *** magit - best git client ever
 
 #+begin_src emacs-lisp
-(use-package transient)
-
 (use-package magit
   :after transient
   :bind ("C-x g" . magit-status)
@@ -2454,7 +2447,7 @@ Hides modeline whenever this minor mode is active
   (magit-process-finish-apply-ansi-colors t)
   (magit-refresh-status-buffer t)
   (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message))
-  (magit-display-buffer-function 'magit-display-buffer-fullframe-status-v1)
+  (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
   (magit-process-password-functions '(magit-process-password-auth-source))
   :config
@@ -2622,9 +2615,10 @@ ripgrep frontend
   :custom
   (rg-custom-type-aliases
    '(("svelte" .    "*.svelte")
-     ("ts" .    "*.tsx?")
-     ("env" .    "\.env.*")))
+     ("ts"     .    "*.tsx?")
+     ("env"    .    "\.env.*")))
   :config
+  (rg-enable-default-bindings)
   (rg-enable-menu))
 #+end_src
 
