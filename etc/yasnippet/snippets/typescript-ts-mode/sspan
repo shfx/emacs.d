@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: Sentry.startSpan
+# key: sspan
+# --
+return startSpan({ name: "$1" }, async () => {
+  $0
+});

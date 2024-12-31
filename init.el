@@ -4,6 +4,7 @@
         (if (boundp 'server-socket-dir)
             (expand-file-name "custom.el" server-socket-dir)
           (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+
 (setopt auto-revert-avoid-polling t)
 (setopt auto-revert-interval 5)
 (setopt auto-revert-check-vc-info t)
@@ -19,7 +20,6 @@
 (setq-default truncate-lines t)
 (setq-default word-wrap t)
 
-(setq indicate-buffer-boundaries nil)
 (setq ad-redefinition-action 'accept)
 (setq auto-revert-stop-on-user-input nil)
 (setq auto-revert-verbose t)

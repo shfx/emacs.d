@@ -199,6 +199,7 @@ not break the init of Emacs.
   (undo-limit         50000000)
   (undo-strong-limit 100000000)
   (undo-outer-limit  300000000)
+  (indicate-buffer-boundaries nil)
 
   :config
   (set-default 'truncate-lines t)
@@ -263,23 +264,22 @@ not break the init of Emacs.
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
 ;; font sizes
-(global-set-key
- (kbd "s-=")
- (lambda ()
-   (interactive)
-   (let ((old-face-attribute (face-attribute 'default :height)))
-     (message (format "Changed font size to %d" (+ old-face-attribute 10)))
-     (set-face-attribute 'default nil :height (+ old-face-attribute 10)))))
 
-(global-set-key
- (kbd "s--")
- (lambda ()
-   (interactive)
-   (let ((old-face-attribute (face-attribute 'default :height)))
-     (message (format "Changed font size to %d" (- old-face-attribute 10)))
-     (set-face-attribute 'default nil :height (- old-face-attribute 10)))))
+(defun my/increase-font-size ()
+  (interactive)
+  (let ((old-face-attribute (face-attribute 'default :height)))
+    (message (format "Changed font size to %d" (+ old-face-attribute 10)))
+    (set-face-attribute 'default nil :height (+ old-face-attribute 10))))
 
-(global-set-key "\C-l" 'goto-line)
+(defun my/decrease-font-size ()
+  (interactive)
+  (let ((old-face-attribute (face-attribute 'default :height)))
+    (message (format "Changed font size to %d" (- old-face-attribute 10)))
+    (set-face-attribute 'default nil :height (- old-face-attribute 10))))
+
+(global-set-key (kbd "s-=") 'my/increase-font-size)
+(global-set-key (kbd "s--") 'my/decrease-font-size)
+(global-set-key (kbd "C-l") 'goto-line)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (global-set-key (kbd "M-s-<right>") 'tab-next)
 (global-set-key (kbd "M-s-<left>") 'tab-previous)
@@ -299,8 +299,16 @@ not break the init of Emacs.
 #+begin_src emacs-lisp
 (use-package fancy-compilation
   :ensure (fancy-compilation :fetcher git :url "https://codeberg.org/ideasman42/emacs-fancy-compilation.git")
+  :preface
+  (defun my/fancy-comp ()
+    (unless (eq major-mode "rg-mode")
+      (fancy-compilation-mode)))
   :hook
-  (compilation-mode . fancy-compilation-mode))
+  (compilation-mode . my/fancy-comp)
+  :custom
+  (fancy-compilation-quiet-prelude t)
+  (fancy-compilation-quiet-prolog t)
+  (fancy-compilation-override-colors nil))
 
 (use-package compile
   :ensure nil
@@ -975,6 +983,7 @@ Packages
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :after (corfu orderless)
+  :defer 1
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
    (lsp-completion-mode . my/corfu-setup-lsp))
@@ -1060,25 +1069,15 @@ Packages
 #+begin_src emacs-lisp
 (defun shell-maker-welcome-message-ignore (config) "")
 
+(defun shfx-chatgpt-dwim ()
+  "Run dwim in any buffer with "
+  (interactive)
+  (if (region-active-p)
+      (chatgpt-shell-quick-modify-region)
+    (chatgpt-shell-quick-insert)))
+
 (use-package chatgpt-shell
   :after shell-maker
-  :preface
-  (defun shfx-chatgpt-dwim ()
-    "Run dwim in any buffer with "
-    (interactive)
-    (if (region-active-p)
-        (chatgpt-shell-quick-modify-region)
-      (chatgpt-shell-quick-insert)))
-  :commands
-  (chatgpt-shell
-   chatgpt-shell-prompt
-   chatgpt-shell-send-region
-   chatgpt-shell-explain-code
-   chatgpt-shell-refactor-code
-   chatgpt-shell-view-at-point
-   chatgpt-shell-search-history
-   chatgpt-shell-quick-modify-region
-   chatgpt-shell-quick-insert)
   :bind
   ("C-c C-a" . shfx-chatgpt-dwim)
   :custom
@@ -1203,6 +1202,13 @@ loaded before any language package
 #+begin_src emacs-lisp
 (use-package treesit-fold
   :ensure (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
+#+end_src
+
+** Cognitive Complexity
+
+#+begin_src emacs-lisp
+(use-package cognitive-complexity
+  :ensure (:host github :repo "abougouffa/cognitive-complexity"))
 #+end_src
 
 ** COMMENT Combobulate
