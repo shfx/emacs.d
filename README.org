@@ -199,7 +199,6 @@ not break the init of Emacs.
   (undo-limit         50000000)
   (undo-strong-limit 100000000)
   (undo-outer-limit  300000000)
-  (indicate-buffer-boundaries nil)
 
   :config
   (set-default 'truncate-lines t)
@@ -217,8 +216,10 @@ not break the init of Emacs.
 
   ;; Better support for files with long lines
   (setq-default bidi-display-reordering 'left-to-right
-                bidi-paragraph-direction 'left-to-right)
-  (setq-default bidi-inhibit-bpa t)
+                bidi-paragraph-direction 'left-to-right
+                bidi-inhibit-bpa t
+                indicate-buffer-boundaries nil)
+
   (global-so-long-mode 1)
 
   (advice-add #'tty-run-terminal-initialization :override #'ignore)
@@ -255,7 +256,7 @@ not break the init of Emacs.
 (global-unset-key (kbd "<mouse-2>"))
 (global-unset-key (kbd "s-t"))
 
-;; TODO: find better replacement for those bindigns 
+;; TODO: find better replacement for those bindigns
 (global-set-key (kbd "<pinch>") 'ignore)
 (global-set-key (kbd "<C-wheel-up>") 'ignore)
 (global-set-key (kbd "<C-wheel-down>") 'ignore)
@@ -599,7 +600,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
 
 ** Vertico ([[https://github.com/minad/vertico][link]])
 
-Some of the config is borrowed straight from [[https://kristofferbalintona.me/posts/vertico-marginalia-all-the-icons-completion-and-orderless/][Kristoffer Balintonas blog post]] from 
+Some of the config is borrowed straight from [[https://kristofferbalintona.me/posts/vertico-marginalia-all-the-icons-completion-and-orderless/][Kristoffer Balintonas blog post]] from
 
 #+begin_src emacs-lisp
 (defun my/vertico-multiform-flat-toggle ()
@@ -897,37 +898,14 @@ Packages
   (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
   (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :custom
+  (flycheck-display-errors-delay 0)
   (flycheck-idle-change-delay 0)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-#+end_src
 
-** Sideline
+(use-package flycheck-inline-mode
+  :after flycheck
+  :hook (flycheck-mode . flycheck-inline-mode))
 
-#+begin_src emacs-lisp
-(use-package sideline
-  :after (flycheck lsp)
-  :defines sideline-backends-right
-  :custom
-  (sideline-backends-left-skip-current-line t)
-  (sideline-backends-right-skip-current-line t)
-  (sideline-order-left 'down)
-  (sideline-order-right 'up)
-  (sideline-format-left "%s   ")
-  (sideline-format-right "   %s")
-  (sideline-priority 100)
-  (sideline-display-backend-name nil))
-
-(use-package sideline-flycheck
-  :hook (flycheck-mode . sideline-flycheck-setup)
-  :config
-  (add-to-list 'sideline-backends-right 'sideline-flycheck))
-
-(use-package sideline-lsp
-  :after lsp
-  :custom
-  (sideline-lsp-code-actions-prefix "")
-  :config
-  (add-to-list 'sideline-backends-right 'sideline-lsp))
 #+end_src
 
 * Packages
@@ -1011,8 +989,11 @@ Packages
    (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   (lsp-yaml-custom-tags '("!reference sequence"))
   (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-inlay-hint-enable nil))
+  (lsp-eldoc-render-all nil)
+  (lsp-inlay-hint-enable nil)
+  (lsp-eslint-auto-fix-on-save t)
+  (lsp-eslint-working-directories '((pattern "./*")))
+  (lsp-eslint-options '((flags . ["unstable_ts_config"]))))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1033,7 +1014,7 @@ Packages
   (lsp-ui-doc-max-height 15)
   (lsp-ui-doc-max-width 100)
   (lsp-ui-sideline-enable nil)
-  (lsp-ui-peek-always-show t)
+  (lsp-ui-peek-always-show nil)
   (lsp-ui-sideline-show-hover nil))
 
 (use-package lsp-tailwindcss
@@ -1161,7 +1142,7 @@ loaded before any language package
   (defun my/get-treesit-auto-modes ()
     "Extracts all available treesit auto modes"
     (unless global-treesit-auto-modes
-      (error "global-treesit-auto-modes vartable does not exist, can't transfer hooks from non treesit modes"))  
+      (error "global-treesit-auto-modes vartable does not exist, can't transfer hooks from non treesit modes"))
     (seq-filter 'my/ts-mode-p global-treesit-auto-modes))
 
   :config
