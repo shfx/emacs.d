@@ -299,7 +299,7 @@ not break the init of Emacs.
 
 #+begin_src emacs-lisp
 (use-package fancy-compilation
-  :ensure (fancy-compilation :fetcher git :url "https://codeberg.org/ideasman42/emacs-fancy-compilation.git")
+  :ensure (fancy-compilation :host codeberg :url "ideasman42/emacs-fancy-compilation")
   :preface
   (defun my/fancy-comp ()
     (unless (eq major-mode "rg-mode")
@@ -903,7 +903,7 @@ Packages
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
 (use-package flycheck-inline-mode
-  :after flycheck
+  :ensure (flycheck-inline-mode :fetcher github :repo "flycheck/flycheck-inline" :main "flycheck-inline.el")
   :hook (flycheck-mode . flycheck-inline-mode))
 
 #+end_src
@@ -956,44 +956,65 @@ Packages
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
         '(orderless)))
 
-(setq lsp-use-plists "true")
+;; (defun my/lsp-signature-quick-peek-dispay (str)
+;;   "Use quick-peek to show the STR signatureHelp string."
+;;   (if str
+;;       (let ((ov (quick-peek-overlay-ensure-at (- (point) 1))))
+;;         (setf (quick-peek-overlay-contents ov) str)
+;;         (quick-peek-update ov))
+;;     (quick-peek-hide)))
+
+;; (defun my/lsp-signature-overlay-dispay (str)
+;;   "Use flycheck-inline to show the STR signatureHelp string."
+;;   (if str
+;;       (let ((msg (propertize str 'face 'flycheck-inline-info)))
+;;         (flycheck-inline-phantom-display msg))
+;;     (flycheck-inline-hide-errors)))
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :after (corfu orderless)
+  :after (corfu orderless posframe)
   :defer 1
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
    (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
-  (lsp-log-io nil)
-  (lsp-completion-default-behaviour :insert)
-  (lsp-file-watch-threshold 4000)
-  (lsp-headerline-breadcrumb-enable nil)
   (lsp-auto-guess-root t)
-  (lsp-enable-file-watchers t)
-  (lsp-clients-typescript-preferences
-   '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
   (lsp-clients-typescript-prefer-use-project-ts-server t)
+  (lsp-clients-typescript-preferences '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
+  (lsp-completion-default-behaviour :insert)
   (lsp-completion-provider :none)
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
+  (lsp-eldoc-render-all nil)
+  (lsp-enable-file-watchers t)
   (lsp-enable-indentation nil)
   (lsp-enable-on-type-formatting t)
+  ;; (lsp-signature-function #'my/lsp-signature-dispay)
+  (lsp-signature-render-documentation nil)
+  (lsp-eslint-auto-fix-on-save t)
+  (lsp-eslint-options '((flags . ["unstable_ts_config"])))
+  (lsp-eslint-working-directories '((pattern "./*")))
+  (lsp-file-watch-threshold 4000)
+  (lsp-headerline-breadcrumb-enable nil)
+  (lsp-inlay-hint-enable nil)
   (lsp-javascript-display-enum-member-value-hints t)
   (lsp-javascript-format-enable nil)
   (lsp-keymap-prefix "s-l")
   (lsp-lens-enable nil)
-  (lsp-typescript-format-enable nil)
-  (lsp-yaml-schema-store-local-db
-   (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  (lsp-yaml-custom-tags '("!reference sequence"))
   (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all nil)
-  (lsp-inlay-hint-enable nil)
-  (lsp-eslint-auto-fix-on-save t)
-  (lsp-eslint-working-directories '((pattern "./*")))
-  (lsp-eslint-options '((flags . ["unstable_ts_config"]))))
+  (lsp-typescript-format-enable nil)
+  (lsp-use-plists "true")
+  (lsp-yaml-custom-tags '("!reference sequence"))
+  (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json")))
+
+;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
+;; (lsp-rust-analyzer-display-chaining-hints t)
+;; (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names t)
+;; (lsp-rust-analyzer-display-closure-return-type-hints t)
+;; (lsp-rust-analyzer-display-parameter-hints t)
+;; (lsp-rust-analyzer-display-reborrow-hints t)
+;; (lsp-inlay-hint-enable nil)
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1009,7 +1030,7 @@ Packages
   (lsp-ui-doc-show-with-cursor nil)
   (lsp-ui-doc-show-with-mouse t)
   (lsp-ui-doc-use-childframe t)
-  (lsp-ui-doc-border "windowBacekgroundColor")
+  (lsp-ui-doc-border "windowBackgroundColor")
   (lsp-ui-doc-include-signature t)
   (lsp-ui-doc-max-height 15)
   (lsp-ui-doc-max-width 100)
@@ -1226,22 +1247,13 @@ loaded before any language package
   (add-to-list 'project-switch-commands '(project-tasks "tasks") t)
   ;; Add action to embark-file map
   (with-eval-after-load 'embark
-    (define-key embark-file-map (kbd "P") #'project-tasks-in-dir))
+    (define-key embark-file-map (kbd "P") #'project-tasks))
 
   :custom
-  ;; Set the list of tasks files
   (project-tasks-files '("tasks.org"))
-
-  ;; Set the ignore files
-  ;; (project-tasks-ignore-files '("README.org"))
-
-  ;; Set the function to get current project dir
-  ;; (project-tasks-root-func #'project-tasks-project-root)
-
-  ;; Set the separator between file name and task name
-  ;; (project-tasks-separator " -> ")
+  (project-tasks-separator " => ")
   :config
-  (add-to-list 'marginalia-prompt-categories '("select task" . project-task))
+  (add-to-list 'marginalia-prompt-categories '("Select task" . project-task))
   (defvar-keymap embark-project-task-actions
     :doc "Keymap for actions for project-task (when mentioned by name)."
     :parent embark-general-map
@@ -1253,6 +1265,7 @@ loaded before any language package
 #+end_src
 
 ** Dashboard
+
 #+begin_src emacs-lisp
 (use-package dashboard
   :custom
@@ -1549,7 +1562,7 @@ the bottom of active window with directory of its buffer.
 #+begin_src emacs-lisp
 (use-package diff-hl
   :commands global-diff-hl-mode
-  :hook 
+  :hook
   ((magit-pre-refresh . diff-hl-magit-pre-refresh)
    (magit-post-refresh . diff-hl-magit-post-refresh)
    (dired-mode . diff-hl-dired-mode))
@@ -1579,7 +1592,7 @@ with version control systems.
 #+begin_src emacs-lisp
 (use-package posframe)
 #+end_src
- 
+
 ** goggles (link)
 
 #+begin_src emacs-lisp
@@ -2360,7 +2373,7 @@ fill those notes in with more details!"
   :ensure (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
   :defer 2
   :after (org-roam websocket)
-  ;;         if you don't care about startup time, use  
+  ;;         if you don't care about startup time, use
   :custom
   (org-roam-ui-sync-theme t)
   (org-roam-ui-follow t)
@@ -2610,7 +2623,7 @@ Hides modeline whenever this minor mode is active
 (use-package browse-at-remote
   :bind ("C-c C-g" . browse-at-remote)
   :custom
-  (browse-at-remote-remote-type-regexps 
+  (browse-at-remote-remote-type-regexps
    '(
      (:host "^git\\.oslo\\.osa"               :type "oslo")
      (:host "^gitlab\\.services\\.ams\\.osa$" :type "gitlab")
