@@ -5,100 +5,98 @@
             (expand-file-name "custom.el" server-socket-dir)
           (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
 
+;; ;; Track max-specpdl-size exceded error by uncommenting this
+;; (setq max-specpdl-size 5)
+;; (setq debug-on-error t)
+
+(setopt ad-redefinition-action 'accept)
 (setopt auto-revert-avoid-polling t)
-(setopt auto-revert-interval 5)
 (setopt auto-revert-check-vc-info t)
-(setopt sentence-end-double-space nil)
-(setopt x-underline-at-descent-line nil)
-(setopt switch-to-buffer-obey-display-actions t)
-(setopt mouse-wheel-tilt-scroll t)
-(setopt mouse-wheel-flip-direction t)
+(setopt auto-revert-interval 5)
+(setopt auto-revert-stop-on-user-input nil)
+(setopt auto-revert-verbose t)
+(setopt auto-save-default t)
+(setopt auto-save-include-big-deletions t)
+(setopt auto-window-vscroll nil)
+(setopt backup-by-copying t)
+(setopt backup-by-copying-when-linked t)
+(setopt column-number-mode t)
+(setopt comint-buffer-maximum-size 2048)
+(setopt comint-prompt-read-only t)
+(setopt comment-empty-lines t)
+(setopt comment-multi-line t)
+(setopt compilation-always-kill t)
+(setopt compilation-ask-about-save nil)
+(setopt compilation-scroll-output 'first-error)
+(setopt confirm-nonexistent-file-or-buffer nil)
+(setopt create-lockfiles nil)
+(setopt cursor-in-non-selected-windows nil)
+(setopt delete-old-versions t)
+(setopt delete-pair-blink-delay 0.03)
+(setopt dired-clean-confirm-killing-deleted-buffers nil)
+(setopt dired-create-destination-dirs 'ask)
+(setopt dired-recursive-copies  'always)
+(setopt dired-recursive-deletes 'top)
 (setopt display-line-numbers-width 3)
-
-(setq-default cursor-in-non-selected-windows nil)
-(setq-default indicate-empty-lines nil)
-(setq-default truncate-lines t)
-(setq-default word-wrap t)
-
-(setq ad-redefinition-action 'accept)
-(setq auto-revert-stop-on-user-input nil)
-(setq auto-revert-verbose t)
-(setq auto-save-default t)
-(setq auto-save-include-big-deletions t)
-(setq auto-window-vscroll nil)
-(setq backup-by-copying t)
-(setq backup-by-copying-when-linked t)
-(setq column-number-mode t)
-(setq comint-buffer-maximum-size 2048)
-(setq comint-prompt-read-only t)
-(setq comment-empty-lines t)
-(setq comment-multi-line t)
-(setq compilation-always-kill t)
-(setq compilation-ask-about-save nil)
-(setq compilation-scroll-output 'first-error)
-(setq confirm-nonexistent-file-or-buffer nil)
-(setq create-lockfiles nil)
-(setq delete-old-versions t)
-(setq delete-pair-blink-delay 0.03)
-(setq dired-clean-confirm-killing-deleted-buffers nil)
-(setq dired-create-destination-dirs 'ask)
-(setq dired-recursive-copies  'always)
-(setq dired-recursive-deletes 'top)
-(setq display-time-default-load-average nil)
-(setq ediff-split-window-function #'split-window-horizontally)
-(setq ediff-window-setup-function #'ediff-setup-windows-plain)
-(setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-(setq fast-but-imprecise-scrolling t)
-(setq ffap-machine-p-known 'reject)
-(setq find-file-suppress-same-file-warnings t)
-(setq find-file-visit-truename t)
-(setq frame-resize-pixelwise t)
-(setq global-text-scale-adjust-resizes-frames nil)
-(setq highlight-nonselected-windows nil)
-(setq hscroll-margin 2)
-(setq hscroll-step 1)
-(setq idle-update-delay 1.0)
-(setq kept-new-versions 5)
-(setq kept-old-versions 5)
-(setq kill-buffer-delete-auto-save-files t)
-(setq kill-do-not-save-duplicates t)
-(setq lazy-highlight-initial-delay 0)
-(setq line-number-mode t)
-(setq make-backup-files nil)
-(setq mouse-wheel-scroll-amount '(1 ((shift) . hscroll)))
-(setq mouse-wheel-scroll-amount-horizontal 1)
-(setq mouse-yank-at-point t)
-(setq recentf-auto-cleanup 'mode)
-(setq recentf-max-saved-items 300) ; default is 20
-(setq require-final-newline t)
-(setq resize-mini-windows 'grow-only)
-(setq revert-without-query (list "."))
-(setq ring-bell-function #'ignore)
-(setq scroll-conservatively 10000)
-(setq scroll-error-top-bottom t)
-(setq scroll-margin 0)
-(setq scroll-preserve-screen-position t)
-(setq scroll-step 1)
-(setq sentence-end-double-space nil)
-(setq sh-indent-after-continuation 'always)
-(setq show-paren-delay 0.1)
-(setq show-paren-highlight-openparen t)
-(setq show-paren-when-point-in-periphery t)
-(setq show-paren-when-point-inside-paren t)
-(setq switch-to-buffer-obey-display-actions t)
-(setq truncate-partial-width-windows nil)
-(setq truncate-string-ellipsis "…")
-(setq uniquify-buffer-name-style 'forward)
-(setq vc-follow-symlinks t)
-(setq vc-make-backup-files nil)
-(setq version-control t)
-(setq visible-bell nil)
-(setq warning-suppress-types '((lexical-binding)))
-(setq whitespace-line-column nil)
-(setq window-divider-default-bottom-width 1)
-(setq window-divider-default-places t)
-(setq window-divider-default-right-width 1)
-(setq window-resize-pixelwise nil)
+(setopt display-time-default-load-average nil)
+(setopt ediff-split-window-function #'split-window-horizontally)
+(setopt ediff-window-setup-function #'ediff-setup-windows-plain)
+(setopt eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+(setopt fast-but-imprecise-scrolling t)
+(setopt ffap-machine-p-known 'reject)
+(setopt find-file-suppress-same-file-warnings t)
+(setopt find-file-visit-truename t)
+(setopt frame-resize-pixelwise t)
+(setopt global-text-scale-adjust-resizes-frames nil)
+(setopt highlight-nonselected-windows nil)
+(setopt hscroll-margin 2)
+(setopt hscroll-step 1)
+(setopt idle-update-delay 0.5)
+(setopt indicate-empty-lines nil)
+(setopt kept-new-versions 5)
+(setopt kept-old-versions 5)
+(setopt kill-buffer-delete-auto-save-files t)
+(setopt kill-do-not-save-duplicates t)
+(setopt lazy-highlight-initial-delay 0)
+(setopt mac-command-modifier 'super)
+(setopt mac-option-modifier 'meta)
+(setopt make-backup-files nil)
+(setopt mouse-wheel-flip-direction t)
+(setopt mouse-wheel-scroll-amount '(1 ((shift) . hscroll)))
+(setopt mouse-wheel-scroll-amount-horizontal 1)
+(setopt mouse-wheel-tilt-scroll t)
+(setopt mouse-yank-at-point t)
+(setopt recentf-auto-cleanup 'mode)
+(setopt recentf-max-saved-items 300) ; default is 20
+(setopt resize-mini-windows 'grow-only)
+(setopt revert-without-query (list "."))
+(setopt ring-bell-function #'ignore)
+(setopt scroll-conservatively 0)
+(setopt scroll-error-top-bottom t)
+(setopt scroll-margin 15)
+(setopt scroll-preserve-screen-position t)
+(setopt scroll-step 1)
+(setopt sentence-end-double-space nil)
+(setopt sh-indent-after-continuation 'always)
+(setopt show-paren-delay 0.1)
+(setopt show-paren-highlight-openparen t)
+(setopt show-paren-when-point-in-periphery t)
+(setopt show-paren-when-point-inside-paren t)
+(setopt switch-to-buffer-obey-display-actions t)
+(setopt truncate-lines t)
+(setopt truncate-partial-width-windows nil)
+(setopt truncate-string-ellipsis "…")
+(setopt uniquify-buffer-name-style 'forward)
+(setopt vc-follow-symlinks t)
+(setopt vc-make-backup-files nil)
+(setopt version-control t)
+(setopt visible-bell nil)
+(setopt warning-suppress-types '((lexical-binding)))
+(setopt window-divider-default-bottom-width 1)
+(setopt window-divider-default-places t)
+(setopt window-divider-default-right-width 1)
+(setopt window-resize-pixelwise nil)
+(setopt x-underline-at-descent-line nil)
 
 (add-hook 'after-init-hook #'window-divider-mode)
 
@@ -111,9 +109,10 @@
 (if (bound-and-true-p module-file-suffix)
     (push 'dynamic-modules features))
 
-(setq minibuffer-prompt-properties
-      '(read-only t intangible t cursor-intangible t face
-                  minibuffer-prompt))
+(setopt minibuffer-prompt-properties
+        '(read-only t intangible t cursor-intangible t face
+                    minibuffer-prompt))
+
 (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
 (if (boundp 'use-short-answers)
@@ -178,8 +177,9 @@
 (elpaca elpaca-use-package
   (elpaca-use-package-mode))
 
-;; ;; Uncomment this to see the list of loaded packages
-;; (setq use-package-verbose 
+;; Uncomment this to see the list of loaded packages
+;; (setq use-package-verbose t)
+
 (setq use-package-always-ensure t)
 
 (use-package no-littering
@@ -189,10 +189,10 @@
 (setq package-check-signature nil)
 
 ;; Updates public keyring and reverts package-check-signature
-(use-package gnu-elpa-keyring-update
-  :ensure (:wait t)
-  :init
-  (setq package-check-signature 'allow-unsigned))
+;; (use-package gnu-elpa-keyring-update
+;;   :ensure (:wait t)
+;;   :init
+;;   (setq package-check-signature 'allow-unsigned))
 
 (use-package system-packages
   :ensure (:wait t)
@@ -200,11 +200,11 @@
   :custom
   (system-packages-package-manager 'brew))
 
-;; ;; Track max-specpdl-size exceded error by uncommenting this
-;; (setq max-specpdl-size 5)
-;; (setq debug-on-error t)
-
 (use-package org
+  :ensure (:wait t)
+  :demand t)
+
+(use-package seq
   :ensure (:wait t)
   :demand t)
 
@@ -214,9 +214,9 @@
 
 (fset #'x-apply-session-resources #'ignore)
 
-
 ;; Inject PATH from shell
 (use-package exec-path-from-shell
+  :functions exec-path-from-shell-initialize
   :custom
   (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
   (exec-path-from-shell-arguments '("-l"))

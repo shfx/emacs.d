@@ -199,6 +199,7 @@ not break the init of Emacs.
   (undo-limit         50000000)
   (undo-strong-limit 100000000)
   (undo-outer-limit  300000000)
+  (switch-to-prev-buffer-skip t)
 
   :config
   (set-default 'truncate-lines t)
@@ -212,13 +213,11 @@ not break the init of Emacs.
   (menu-bar-mode 0)
   (save-place-mode 1)
   (recentf-mode 1)
-  (pixel-scroll-precision-mode 1)
 
   ;; Better support for files with long lines
   (setq-default bidi-display-reordering 'left-to-right
                 bidi-paragraph-direction 'left-to-right
-                bidi-inhibit-bpa t
-                indicate-buffer-boundaries nil)
+                bidi-inhibit-bpa t)
 
   (global-so-long-mode 1)
 
@@ -508,8 +507,6 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (reb-re-syntax 'string))
 #+end_src
 
-* Initialiation defaults
-
 * Window and frame management
 
 ** Pooper (link)
@@ -646,6 +643,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
   (vertico-grid-separator "        ")
   (vertico-grid-lookahead 50)
   (vertico-buffer-display-action '(display-buffer-reuse-window))
+  (vertico-sort-function 'vertico-sort-history-alpha)
   (vertico-multiform-categories
    '((consult-line
       posframe
@@ -660,7 +658,10 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
      (org-roam-node posframe indexed)
      (t posframe)))
   (vertico-multiform-commands
-   '((consult-line
+   '((consult-imenu
+      posframe
+      (vertico-sort-function . nil))
+     (consult-line
       posframe
       (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
       (vertico-posframe-border-width . 10)
@@ -1005,7 +1006,7 @@ Packages
   (lsp-rust-analyzer-cargo-watch-command "clippy")
   (lsp-typescript-format-enable nil)
   (lsp-use-plists "true")
-  (lsp-yaml-custom-tags '("!reference sequence"))
+  (lsp-yaml-custom-tags ["!reference sequence"])
   (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json")))
 
 ;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
@@ -1747,28 +1748,41 @@ with version control systems.
 (use-package ligature
   :functions ligature-set-ligatures global-ligature-mode
   :config
-  ;; Enable the "www" ligature in every possible major mode
-  (ligature-set-ligatures 't '("www"))
-  ;; Enable traditional ligature support in eww-mode, if the
-  ;; `variable-pitch' face supports it
-  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
-  ;; Enable all Cascadia Code ligatures in programming modes
-  (ligature-set-ligatures 'prog-mode '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
-                                       ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
-                                       "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
-                                       "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
-                                       "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
-                                       "..." "+++" "/==" "///" "_|_" "www" "&&" "^=" "~~" "~@" "~="
-                                       "~>" "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|"
-                                       "[|" "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:"
-                                       ">=" ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:"
-                                       "<$" "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!"
-                                       "##" "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
-                                       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "~~" "(*" "*)"
-                                       "\\\\" "://"))
-  ;; Enables ligature checks globally in all buffers. You can also do it
-  ;; per mode with `ligature-mode'.
-  (global-ligature-mode t))
+  (ligature-set-ligatures
+   '(js-base-mode typescript-mode typescript-ts-mode)
+   '("?." "?=" "<>"
+     "</>" "/>" "<!--" "<#--" "-->" "=>"
+     "..." ".."
+     "//" "///"))
+
+  (ligature-set-ligatures
+   '(emacs-lisp-mode lisp-data-mode)
+   '(";;;" ";;"))
+
+  (ligature-set-ligatures
+   'go-mode
+   '(":="))
+
+  (ligature-set-ligatures
+   'prog-mode
+   '("--" "==" "===" "!=" "!==" "&&" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" "..." ".."))
+
+   ;; (ligature-set-ligatures
+   ;;  t
+   ;;  '("--" "---"
+   ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
+   ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
+   ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
+   ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
+   ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
+   ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
+   ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
+   ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
+   ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
+   ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
+   ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
+   ;;    "<:<" ";;;"))
+   (global-ligature-mode t))
 #+end_src
 
 ** Projectile ([[https://github.com/bbatsov/projectile][link]])
@@ -1904,6 +1918,81 @@ targets."
   ("C-s-h" . highlight-global-hl-frame-toggle))
 #+end_src
 
+** Dimmer
+
+#+begin_src emacs-lisp
+(use-package dimmer
+  :custom
+  (dimmer-use-colorspace :cielab)
+  (dimmer-fraction 0.3)
+  :config
+
+  ;; Disabling corfu dimming
+  ;; https://github.com/gonewest818/dimmer.el/issues/62#issuecomment-1093836001
+  (defun corfu-frame-p ()
+    "Check if the buffer is a corfu frame buffer."
+    (string-match-p "\\` \\*corfu" (buffer-name)))
+
+  (defun dimmer-configure-corfu ()
+    "Convenience settings for corfu users."
+    (add-to-list
+     'dimmer-prevent-dimming-predicates
+     #'corfu-frame-p))
+
+  (define-advice dimmer-config-change-handler
+      (:override ())
+    "Advise to only force process if no predicate is truthy."
+    (let ((ignore (cl-some (lambda (f) (and (fboundp f) (funcall f)))
+                           dimmer-prevent-dimming-predicates)))
+      (unless ignore
+        (when (fboundp 'dimmer-process-all)
+          (dimmer-process-all t)))))
+
+  ;; Fix issue with emacs 29 and color reset
+  ;; https://github.com/gonewest818/dimmer.el/issues/68#issuecomment-2053620377
+  (define-advice dimmer-face-color
+      (:override (f frac))
+    (let* ((fg-original (face-foreground f))
+           (fg (if (eq 'reset fg-original) 'unspecified  fg-original))
+           (bg-original (face-background f))
+           (bg (if (eq 'reset bg-original) 'unspecified  bg-original))
+           (def-fg (face-foreground 'default))
+           (def-bg (face-background 'default))
+           (my-frac (if (eq dimmer-adjustment-mode :both)
+                        (/ frac 2.0)
+                      frac))
+           (result '()))
+      (when (and (or (eq dimmer-adjustment-mode :foreground)
+                     (eq dimmer-adjustment-mode :both))
+                 fg (color-defined-p fg)
+                 def-bg (color-defined-p def-bg))
+        (setq result
+              (plist-put result :foreground
+                         (dimmer-cached-compute-rgb fg
+                                                    def-bg
+                                                    my-frac
+                                                    dimmer-use-colorspace))))
+      (when (and (or (eq dimmer-adjustment-mode :background)
+                     (eq dimmer-adjustment-mode :both))
+                 bg (color-defined-p bg)
+                 def-fg (color-defined-p def-fg))
+        (setq result
+              (plist-put result :background
+                         (dimmer-cached-compute-rgb bg
+                                                    def-fg
+                                                    my-frac
+                                                    dimmer-use-colorspace))))
+      result))
+
+  (dimmer-configure-which-key)
+  (dimmer-configure-magit)
+  (dimmer-configure-org)
+  (dimmer-configure-which-key)
+  (dimmer-configure-posframe)
+  (dimmer-mode t))
+
+#+end_src
+
 ** Embark Consult ([[https://github.com/oantolin/embark/blob/master/embark-consult.el][link]])
 
 Consult users will also want the embark-consult package.
@@ -2004,6 +2093,7 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 #+begin_src emacs-lisp
 (use-package multiple-cursors
+  :defer 0.5
   :hook
   (multiple-cursors-mode
    .
@@ -2831,15 +2921,6 @@ return windowTitle"))
 #+end_src
 
 * Prog modes
-** Prepare all prog modes
-
-#+begin_src emacs-lisp
-(use-package display-line-numbers
-  :ensure nil
-  :hook (prog-mode . display-line-numbers-mode)
-  :custom
-  (display-line-numbers-type 'relative))
-#+end_src
 
 ** bash
 

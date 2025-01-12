@@ -6,7 +6,7 @@
     (startup-redirect-eln-cache
      (convert-standard-filename
       (expand-file-name  "var/eln-cache/" user-emacs-directory))))
-  (setq native-comp-async-report-warnings-errors 'silent)
+  (setopt native-comp-async-report-warnings-errors 'silent)
   ;; Make native compilation happens asynchronously
   (setq native-comp-jit-compilation t)
   (setq package-native-compile t))
