@@ -196,9 +196,7 @@
 
 (use-package system-packages
   :ensure (:wait t)
-  :demand t
-  :custom
-  (system-packages-package-manager 'brew))
+  :demand t)
 
 (use-package org
   :ensure (:wait t)

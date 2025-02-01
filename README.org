@@ -478,14 +478,24 @@ Disable all mouse input
 ** EasyGP Assistant
 
 #+begin_src emacs-lisp
+(defun my/epa-config ()
+  (setopt epa-file-encrypt-to "shfx@shfx.pl")
+  (setopt password-cache-expiry (* 60 15))
+  (setopt epa-file-select-keys t)
+  (setopt epg-pinentry-mode 'loopback))
+
 (use-package epa
-  :ensure-system-package pinentry-mac
+  :if (eq system-type 'darwin)
   :ensure nil
-  :custom
-  (epa-file-encrypt-to "shfx@shfx.pl")
-  (password-cache-expiry (* 60 15))
-  (epa-file-select-keys t)
-  (epg-pinentry-mode 'loopback))
+  :ensure-system-package pinentry-mac
+  :config
+  (my/epa-config))
+
+(use-package epa
+  :if (eq system-type 'gnu/linux)
+  :ensure nil
+  :config
+  (my/epa-config))
 #+end_src
 
 when starting, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
@@ -1140,7 +1150,7 @@ loaded before any language package
   :custom
   (treesit-auto-install 'prompt)
   :functions global-treesit-auto-mode
-  :defines global-treesit-auto-modes
+  :defines globatrel-treesit-auto-modes
   :preface
   (defun my/ts-mode-p (mode)
     (let* ((mode-name (symbol-name mode)))
@@ -1640,10 +1650,20 @@ with version control systems.
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
-  :preface
-  (set-face-attribute 'default nil :font "JetBrains Mono" :height 150)
-  :if (not (file-exists-p "~//Library/Fonts/JetBrainsMono[wght].ttf"))
-  :ensure-system-package font-jetbrains-mono)
+  :if (and
+       (eq system-type 'darwin)
+       (not (file-exists-p "~//Library/Fonts/JetBrainsMono[wght].ttf")))
+  :ensure-system-package font-jetbrains-mono
+  :config
+  (set-face-attribute 'default nil :font "JetBrains Mono" :height 150))
+
+(use-package emacs
+  :ensure nil
+  :if (eq system-type 'gnu/linux)
+  :config
+  (when (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2"))
+    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
+  (set-face-attribute 'default nil :font "JetBrains Mono" :height 120))
 
 (use-package nerd-icons
   :defines nerd-icons-regexp-icon-alist
