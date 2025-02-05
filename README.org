@@ -57,6 +57,7 @@ Better package management
 
 #+begin_src emacs-lisp
 (use-package better-defaults
+  :demand t
   :config
   (ido-mode 0))
 #+end_src
@@ -200,6 +201,7 @@ not break the init of Emacs.
   (undo-strong-limit 100000000)
   (undo-outer-limit  300000000)
   (switch-to-prev-buffer-skip t)
+  (text-mode-ispell-word-completion nil)
 
   :config
   (set-default 'truncate-lines t)
@@ -297,19 +299,6 @@ not break the init of Emacs.
 ** Compiation
 
 #+begin_src emacs-lisp
-(use-package fancy-compilation
-  :ensure (fancy-compilation :host codeberg :url "ideasman42/emacs-fancy-compilation")
-  :preface
-  (defun my/fancy-comp ()
-    (unless (eq major-mode "rg-mode")
-      (fancy-compilation-mode)))
-  :hook
-  (compilation-mode . my/fancy-comp)
-  :custom
-  (fancy-compilation-quiet-prelude t)
-  (fancy-compilation-quiet-prolog t)
-  (fancy-compilation-override-colors nil))
-
 (use-package compile
   :ensure nil
   :custom
@@ -482,7 +471,8 @@ Disable all mouse input
   (setopt epa-file-encrypt-to "shfx@shfx.pl")
   (setopt password-cache-expiry (* 60 15))
   (setopt epa-file-select-keys t)
-  (setopt epg-pinentry-mode 'loopback))
+  (setopt epg-pinentry-mode 'loopback)
+  (fset 'epg-wait-for-status 'ignore))
 
 (use-package epa
   :if (eq system-type 'darwin)
@@ -745,6 +735,7 @@ also helpful emacs config just for vertico
 
 #+begin_src emacs-lisp
 (use-package orderless
+  :defer 0.5
   :init
   (setq completion-styles '(orderless basic)
         completion-category-defaults nil
@@ -756,6 +747,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 (use-package savehist
   :ensure nil
+  :defer t
   :after no-littering
   :custom
   (history-length 100)
@@ -768,7 +760,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 ;; Example configuration for Consult
 (use-package consult
-  :defer 2
+  :defer 0.5
   ;; Replace bindings. Lazily loaded due by `use-package'.
   :bind (;; C-c bindings (mode-specific-map)
          ("C-c h" . consult-history)
@@ -985,7 +977,7 @@ Packages
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :after (corfu orderless posframe)
-  :defer 1
+  :defer 0.5
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
    (lsp-completion-mode . my/corfu-setup-lsp))
@@ -1221,7 +1213,10 @@ loaded before any language package
 
 #+begin_src emacs-lisp
 (use-package cognitive-complexity
-  :ensure (:host github :repo "abougouffa/cognitive-complexity"))
+  :ensure
+  (:host github :repo "abougouffa/cognitive-complexity")
+  :hook
+  (typescript-mode . cognitive-complexity-mode))
 #+end_src
 
 ** COMMENT Combobulate
@@ -1331,16 +1326,37 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 
 #+begin_src emacs-lisp
 (use-package eshell
-  :after corfu
+  :after (corfu cape pcmpl-args)
   :ensure nil
   :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
   :defines (eshell-mode-map eshell-hist-mode-map)
+  :custom
+  (eshell-banner-message "")
+  (eshell-error-if-no-glob t)
+  (eshell-hist-ignoredups t)
+  (eshell-history-size 1024)
+  (eshell-input-filter 'me/eshell-input-filter)
+  (eshell-last-dir-ring-size 32)
+  (eshell-last-dir-unique t)
+  (eshell-pushd-dunique t)
+  (eshell-scroll-to-bottom-on-input t)
+  (eshell-visual-commands nil)
+  :bind
+  (:map eshell-mode-map
+        ("<up>" . previous-line)
+        ("<down>" . next-line)
+        ("M-r" . consult-history))
 
-  :preface
+  :hook
+  (eshell-mode . me/eshell-corfu-setup)
+  :config
+  (setenv "PAGER" "cat")
+  (setenv "TERM" "xterm-256color")
+
   (defun me/eshell-input-filter (input)
     "Do not save on the following:
-       - empty lines
-       - commands that start with a space, `ls`/`l`/`lsd`"
+         - empty lines
+         - commands that start with a space, `ls`/`l`/`lsd`"
     (and
      (eshell-input-filter-default input)
      (eshell-input-filter-initial-space input)
@@ -1369,7 +1385,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
                                                                   (nth 1 args))))))
         (apply orig-fun r))))
 
-  (defun corfu-send-shell (&rest _)
+  (defun my\corfu-send-shell (&rest _)
     "Send completion candidate when inside comint/eshell."
     (cond
      ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
@@ -1378,27 +1394,24 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
       (comint-send-input))))
 
   (defun me/eshell-corfu-setup ()
+    "Setup completion for EShell with ‘corfu’ and ‘cape’."
     (setq-local
      corfu-auto nil
      corfu-quit-at-boundary t
      corfu-quit-no-match t
-     corfu-separatvor nil))
+     corfu-separatvor nil
+     completion-at-point-functions (list #'pcomplete-completions-at-point #'cape-file)))
 
-  :custom
-  (eshell-banner-message "")
-  (eshell-error-if-no-glob t)
-  (eshell-hist-ignoredups t)
-  (eshell-history-size 1024)
-  (eshell-input-filter 'me/eshell-input-filter)
-  (eshell-last-dir-ring-size 32)
-  (eshell-last-dir-unique t)
-  (eshell-pushd-dunique t)
-  (eshell-scroll-to-bottom-on-input t)
-  (eshell-visual-commands nil)
+  (advice-add #'eshell-add-input-to-history :around
+              #'me/adviced-eshell-add-input-to-history)
 
+  (advice-add #'corfu-insert :after
+              #'corfu-send-shell))
+
+(use-package em-hist
+  :after eshell
+  :ensure nil
   :hook
-  (eshell-mode . me/eshell-corfu-setup)
-
   (eshell-hist-mode . (lambda ()
                         (unbind-key (kbd "<up>") eshell-hist-mode-map)
                         (unbind-key (kbd "<down>") eshell-hist-mode-map)
@@ -1408,79 +1421,68 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
                                     'eshell-previous-matching-input-from-input)
                         (define-key eshell-hist-mode-map
                                     (kbd "C-<down>")
-                                    'eshell-next-matching-input-from-input)))
-  :bind
-  (:map eshell-mode-map
-        ("<up>" . previous-line)
-        ("<down>" . next-line)
-        ("<down>" . next-line)
-        ("M-r" . consult-history))
+                                    'eshell-next-matching-input-from-input))))
 
-  :config
-  (setenv "PAGER" "cat")
-  (setenv "TERM" "xterm-256color")
-  (advice-add #'eshell-add-input-to-history :around
-              #'me/adviced-eshell-add-input-to-history)
-  (advice-add #'corfu-insert :after
-              #'corfu-send-shell))
+(use-package eat
+  :hook
+  (eshell-load . eat-eshell-mode)
+  :custom
+  (eat-term-name "xterm"))
 
-  (use-package eat
-    :hook
-    (eshell-load . eat-eshell-mode)
-    :custom
-    (eat-term-name "xterm"))
+(use-package pcmpl-args
+  :defer t
+  :after (pcomplete))
 
-  (use-package pcmpl-args
-    :after eshell)
+(use-package pcmpl-homebrew
+  :defer t
+  :after (pcomplete))
 
-  (use-package pcmpl-homebrew
-    :after eshell)
+(defun eshell/gst (&rest args)
+  (magit-status (pop args) nil)
+  (eshell/echo))
 
-  (defun eshell/gst (&rest args)
-    (magit-status (pop args) nil)
-    (eshell/echo))
+(defun eshell/ccat (file)
+  "Like `cat' but output with Emacs syntax highlighting."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let ((buffer-file-name file))
+      (delay-mode-hooks
+        (set-auto-mode)
+        (if (fboundp 'font-lock-ensure)
+            (font-lock-ensure)
+          (with-no-warnings
+            (font-lock-fontify-buffer)))))
+    (buffer-string)))
 
-  (defun eshell/ccat (file)
-    "Like `cat' but output with Emacs syntax highlighting."
-    (with-temp-buffer
-      (insert-file-contents file)
-      (let ((buffer-file-name file))
-        (delay-mode-hooks
-          (set-auto-mode)
-          (if (fboundp 'font-lock-ensure)
-              (font-lock-ensure)
-            (with-no-warnings
-              (font-lock-fontify-buffer)))))
-      (buffer-string)))
+(use-package multi-eshell
+  :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
+  :bind (("s-s" . multi-eshell)
+         ;; ("s-n" . multi-eshell-switch)
+         ("s-p" . multi-eshell-go-back))
+  :custom
+  (multi-eshell-shell-function '(eshell))
+  (multi-eshell-name "*eshell*"))
 
-  (use-package multi-eshell
-    :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
-    :bind (("s-s" . multi-eshell)
-           ;; ("s-n" . multi-eshell-switch)
-           ("s-p" . multi-eshell-go-back))
-    :custom
-    (multi-eshell-shell-function '(eshell))
-    (multi-eshell-name "*eshell*"))
-
-  (use-package shrink-path
-    :preface
-    (defun me/eshell-set-outline-regexp ()
-      (setq-local
-       outline-regexp eshell-prompt-regexp))
-    :hook
-    (eshell-mode . me/eshell-set-outline-regexp)
-    :custom
-    ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
-     (eshell-prompt-function
-      (lambda ()
-        (let ((base/dir (shrink-path-prompt default-directory)))
-          (concat (propertize (car base/dir)
-                              'face 'font-lock-comment-face)
-                  (propertize (cdr base/dir)
-                              'face 'font-lock-constant-face)
-                  (propertize " ❯" 'face 'eshell-prompt-face)
-                  ;; needed for the input text to not have prompt face
-                  (propertize " " 'face 'default)))))))
+(use-package shrink-path
+  :after eshell
+  :preface
+  (defun me/eshell-set-outline-regexp ()
+    (setq-local
+     outline-regexp eshell-prompt-regexp))
+  :hook
+  (eshell-mode . me/eshell-set-outline-regexp)
+  :custom
+  ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
+   (eshell-prompt-function
+    (lambda ()
+      (let ((base/dir (shrink-path-prompt default-directory)))
+        (concat (propertize (car base/dir)
+                            'face 'font-lock-comment-face)
+                (propertize (cdr base/dir)
+                            'face 'font-lock-constant-face)
+                (propertize " ❯" 'face 'eshell-prompt)
+                ;; needed for the input text to not have prompt face
+                (propertize " " 'face 'default)))))))
 #+end_src
 
 ** Toogle undecorated frame
@@ -1545,6 +1547,7 @@ the bottom of active window with directory of its buffer.
 
 #+begin_src emacs-lisp
 (use-package vterm
+  :defer 1
   :custom
   (vterm-always-compile-module t))
 
@@ -1601,7 +1604,8 @@ with version control systems.
 ** Posframe
 
 #+begin_src emacs-lisp
-(use-package posframe)
+(use-package posframe
+  :demand t)
 #+end_src
 
 ** goggles (link)
@@ -1706,9 +1710,9 @@ with version control systems.
 
 (use-package nerd-icons-corfu
   :after corfu
+  :commands nerd-icons-corfu-formatter
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
-
 #+end_src
 
 ** Treemacs
@@ -1938,81 +1942,6 @@ targets."
   ("C-s-h" . highlight-global-hl-frame-toggle))
 #+end_src
 
-** Dimmer
-
-#+begin_src emacs-lisp
-(use-package dimmer
-  :custom
-  (dimmer-use-colorspace :cielab)
-  (dimmer-fraction 0.3)
-  :config
-
-  ;; Disabling corfu dimming
-  ;; https://github.com/gonewest818/dimmer.el/issues/62#issuecomment-1093836001
-  (defun corfu-frame-p ()
-    "Check if the buffer is a corfu frame buffer."
-    (string-match-p "\\` \\*corfu" (buffer-name)))
-
-  (defun dimmer-configure-corfu ()
-    "Convenience settings for corfu users."
-    (add-to-list
-     'dimmer-prevent-dimming-predicates
-     #'corfu-frame-p))
-
-  (define-advice dimmer-config-change-handler
-      (:override ())
-    "Advise to only force process if no predicate is truthy."
-    (let ((ignore (cl-some (lambda (f) (and (fboundp f) (funcall f)))
-                           dimmer-prevent-dimming-predicates)))
-      (unless ignore
-        (when (fboundp 'dimmer-process-all)
-          (dimmer-process-all t)))))
-
-  ;; Fix issue with emacs 29 and color reset
-  ;; https://github.com/gonewest818/dimmer.el/issues/68#issuecomment-2053620377
-  (define-advice dimmer-face-color
-      (:override (f frac))
-    (let* ((fg-original (face-foreground f))
-           (fg (if (eq 'reset fg-original) 'unspecified  fg-original))
-           (bg-original (face-background f))
-           (bg (if (eq 'reset bg-original) 'unspecified  bg-original))
-           (def-fg (face-foreground 'default))
-           (def-bg (face-background 'default))
-           (my-frac (if (eq dimmer-adjustment-mode :both)
-                        (/ frac 2.0)
-                      frac))
-           (result '()))
-      (when (and (or (eq dimmer-adjustment-mode :foreground)
-                     (eq dimmer-adjustment-mode :both))
-                 fg (color-defined-p fg)
-                 def-bg (color-defined-p def-bg))
-        (setq result
-              (plist-put result :foreground
-                         (dimmer-cached-compute-rgb fg
-                                                    def-bg
-                                                    my-frac
-                                                    dimmer-use-colorspace))))
-      (when (and (or (eq dimmer-adjustment-mode :background)
-                     (eq dimmer-adjustment-mode :both))
-                 bg (color-defined-p bg)
-                 def-fg (color-defined-p def-fg))
-        (setq result
-              (plist-put result :background
-                         (dimmer-cached-compute-rgb bg
-                                                    def-fg
-                                                    my-frac
-                                                    dimmer-use-colorspace))))
-      result))
-
-  (dimmer-configure-which-key)
-  (dimmer-configure-magit)
-  (dimmer-configure-org)
-  (dimmer-configure-which-key)
-  (dimmer-configure-posframe)
-  (dimmer-mode t))
-
-#+end_src
-
 ** Embark Consult ([[https://github.com/oantolin/embark/blob/master/embark-consult.el][link]])
 
 Consult users will also want the embark-consult package.
@@ -2029,7 +1958,7 @@ Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
 (use-package corfu
-  :demand t
+  :defer 1
   :after orderless
 
   :preface
@@ -2037,7 +1966,7 @@ Consult users will also want the embark-consult package.
     "Enable Corfu in the minibuffer if Vertico/Mct are not active."
     (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
                 (bound-and-true-p vertico--input))
-      (setq-local corfu-auto nil)       ; Ensure auto completion is disabled
+      (setq-local corfu-auto nil) ; Ensure auto completion is disabled
       (corfu-mode 1)))
 
   :hook (minibuffer-setup . corfu-enable-always-in-minibuffer)
@@ -2077,22 +2006,18 @@ Consult users will also want the embark-consult package.
   :config
   (global-corfu-mode)
   (corfu-history-mode)
-  (corfu-popupinfo-mode)
-  ;; The advices are only needed on Emacs 28 and older.
-  (when (< emacs-major-version 29)
-    ;; Silence the pcomplete capf, no errors or messages!
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-silent)
-
-    ;; Ensure that pcomplete does not write to the buffer
-    ;; and behaves as a pure `completion-at-point-function'.
-    (advice-add 'pcomplete-completions-at-point :around #'cape-wrap-purify)))
+  (corfu-popupinfo-mode))
 
 ;; Use dabbrev with Corfu!
 (use-package dabbrev
   :ensure nil
   ;; Swap M-/ and C-M-/
   :bind (("M-/" . dabbrev-completion)
-         ("C-M-/" . dabbrev-expand)))
+         ("C-M-/" . dabbrev-expand))
+  :config
+  (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
+  (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
+  (add-to-list 'dabbrev-ignored-buffer-modes 'tags-table-mode))
 #+end_src
 
 ** Cape ([[https://github.com/minad/cape][link]])
@@ -2505,7 +2430,8 @@ fill those notes in with more details!"
 
 #+begin_src emacs-lisp
 (use-package org-download
-  :hook (dired-mode . org-download-enable)
+  :hook ((dired-mode org-mode) . org-download-enable)
+  :ensure-system-package pngpaste
   :custom
   (org-download-screenshot-method "screencapture -i %s"))
 #+end_src
@@ -2530,14 +2456,6 @@ fill those notes in with more details!"
    (which-key-side-window-max-width 0.33)
    (which-key-popup-type 'side-window)
    (which-key-sort-uppercase-first nil)))
-#+end_src
-
-** Editing forms in chrome
-
-#+begin_src emacs-lisp
-(use-package atomic-chrome
-  :config
-  (atomic-chrome-start-server))
 #+end_src
 
 ** Better help dialogs
@@ -2850,14 +2768,13 @@ ripgrep frontend
 #+begin_src emacs-lisp
 (use-package rg
   :ensure-system-package (rg . ripgrep)
+  :bind
+  ("C-c s" . rg-menu)
   :custom
   (rg-custom-type-aliases
    '(("svelte" .    "*.svelte")
      ("ts"     .    "*.tsx?")
-     ("env"    .    "\.env.*")))
-  :config
-  (rg-enable-default-bindings)
-  (rg-enable-menu))
+     ("env"    .    "\.env.*"))))
 #+end_src
 
 ** Dired
@@ -2869,6 +2786,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 #+begin_src emacs-lisp
 (use-package dired
   :ensure nil
+  :defer 0.5
   :custom
   (dired-dwim-target t)
   (dired-vc-rename-file t)
@@ -2896,6 +2814,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
 
 #+begin_src emacs-lisp
 (use-package emacs-everywhere
+  :defer 1
   :custom
   (emacs-everywhere-frame-parameters '((name . "emacs-everywhere") (fullscreen) (width . 160) (height . 24)))
   (emacs-everywhere-clipboard-sleep-delay 0.005)
@@ -2974,6 +2893,7 @@ return windowTitle"))
 
 #+begin_src emacs-lisp
 (use-package rust-mode
+  :defer 0.5
   :custom
   (rust-mode-treesitter-derive t)
   :config

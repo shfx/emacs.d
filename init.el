@@ -12,7 +12,7 @@
 (setopt ad-redefinition-action 'accept)
 (setopt auto-revert-avoid-polling t)
 (setopt auto-revert-check-vc-info t)
-(setopt auto-revert-interval 5)
+(setopt auto-revert-interval 1)
 (setopt auto-revert-stop-on-user-input nil)
 (setopt auto-revert-verbose t)
 (setopt auto-save-default t)
