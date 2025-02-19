@@ -13,6 +13,11 @@ xcode-select --install
 * Install Emacs with ~homebrew~
 
 #+begin_src shell
+osascript -e 'id of app "Emacs"'
+
+defaults write org.gnu.Emacs AppleFontSmoothing -int 0
+defaults write NSGlobalDomain KeyRepeat -int 1
+
 brew tap d12frosted/emacs-plus
 brew install emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon
 #+end_src

@@ -122,7 +122,7 @@
 
 ;; Elpaca
 
-(defvar elpaca-installer-version 0.8)
+(defvar elpaca-installer-version 0.9)
 (defvar elpaca-directory
   (locate-user-emacs-file
    (concat
@@ -130,13 +130,11 @@
     emacs-version)))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
 (defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-
 (defvar elpaca-order
   '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-           :ref nil :depth 1
+           :ref nil :depth 1 :inherit ignore
            :files (:defaults "elpaca-test.el" (:exclude "extensions"))
            :build (:not elpaca--activate-package)))
-
 (let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
@@ -146,18 +144,18 @@
     (make-directory repo t)
     (when (< emacs-major-version 28) (require 'subr-x))
     (condition-case-unless-debug err
-        (if-let ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                 ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                 ,@(when-let ((depth (plist-get order :depth)))
-                                                     (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                 ,(plist-get order :repo) ,repo))))
-                 ((zerop (call-process "git" nil buffer t "checkout"
-                                       (or (plist-get order :ref) "--"))))
-                 (emacs (concat invocation-directory invocation-name))
-                 ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                       "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                 ((require 'elpaca))
-                 ((elpaca-generate-autoloads "elpaca" repo)))
+        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
+                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
+                                                  ,@(when-let* ((depth (plist-get order :depth)))
+                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
+                                                  ,(plist-get order :repo) ,repo))))
+                  ((zerop (call-process "git" nil buffer t "checkout"
+                                        (or (plist-get order :ref) "--"))))
+                  (emacs (concat invocation-directory invocation-name))
+                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
+                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
+                  ((require 'elpaca))
+                  ((elpaca-generate-autoloads "elpaca" repo)))
             (progn (message "%s" (buffer-string)) (kill-buffer buffer))
           (error "%s" (with-current-buffer buffer (buffer-string))))
       ((error) (warn "%s" err) (delete-directory repo 'recursive))))
@@ -165,12 +163,8 @@
     (require 'elpaca)
     (elpaca-generate-autoloads "elpaca" repo)
     (load "./elpaca-autoloads")))
-
 (add-hook 'after-init-hook #'elpaca-process-queues)
-
 (elpaca `(,@elpaca-order))
-
-(elpaca-wait)
 
 (require 'use-package)
 
@@ -186,14 +180,6 @@
   :ensure (:wait t)
   :demand t)
 
-(setq package-check-signature nil)
-
-;; Updates public keyring and reverts package-check-signature
-;; (use-package gnu-elpa-keyring-update
-;;   :ensure (:wait t)
-;;   :init
-;;   (setq package-check-signature 'allow-unsigned))
-
 (use-package system-packages
   :ensure (:wait t)
   :demand t)
@@ -207,7 +193,6 @@
   :demand t)
 
 (use-package org-contrib
-  :ensure (:wait t)
   :after org)
 
 (fset #'x-apply-session-resources #'ignore)
@@ -222,6 +207,8 @@
   (when (or (memq window-system '(ns x))
             (daemonp))
     (exec-path-from-shell-initialize)))
+
+(elpaca-wait)
 
 ;; Load org literal config config
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
