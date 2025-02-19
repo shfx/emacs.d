@@ -1001,7 +1001,6 @@ Packages
   ;; (lsp-signature-function #'my/lsp-signature-dispay)
   (lsp-signature-render-documentation nil)
   (lsp-eslint-auto-fix-on-save t)
-  (lsp-eslint-options '((flags . ["unstable_ts_config"])))
   (lsp-eslint-working-directories '((pattern "./*")))
   (lsp-file-watch-threshold 4000)
   (lsp-headerline-breadcrumb-enable nil)
@@ -1214,14 +1213,6 @@ loaded before any language package
   :ensure (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
 #+end_src
 
-** Cognitive Complexity
-
-#+begin_src emacs-lisp
-(use-package cognitive-complexity
-  :ensure
-  (:host github :repo "abougouffa/cognitive-complexity")
-  :hook
-  (typescript-mode . cognitive-complexity-mode))
 #+end_src
 
 ** COMMENT Combobulate
