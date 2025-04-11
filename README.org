@@ -4,44 +4,57 @@
 
 Emacs configuration files written with the help of [[https://orgmode.org/][org-mode]] and [[https://orgmode.org/worg/org-contrib/babel/][org-babel]]
 
-* Install xcode cli tools
+* Prelude
+** Install xcode cli tools
 
 #+begin_src shell
 xcode-select --install
 #+end_src
 
-* Install Emacs with ~homebrew~
+** Change system maxfiles
+
+#+begin_src shell :dir /sudo::
+launchctl limit maxfiles 65536 65536
+cat <<EOF >/Library/LaunchDaemons/limit.maxfiles.plist
+<?xml version="1.0" encoding="UTF-8"?>
+DOCTYPE plist PUBLIC "-//Apple/DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+      <string>limit.maxfiles</string>
+    <key>ProgramArguments</key>
+      <array>
+        <string>launchctl</string>
+        <string>limit</string>
+        <string>maxfiles</string>
+        <string>65536</string>
+        <string>65536</string>
+      </array>
+    <key>RunAtLoad</key>
+      <true />
+  </dict>
+</plist>
+EOF
+#+end_src
+
+** Install Emacs with ~homebrew~
 
 #+begin_src shell
-osascript -e 'id of app "Emacs"'
+brew tap jimeh/emacs-builds
+brew install emacs-app-good
 
-defaults write org.gnu.Emacs AppleFontSmoothing -int 0
-defaults write NSGlobalDomain KeyRepeat -int 1
+# Disable font smoothing
+defaults write $(osascript -e 'id of app "Emacs"') AppleFontSmoothing -int 0
+defaults write NSGlobalDomain KeyRepeat -int 0.02
 
-brew tap d12frosted/emacs-plus
-brew install emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon
+defaults write com.apple.dock autohide -bool true
+defaults write com.apple.dock autohide-time-modifier -float 0.5
+killall Dock
+
+chflags nohidden ~/Library
+
+defaults write com.apple.screencapture disable-shadow -bool true
 #+end_src
-
-To start a bg service, run:
-
-#+begin_src xml
-brew services start emacs-plus@29
-#+end_src
-
-** To reinstall
-
-#+begin_src shell
-brew reinstall emacs-plus@30 --with-no-frame-refocus --with-xwidgets --with-native-comp --with-savchenkovaleriy-big-sur-icon
-#+end_src
-
-sometimes when you update macsos you need to make sure gcc and
-libgccjit is updated as well
-
-#+begin_src shell
-brew reinstall gcc libgccjit
-#+end_src
-
-Better package management
 
 ** Enable lexical binding
 
@@ -56,15 +69,63 @@ Better package management
 (use-package auto-minor-mode)
 #+end_src
 
-* Initialiation defaults
+* Configuring the build-ins and bare minimum defaults
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
+
+Fixing weird quirks and poor defaults
 
 #+begin_src emacs-lisp
 (use-package better-defaults
   :demand t
   :config
   (ido-mode 0))
+#+end_src
+
+** EasyGP Assistant
+
+#+begin_src emacs-lisp
+(defun my/epa-config ()
+  (setopt epa-file-encrypt-to "shfx@shfx.pl")
+  (setopt password-cache-expiry (* 60 15))
+  (setopt epa-file-select-keys t)
+  (setopt epg-pinentry-mode 'loopback)
+  (fset 'epg-wait-for-status 'ignore))
+
+(use-package epa
+  :if (eq system-type 'darwin)
+  :ensure nil
+  :ensure-system-package pinentry-mac
+  :config
+  (my/epa-config))
+
+(use-package epa
+  :if (eq system-type 'gnu/linux)
+  :ensure nil
+  :config
+  (my/epa-config))
+#+end_src
+
+when starting, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
+
+#+begin_src sh
+gpg --list-keys
+echo "pinentry-program /opt/homebrew/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.conf
+gpg --expert --full-generate-key
+#+end_src
+
+https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
+
+** auth-source
+
+Providing user credentials from encrypted file
+
+#+begin_src emacs-lisp
+(use-package auth-source
+  :ensure nil
+  :no-require t
+  :custom
+  (auth-sources '("~/.authinfo.gpg")))
 #+end_src
 
 ** async ([[https://github.com/jwiegley/emacs-async][link]])
@@ -75,81 +136,37 @@ Better package management
   (dired-async-mode 1))
 #+end_src
 
-** auth-source
+** which-key
 
 #+begin_src emacs-lisp
-(use-package auth-source
-  :ensure nil
-  :no-require t
+(use-package which-key
+  :init
+  (which-key-mode)
+  :config
+  (add-to-list 'which-key-replacement-alist '(("TAB" . nil) . ("↹" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("RET" . nil) . ("⏎" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤" . nil)))
+  (add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣" . nil)))
   :custom
-  (auth-sources '("~/.authinfo.gpg")))
+  ((which-key-sort-order #'which-key-prefix-then-key-order)
+   (which-key-add-column-padding 1)
+   (which-key-min-display-lines 6)
+   (which-key-side-window-location 'bottom)
+   (which-key-side-window-max-height 0.25)
+   (which-key-side-window-max-width 0.33)
+   (which-key-popup-type 'side-window)
+   (which-key-sort-uppercase-first nil)))
 #+end_src
 
-** Measure startup time
+** server-start
 
-#+begin_src emacs-lisp
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (message "*** Emacs loaded in %s with %d garbage collections."
-                     (format "%.2f seconds"
-                             (float-time
-                              (time-subtract after-init-time before-init-time)))
-                     gcs-done)))
-#+end_src
-
-** Starting the server if not already started
+Start emacs server if you run just the app. This can help with startup
+of other emacsclients instances
 
 #+begin_src emacs-lisp
 (if (and (fboundp 'server-running-p)
          (not (server-running-p)))
    (server-start))
-#+end_src
-
-** Focus new frame
-
-#+begin_src emacs-lisp
-(when (featurep 'ns)
-  (defun ns-raise-emacs ()
-    "Raise Emacs."
-    (ns-do-applescript "tell application \"Emacs\" to activate"))
-
-  (defun ns-raise-emacs-with-frame (frame)
-    "Raise Emacs and select the provided frame."
-    (with-selected-frame frame
-      (when (display-graphic-p)
-        (ns-raise-emacs))))
-
-  (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
-  (when (display-graphic-p)
-    (ns-raise-emacs)))
-#+end_src
-
-** Errors handling and ignore server errors
-
-When running as a deamon emacs checks if custom.el is in safe place. Here were
-setting custom.el in ~/tmp~ dir and it will sometimes throw an
-errors. Here is a dirty hack.
-
-#+begin_src emacs-lisp
-(defadvice server-ensure-safe-dir
-    (around
-     my-around-server-ensure-safe-dir
-     activate)
-  "Ignores any errors raised from server-ensure-safe-dir"
-  (ignore-errors ad-do-it))
-#+end_src
-
-Disable native-compile warnings when starting emacs. Warnings should
-not break the init of Emacs.
-
-#+begin_src emacs-lisp
-(setq warning-minimum-level :error)
-#+end_src
-
-** Setting default coding system
-
-#+begin_src emacs-lisp
-(prefer-coding-system 'utf-8)
 #+end_src
 
 ** Setting default display and editing options
@@ -170,7 +187,6 @@ not break the init of Emacs.
   (cursor-in-non-selected-windows nil)
   (debugger-stack-frame-as-list t)
   (dired-kill-when-opening-new-dired-buffer t)
-  (fast-but-imprecise-scrolling t)
   (ffap-machine-p-known 'reject)
   (frame-resize-pixelwise t)
   (frame-title-format nil)
@@ -193,7 +209,6 @@ not break the init of Emacs.
   (scroll-margin 0)
   (scroll-preserve-screen-position t)
   (scroll-step 1)
-  (show-paren-mode 1)
   (show-trailing-whitespace nil)
   (switch-to-buffer-in-dedicated-window nil)
   (switch-to-buffer-obey-display-actions t)
@@ -207,8 +222,15 @@ not break the init of Emacs.
   (undo-outer-limit  300000000)
   (switch-to-prev-buffer-skip t)
   (text-mode-ispell-word-completion nil)
-
+  (remote-file-name-inhibit-cache nil)
+  (async-shell-command-buffer 'new-buffer)
+  (tramp-verbose 1)
+  (vc-ignore-dir-regexp
+   (format "%s\\|%s"
+           vc-ignore-dir-regexp
+           tramp-file-name-regexp))
   :config
+  (prefer-coding-system 'utf-8)
   (set-default 'truncate-lines t)
   (global-hl-line-mode 0)
   (set-window-margins nil 0 0)
@@ -220,29 +242,26 @@ not break the init of Emacs.
   (menu-bar-mode 0)
   (save-place-mode 1)
   (recentf-mode 1)
-
-  ;; Better support for files with long lines
+  (global-so-long-mode 1)
   (setq-default bidi-display-reordering 'left-to-right
                 bidi-paragraph-direction 'left-to-right
                 bidi-inhibit-bpa t)
 
-  (global-so-long-mode 1)
+  (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
 
   (advice-add #'tty-run-terminal-initialization :override #'ignore)
-  (advice-add #'display-startup-echo-area-message :override #'ignore))
+  (advice-add #'display-startup-echo-area-message :override #'ignore)
+
+  (when (eq system-type 'darwin)
+    (defvar ls-lisp-use-insert-directory-program)
+    (setq ns-use-srgb-colorspace t)
+    (require 'ls-lisp)
+    (setq ls-lisp-use-insert-directory-program nil))
+  (fset 'yes-or-no-p 'y-or-n-p))
 
 (use-package prog-mode
   :ensure nil
   :hook (prog-mode . electric-pair-mode))
-
-(setq remote-file-name-inhibit-cache nil)
-(setq vc-ignore-dir-regexp
-      (format "%s\\|%s"
-              vc-ignore-dir-regexp
-              tramp-file-name-regexp))
-(setq tramp-verbose 1)
-
-(fset 'yes-or-no-p 'y-or-n-p)
 
 ;; http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
 (defconst y-or-n-p-ret-yes-map
@@ -262,16 +281,7 @@ not break the init of Emacs.
 (global-unset-key (kbd "<mouse-2>"))
 (global-unset-key (kbd "s-t"))
 
-;; TODO: find better replacement for those bindigns
-(global-set-key (kbd "<pinch>") 'ignore)
-(global-set-key (kbd "<C-wheel-up>") 'ignore)
-(global-set-key (kbd "<C-wheel-down>") 'ignore)
-
-;; Make shebang (#!) file executable when saved
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-
 ;; font sizes
-
 (defun my/increase-font-size ()
   (interactive)
   (let ((old-face-attribute (face-attribute 'default :height)))
@@ -283,6 +293,11 @@ not break the init of Emacs.
   (let ((old-face-attribute (face-attribute 'default :height)))
     (message (format "Changed font size to %d" (- old-face-attribute 10)))
     (set-face-attribute 'default nil :height (- old-face-attribute 10))))
+
+;; TODO: find better replacement for those bindigns
+(global-set-key (kbd "<pinch>") 'ignore)
+(global-set-key (kbd "<C-wheel-up>") 'ignore)
+(global-set-key (kbd "<C-wheel-down>") 'ignore)
 
 (global-set-key (kbd "s-=") 'my/increase-font-size)
 (global-set-key (kbd "s--") 'my/decrease-font-size)
@@ -301,7 +316,7 @@ not break the init of Emacs.
   (add-to-list 'comint-output-filter-functions 'ansi-color-process-output))
 #+end_src
 
-** Compiation
+** Compilation
 
 #+begin_src emacs-lisp
 (use-package compile
@@ -326,59 +341,6 @@ not break the init of Emacs.
   (auto-compile-on-save-mode))
 #+end_src
 
-** Alerter - notifications for macos
-
-#+begin_src emacs-lisp
-(defun alerter--symbol-value (symbol)
-  "Stripts keyword symbol name from a colon"
-  (replace-regexp-in-string "^:" "" (symbol-name symbol)))
-
-(defun alerter--option (args)
-  "Returns a function that will generate single argument for alerter using ARGS as a string"
-  (lambda (key)
-    (concat "-" (alerter--symbol-value key) " " (plist-get args key))))
-
-(setq alerter-default-args
-      '(:title "Emacs" :sender "org.gnu.Emacs" :timeout "5"))
-
-(defun alerter (message &rest args)
-  "Notify user using native macOS notifications. MESSAGE will be displayed using alerter package, with additional ARGS"
-  (if (executable-find "alerter")
-      (let* ((args (append alerter-default-args args))
-             (options (seq-filter (lambda (element) (keywordp element)) args))
-             (config (mapconcat (alerter--option args) options " "))
-             (cmd (concat "alerter " config " -message \"" (replace-regexp-in-string "\"" "\\\"" message  t t) "\" &")))
-        (message cmd)
-        (call-process-shell-command cmd))
-    (error "Can't find alerter executable")))
-#+end_src
-
-** COMMENT Check on save if config is valid
-
-#+begin_src emacs-lisp
-(setq check-if-config-valid-files '("init.el" "early-init.el" "README.org"))
-
-(defun check-if-config-valid ()
-  (alerter "Checking config..." :group "check-config" )
-  (async-start (lambda ()
-                 (call-process-shell-command "./scripts/validate"))
-               (lambda (results)
-                 (if (< 0 results )
-                     (alerter "Problem with emacs config!" :group "check-config" :sound "funky" )
-                   (alerter "Config valid!" :group "check-config" )))))
-
-(defun current-file-is-config ()
-  (member t (mapcar (lambda (file)
-                      (message (expand-file-name file user-emacs-directory))
-                      (message (buffer-file-name))
-                      (equal (expand-file-name file user-emacs-directory) (buffer-file-name))) check-if-config-valid-files)))
-
-(add-hook 'after-save-hook
-          (lambda ()
-            (if (current-file-is-config)
-                (check-if-config-valid))))
-#+end_src
-
 ** xwidget-webkit problem with emacsclient
 
 We need to redefine ~xwidget-webkit-enable-plugins~ variable for webkit
@@ -388,19 +350,6 @@ to work properly
 (if (boundp 'xwidget-webkit-enable-plugins)
       (setq xwidget-webkit-enable-plugins t)
   (defvar xwidget-webkit-enable-plugins t))
-#+end_src
-
-** Framemove
-
-#+begin_src emacs-lisp
-(use-package framemove
-  :ensure (framemove :fetcher github :host github :repo "emacsmirror/framemove")
-  :custom
-  (framemove-hook-into-windmove t)
-  :config
-  (windmove-default-keybindings 'super)
-  (windmove-swap-states-default-keybindings (list 'super 'control))
-  (winner-mode 1))
 #+end_src
 
 ** Default trash behavior
@@ -413,18 +362,6 @@ to work properly
   (osx-trash-setup)
   (osx-trash-command "trash -F")
   (delete-by-moving-to-trash t))
-#+end_src
-
-** System specific defaults
-
-#+begin_src emacs-lisp
-(when (eq system-type 'darwin)
-  (defvar ls-lisp-use-insert-directory-program)
-  (defvar powerline-image-apple-rgb)
-  (setq ns-use-srgb-colorspace t)
-  (setq powerline-image-apple-rgb t)
-  (require 'ls-lisp)
-  (setq ls-lisp-use-insert-directory-program nil))
 #+end_src
 
 ** Disabling suspend-frame binding
@@ -462,46 +399,7 @@ Disable all mouse input
   :ensure nil
   :custom
   (browse-url-browser-function 'browse-url-default-browser))
-
-(use-package browse-url-dwim
-  :defer 2
-  :config
-  (browse-url-dwim-mode 1))
 #+end_src
-
-** EasyGP Assistant
-
-#+begin_src emacs-lisp
-(defun my/epa-config ()
-  (setopt epa-file-encrypt-to "shfx@shfx.pl")
-  (setopt password-cache-expiry (* 60 15))
-  (setopt epa-file-select-keys t)
-  (setopt epg-pinentry-mode 'loopback)
-  (fset 'epg-wait-for-status 'ignore))
-
-(use-package epa
-  :if (eq system-type 'darwin)
-  :ensure nil
-  :ensure-system-package pinentry-mac
-  :config
-  (my/epa-config))
-
-(use-package epa
-  :if (eq system-type 'gnu/linux)
-  :ensure nil
-  :config
-  (my/epa-config))
-#+end_src
-
-when starting, we should prepare our [[https://cerb.ai/guides/mail/gpg-setup-on-mac/][gpg config]]
-
-#+begin_src sh
-gpg --list-keys
-echo "pinentry-program /opt/homebrew/bin/pinentry-mac" >> $HOME/.gnupg/gpg-agent.conf
-gpg --expert --full-generate-key
-#+end_src
-
-https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
 
 ** Re-builder
 
@@ -512,9 +410,156 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (reb-re-syntax 'string))
 #+end_src
 
-* Window and frame management
+* Themes, Fonts, Colors
 
-** Pooper (link)
+** Load theme
+
+#+begin_src emacs-lisp
+(use-package catppuccin-theme
+  :demand t
+  :preface
+  (defun my/set-font (frame)
+    (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160))
+  :hook (after-make-frame-functions . my/set-font)
+  :custom-face
+  (show-paren-match ((t (:foreground "#181825" :inherit 'match))))
+  :config
+  (load-theme 'catppuccin t)
+  (when (and (eq system-type 'darwin))
+    (system-packages-install "font-jetbrains-mono"))
+  (when (and (eq system-type 'gnu/linux)
+             (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
+    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
+  (my/set-font nil))
+#+end_src
+
+** Nerd Icons
+
+#+begin_src emacs-lisp
+(use-package nerd-icons
+  :defines nerd-icons-regexp-icon-alist
+  :custom
+  (nerd-icons-color-icons t)
+  :config
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?test\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?test_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?spec\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("_?spec_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?spec\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt))
+  (add-to-list 'nerd-icons-regexp-icon-alist
+    '("-?test\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt)))
+
+(use-package nerd-icons-dired
+  :hook (dired-mode . nerd-icons-dired-mode))
+
+(use-package nerd-icons-ibuffer
+  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
+
+(use-package nerd-icons-completion
+  :after corfu marginalia
+  :functions (nerd-icons-completion-mode nerd-icons-completion-marginalia-setup)
+  :config
+  (nerd-icons-completion-mode)
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
+
+(use-package nerd-icons-corfu
+  :after corfu
+  :commands nerd-icons-corfu-formatter
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+#+end_src
+
+** Ligatures
+
+#+begin_src emacs-lisp
+;; This assumes you've installed the package via MELPA.
+(use-package ligature
+  :functions ligature-set-ligatures global-ligature-mode
+  :config
+  (ligature-set-ligatures
+   '(js-base-mode typescript-mode typescript-ts-mode)
+   '("?." "?=" "<>"
+     "</>" "/>" "<!--" "<#--" "-->" "=>"
+     "..." ".."
+     "//" "///"))
+
+  (ligature-set-ligatures
+   '(emacs-lisp-mode lisp-data-mode)
+   '(";;;" ";;"))
+
+  (ligature-set-ligatures
+   'go-mode
+   '(":="))
+
+  (ligature-set-ligatures
+   'prog-mode
+   '("--" "==" "===" "!=" "!==" "&&" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" "..." ".."))
+
+   ;; (ligature-set-ligatures
+   ;;  t
+   ;;  '("--" "---"
+   ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
+   ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
+   ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
+   ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
+   ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
+   ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
+   ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
+   ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
+   ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
+   ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
+   ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
+   ;;    "<:<" ";;;"))
+   (global-ligature-mode t))
+#+end_src
+
+* Buffers, Windows, Frames and scrolling
+
+#+begin_src emacs-lisp
+(setopt jit-lock-defer-time 0)
+(setopt fast-but-imprecise-scrolling t)
+#+end_src
+
+** Focus new frame
+
+#+begin_src emacs-lisp
+(when (featurep 'ns)
+  (defun ns-raise-emacs ()
+    "Raise Emacs."
+    (ns-do-applescript "tell application \"Emacs\" to activate"))
+
+  (defun ns-raise-emacs-with-frame (frame)
+    "Raise Emacs and select the provided frame."
+    (with-selected-frame frame
+      (when (display-graphic-p)
+        (ns-raise-emacs))))
+
+  (add-hook 'after-make-frame-functions 'ns-raise-emacs-with-frame)
+  (when (display-graphic-p)
+    (ns-raise-emacs)))
+#+end_src
+
+** Posframe
+
+#+begin_src emacs-lisp
+(use-package posframe
+  :demand t)
+#+end_src
+
+** pooper (link)
 
 #+begin_src emacs-lisp
 (use-package popper
@@ -542,7 +587,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (popper-echo-mode +1))
 #+end_src
 
-** TabBar
+** tab-bar
 
 #+begin_src emacs-lisp
 (use-package tab-bar
@@ -554,7 +599,7 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   (tab-bar-tab-hints t))
 #+end_src
 
-** TabLine
+** tab-line
 
 #+begin_src emacs-lisp
 (use-package tab-line
@@ -589,14 +634,298 @@ https://alexschroeder.ch/wiki/2016-03-17_GPG_Agent_and_Emacs
   :ensure (use-package-transient :fetcher git :url "https://codeberg.org/Thaodan/use-package-transient.git"))
 #+end_src
 
-* Debug Emacs
-
-** Explain Pause
+** bufler
 
 #+begin_src emacs-lisp
-(use-package explain-pause-mode
-  :ensure (explain-pause-mode :fetcher github :repo "lastquestion/explain-pause-mode"))
+(use-package bufler
+  :bind
+  ("C-x C-b" . bufler-list)
+  :custom
+  (bufler-workspace-switch-buffer-sets-workspace t))
 #+end_src
+
+** framemove
+
+#+begin_src emacs-lisp
+(use-package framemove
+  :ensure (framemove :fetcher github :host github :repo "emacsmirror/framemove")
+  :custom
+  (framemove-hook-into-windmove t)
+  :config
+  (windmove-default-keybindings 'super)
+  (windmove-swap-states-default-keybindings (list 'super 'control))
+  (winner-mode 1))
+#+end_src
+
+** perfect-margin
+
+#+begin_src emacs-lisp
+(use-package perfect-margin
+  :custom
+  (perfect-margin-visible-width 128)
+  :config
+  (perfect-margin-mode nil)
+  (setq perfect-margin-ignore-regexps '("^minibuf" "^[[:space:]]\\*"))
+  (dolist (margin '("<left-margin> " "<right-margin> "))
+    (global-set-key (kbd (concat margin "<mouse-1>")) 'ignore)
+    (global-set-key (kbd (concat margin "<mouse-3>")) 'ignore)))
+#+end_src
+
+** ultra-scrol
+
+#+begin_src emacs-lisp
+(use-package ultra-scroll
+  :ensure (ultra-scroll :fetcher github :repo "jdtsmith/ultra-scroll")
+  :custom
+  (scroll-conservatively 101)
+  (scroll-margin 0)
+  :config
+  (ultra-scroll-mode 1))
+#+end_src
+
+* Editing
+
+#+begin_src emacs-lisp
+;; Sometimes i press kill-region when transient mark mode is not
+;; active, This should prevent that.
+(setq mark-even-if-inactive nil)
+#+end_src
+
+** eval-sexp-fu
+
+#+begin_src emacs-lisp
+(use-package eval-sexp-fu
+  :config
+  (require 'eval-sexp-fu))
+#+end_src
+
+** litable
+
+#+begin_src emacs-lisp
+(use-package litable
+  :hook (emacs-lisp-mode . litable-mode))
+#+end_src
+
+** meow
+
+#+begin_src emacs-lisp
+(use-package meow
+  :preface
+  (defun meow-setup ()
+    (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
+    (meow-motion-overwrite-define-key
+     '("j" . meow-next)
+     '("k" . meow-prev)
+     '("<escape>" . ignore))
+    (meow-leader-define-key
+     ;; SPC j/k will run the original command in MOTION state.
+     '("j" . "H-j")
+     '("k" . "H-k")
+     ;; Use SPC (0-9) for digit arguments.
+     '("1" . meow-digit-argument)
+     '("2" . meow-digit-argument)
+     '("3" . meow-digit-argument)
+     '("4" . meow-digit-argument)
+     '("5" . meow-digit-argument)
+     '("6" . meow-digit-argument)
+     '("7" . meow-digit-argument)
+     '("8" . meow-digit-argument)
+     '("9" . meow-digit-argument)
+     '("0" . meow-digit-argument)
+     '("/" . meow-keypad-describe-key)
+     '("?" . meow-cheatsheet))
+    (meow-normal-define-key
+     '("0" . meow-expand-0)
+     '("9" . meow-expand-9)
+     '("8" . meow-expand-8)
+     '("7" . meow-expand-7)
+     '("6" . meow-expand-6)
+     '("5" . meow-expand-5)
+     '("4" . meow-expand-4)
+     '("3" . meow-expand-3)
+     '("2" . meow-expand-2)
+     '("1" . meow-expand-1)
+     '("-" . negative-argument)
+     '(";" . meow-reverse)
+     '("," . meow-inner-of-thing)
+     '("." . meow-bounds-of-thing)
+     '("[" . meow-beginning-of-thing)
+     '("]" . meow-end-of-thing)
+     '("a" . meow-append)
+     '("A" . meow-open-below)
+     '("b" . meow-back-word)
+     '("B" . meow-back-symbol)
+     '("c" . meow-change)
+     '("d" . meow-delete)
+     '("D" . meow-backward-delete)
+     '("e" . meow-next-word)
+     '("E" . meow-next-symbol)
+     '("f" . meow-find)
+     '("g" . meow-cancel-selection)
+     '("G" . meow-grab)
+     '("h" . meow-left)
+     '("H" . meow-left-expand)
+     '("i" . meow-insert)
+     '("I" . meow-open-above)
+     '("j" . meow-next)
+     '("J" . meow-next-expand)
+     '("k" . meow-prev)
+     '("K" . meow-prev-expand)
+     '("l" . meow-right)
+     '("L" . meow-right-expand)
+     '("m" . meow-join)
+     '("n" . meow-search)
+     '("o" . meow-block)
+     '("O" . meow-to-block)
+     '("p" . meow-yank)
+     '("q" . meow-quit)
+     '("Q" . meow-goto-line)
+     '("r" . meow-replace)
+     '("R" . meow-swap-grab)
+     '("s" . meow-kill)
+     '("t" . meow-till)
+     '("u" . meow-undo)
+     '("U" . meow-undo-in-selection)
+     '("v" . meow-visit)
+     '("w" . meow-mark-word)
+     '("W" . meow-mark-symbol)
+     '("x" . meow-line)
+     '("X" . meow-goto-line)
+     '("y" . meow-save)
+     '("Y" . meow-sync-grab)
+     '("z" . meow-pop-selection)
+     '("'" . repeat)
+     '("<escape>" . ignore))))
+#+end_src
+
+** Expand region
+
+#+begin_src emacs-lisp
+(use-package expreg
+  :ensure t
+  :bind
+  ("C-=" . expreg-expand)
+  ("C--" . expreg-contract))
+#+end_src
+
+** Move lines using alt + arrows
+
+#+begin_src emacs-lisp
+(use-package move-text
+  :config
+  (move-text-default-bindings))
+#+end_src
+
+** multiple-cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
+
+Multiple cursors for Emacs. This is some pretty crazy functionality,
+so yes, there are kinks. Don't be afraid tho, I've been using it since
+2011 with great success and much merriment.
+
+#+begin_src emacs-lisp
+(use-package multiple-cursors
+  :defer 0.5
+  :hook
+  (multiple-cursors-mode
+   .
+   (lambda ()
+     (if multiple-cursors-mode
+         (progn
+           (message "multiple cursor on")
+           (corfu-mode 0))
+       (progn
+         (message "multiple cursor off")
+         (corfu-mode 1)))))
+  :bind
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this))
+#+end_src
+
+** Cycling between different var notations
+
+#+begin_src emacs-lisp
+(use-package string-inflection
+  :bind
+  ("C-c C-u" . string-inflection-all-cycle))
+#+end_src
+
+** Flyspell
+
+#+begin_src emacs-lisp
+(use-package ispell
+  :if (executable-find "aspell")
+  :ensure nil
+  :defer t
+  :config
+  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
+  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
+
+  (setq ispell-program-name "aspell"
+        ispell-extra-args   '("--sug-mode=ultra" "--run-together")
+        ispell-aspell-dict-dir (ispell-get-aspell-config-value "dict-dir")
+        ispell-aspell-data-dir (ispell-get-aspell-config-value "data-dir")
+        ispell-personal-dictionary (expand-file-name (concat "ispell/" ispell-dictionary ".pws")
+                                                     user-emacs-directory)))
+
+(use-package flyspell
+  :after ispell
+  :ensure nil
+  :defer t
+  :config
+  (setq flyspell-issue-welcome-flag nil
+        flyspell-issue-message-flag nil))
+
+(use-package flyspell-correct
+  :defer t
+  :bind
+  (([remap ispell-word] . flyspell-correct-at-point)
+   (:map flyspell-mode-map
+         ("C-;" . flyspell-correct-wrapper))))
+
+(use-package flyspell-correct-popup
+  :after flyspell-correct)
+
+(use-package flyspell-lazy
+  :defer t
+  :after flyspell
+  :config
+  (setq flyspell-lazy-idle-seconds 1
+        flyspell-lazy-window-idle-seconds 3)
+  (flyspell-lazy-mode +1))
+#+end_src
+
+** unfill
+
+#+begin_src emacs-lisp
+(use-package unfill
+  :bind ([remap fill-paragraph] . unfill-toggle))
+#+end_src
+
+** visual-regexp-steroids
+
+#+begin_src emacs-lisp
+(use-package pcre2el)
+
+(use-package visual-regexp
+  :after pcre2el
+  :custom
+  (vr/engine 'pcre2el)
+  :bind
+  ("C-c r" . vr/replace)
+  ("C-c q" . vr/query-replace)
+  ("C-c m" . vr/mc-mark)
+  ("C-r" . vr/isearch-backward)
+  ("C-s" . vr/isearch-forward))
+
+(use-package visual-regexp-steroids
+  :after visual-regexp)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+[nil 26609 16160 864841 nil elpaca-process-queues nil nil 0 nil]
+#+end_example
 
 * List filtering helpers
 
@@ -643,7 +972,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               ("RET" . vertico-directory-enter))
 
   :custom
-  (vertico-resize t)
+  (vertico-resize nil)
   (vertico-cycle t)
   (vertico-grid-separator "        ")
   (vertico-grid-lookahead 50)
@@ -726,7 +1055,7 @@ also helpful emacs config just for vertico
   (read-extended-command-predicate
         #'command-completion-default-include-p)
   ;; Enable recursive minibuffers
-  (enable-recursive-minibuffers nil))
+  (enable-recursive-minibuffers t))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -734,6 +1063,21 @@ also helpful emacs config just for vertico
   :demand t
   :config
   (recursion-indicator-mode))
+#+end_src
+
+** Marginalia
+
+#+begin_src emacs-lisp
+;; Enable richer annotations using the Marginalia package
+(use-package marginalia
+  :demand t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :custom
+  ;; (marginalia-max-relative-age)
+  (marginalia-align 'right)
+  :config
+  (marginalia-mode))
 #+end_src
 
 ** Orderless ([[https://github.com/oantolin/orderless][link]])
@@ -757,7 +1101,8 @@ also helpful emacs config just for vertico
   :custom
   (history-length 100)
   :config
-  (savehist-mode))
+  (savehist-mode 1)
+  (add-to-list 'savehist-additional-variables 'corfu-history))
 #+end_src
 
 ** Consult ([[https://github.com/minad/consult][link]])
@@ -876,7 +1221,218 @@ also helpful emacs config just for vertico
          ("C-x C-j" . consult-dir-jump-file)))
 #+end_src
 
-* Remote
+* Terminals, Shells
+
+** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
+
+*Eshell* is a shell written entirely in Emacs-Lisp, and it replicates
+most of the features and commands from GNU CoreUtils and the
+Bourne-like shells. So by re-writing common commands like ls and cp in
+Emacs-Lisp, Eshell will function identically on any environment Emacs
+itself runs on.
+
+PS. some config stolen from https://github.com/gopar/.emacs.d
+
+#+begin_src emacs-lisp
+(use-package eshell
+  :after (corfu cape pcmpl-args)
+  :demand t
+  :ensure nil
+  :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
+  :defines (eshell-mode-map eshell-hist-mode-map)
+  :custom
+  (eshell-banner-message "")
+  (eshell-error-if-no-glob t)
+  (eshell-hist-ignoredups t)
+  (eshell-history-size 1024)
+  (eshell-input-filter 'my/eshell-input-filter)
+  (eshell-last-dir-ring-size 32)
+  (eshell-last-dir-unique t)
+  (eshell-pushd-dunique t)
+  (eshell-scroll-to-bottom-on-input t)
+  (eshell-visual-commands nil)
+  :preface
+  (defun my/eshell-corfu-setup ()
+    "Setup completion for EShell with ‘corfu’ and ‘cape’."
+    (setq-local
+     corfu-auto nil
+     corfu-quit-at-boundary t
+     corfu-quit-no-match t
+     corfu-separatvor nil
+     completion-at-point-functions (list #'pcomplete-completions-at-point #'cape-file)))
+
+  (defun my/eshell-input-filter (input)
+    "Do not save on the following:
+       - empty lines
+       - commands that start with a space, `ls`/`l`/`lsd`"
+    (and
+     (eshell-input-filter-default input)
+     (eshell-input-filter-initial-space input)
+     (not (string-prefix-p "ls " input))
+     (not (string-prefix-p "lsd " input)
+          (not (string-prefix-p "l " input)))))
+
+  (defun my\corfu-send-shell (&rest _)
+    "Send completion candidate when inside comint/eshell."
+    (cond
+     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
+      (eshell-send-input))
+     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
+      (comint-send-input))))
+
+  :bind
+  (:map eshell-mode-map
+        ("<up>" . previous-line)
+        ("<down>" . next-line)
+        ("M-r" . consult-history))
+  :hook
+  (eshell-mode . (my/eshell-corfu-setup hide-mode-line))
+  :config
+  (setenv "PAGER" "cat")
+  (setenv "TERM" "xterm-256color")
+  (advice-add #'corfu-insert :after
+              #'corfu-send-shell))
+
+(use-package em-hist
+  :after eshell
+  :ensure nil
+  :preface
+  (defun my/adviced-eshell-add-input-to-history (orig-fun &rest r)
+    "Cd to relative paths aren't that useful in history. Change to absolute paths."
+    (require 'seq)
+    (let* ((input (nth 0 r))
+           (args (progn
+                   (set-text-properties 0 (length input) nil input)
+                   (split-string input))))
+      (if (and (equal "cd" (nth 0 args))
+               (not (seq-find (lambda (item)
+                                ;; Don't rewrite "cd /ssh:" in history.
+                                (string-prefix-p "/ssh:" item))
+                              args))
+               (not (seq-find (lambda (item)
+                                ;; Don't rewrite "cd -" in history.
+                                (string-equal "-" item))
+                              args)))
+          (apply orig-fun (list (format "cd %s"
+                                        (expand-file-name (concat default-directory
+                                                                  (nth 1 args))))))
+        (apply orig-fun r))))
+  :hook
+  (eshell-hist-mode
+   . (lambda ()
+       (unbind-key (kbd "<up>") eshell-hist-mode-map)
+       (unbind-key (kbd "<down>") eshell-hist-mode-map)
+       (unbind-key (kbd "M-r") eshell-hist-mode-map)
+       (define-key eshell-hist-mode-map (kbd "C-<up>")
+                   'eshell-previous-matching-input-from-input)
+       (define-key eshell-hist-mode-map (kbd "C-<down>")
+                   'eshell-next-matching-input-from-input)))
+  :config
+  (advice-add #'eshell-add-input-to-history :around
+              #'my/adviced-eshell-add-input-to-history))
+
+(use-package eat
+  :hook
+  (eshell-load . eat-eshell-mode)
+  :custom
+  (eat-term-name "xterm"))
+
+(use-package pcmpl-args
+  :defer t
+  :after (pcomplete))
+
+(use-package pcmpl-homebrew
+  :defer t
+  :after (pcomplete))
+
+(defun eshell/gst (&rest args)
+  (magit-status (pop args) nil)
+  (eshell/echo))
+
+(defun eshell/ccat (file)
+  "Like `cat' but output with Emacs syntax highlighting."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (let ((buffer-file-name file))
+      (delay-mode-hooks
+        (set-auto-mode)
+        (if (fboundp 'font-lock-ensure)
+            (font-lock-ensure)
+          (with-no-warnings
+            (font-lock-fontify-buffer)))))
+    (buffer-string)))
+
+(use-package shrink-path
+  :after eshell
+  :preface
+  (defun my/eshell-set-outline-regexp ()
+    (setq-local
+     outline-regexp eshell-prompt-regexp))
+  :hook
+  (eshell-mode . my/eshell-set-outline-regexp)
+  :custom
+  ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
+   (eshell-prompt-function
+    (lambda ()
+      (let ((base/dir (shrink-path-prompt default-directory)))
+        (concat (propertize (car base/dir)
+                            'face 'font-lock-comment-face)
+                (propertize (cdr base/dir)
+                            'face 'font-lock-constant-face)
+                (propertize " ❯" 'face 'eshell-prompt)
+                ;; needed for the input text to not have prompt face
+                (propertize " " 'face 'default)))))))
+#+end_src
+
+** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
+
+Simple functionality to show/hide eshell/ansi-term (or almost any
+other buffer, see eshell-toggle-init-function description below) at
+the bottom of active window with directory of its buffer.
+
+#+begin_src emacs-lisp
+(use-package eshell-toggle
+  :after eshell
+  :demand t
+  :defines eshell-toggle--toggle-buffer-p
+  :commands (eshell-toggle)
+  :preface
+  (defvar my/eshell-close-on-exit nil
+    "When non-nil, closing eshell (`exit`) also kills the window.")
+
+  (defun my/eshell-toggle ()
+    (interactive)
+    (let ((buf (eshell-toggle)))
+      (when (eq eshell-toggle--toggle-buffer-p t)
+        (with-current-buffer buf
+          (add-hook 'eshell-exit-hook #'delete-window nil t)))))
+  :bind
+  ("s-`" . my/eshell-toggle)
+  :custom
+  (eshell-toggle-name-separator " :: ")
+  (eshell-toggle-find-project-root-package t))
+#+end_src
+
+** ESUP
+
+#+begin_src emacs-lisp
+(use-package esup)
+#+end_src
+
+** vterm
+
+#+begin_src emacs-lisp
+(use-package vterm
+  :defer 1
+  :custom
+  (vterm-always-compile-module t))
+
+(use-package multi-vterm
+  :after vterm
+  :bind (("C-c v" . multi-vterm)))
+#+end_src
+
+* Remote work
 
 ** Tramp
 
@@ -893,7 +1449,6 @@ also helpful emacs config just for vertico
   (tramp-verbose 1))
 #+end_src
 
-Packages
 * Displaying errors
 
 ** Flycheck
@@ -901,19 +1456,42 @@ Packages
 #+begin_src emacs-lisp
 (use-package flycheck
   :defer 1
-  :hook (prog-mode . flycheck-mode)
-  :custom-face
-  (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
-  (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
+  :preface
+  ;; Got displaying flycheck errors in eldoc from here https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
+  (defun mp-flycheck-eldoc (callback &rest _ignored)
+    "Print flycheck messages at point by calling CALLBACK."
+    (when-let* ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
+      (mapc
+       (lambda (err)
+         (funcall callback
+                  (format "%s: %s"
+                          (let ((level (flycheck-error-level err)))
+                            (pcase level
+                              ('info (propertize "I" 'face 'flycheck-error-list-info))
+                              ('error (propertize "E" 'face 'flycheck-error-list-error))
+                              ('warning (propertize "W" 'face 'flycheck-error-list-warning))
+                              (_ level)))
+                          (flycheck-error-message err))
+                  :thing (or (flycheck-error-id err)
+                             (flycheck-error-group err))
+                  :face 'font-lock-doc-face))
+       flycheck-errors)))
+
+  (defun my/flycheck-prefer-eldoc ()
+    (add-hook 'eldoc-documentation-functions #'mp-flycheck-eldoc nil t)
+    (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
+    (setq flycheck-display-errors-function nil)
+    (setq flycheck-help-echo-function nil))
+  :hook
+  (prog-mode . flycheck-mode)
+  (flycheck-mode . my/flycheck-prefer-eldoc)
+  ;; :custom-face
+  ;; (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
+  ;; (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :custom
   (flycheck-display-errors-delay 0)
   (flycheck-idle-change-delay 0)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-
-(use-package flycheck-inline-mode
-  :ensure (flycheck-inline-mode :fetcher github :repo "flycheck/flycheck-inline" :main "flycheck-inline.el")
-  :hook (flycheck-mode . flycheck-inline-mode))
-
 #+end_src
 
 * Packages
@@ -964,21 +1542,6 @@ Packages
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
         '(orderless)))
 
-;; (defun my/lsp-signature-quick-peek-dispay (str)
-;;   "Use quick-peek to show the STR signatureHelp string."
-;;   (if str
-;;       (let ((ov (quick-peek-overlay-ensure-at (- (point) 1))))
-;;         (setf (quick-peek-overlay-contents ov) str)
-;;         (quick-peek-update ov))
-;;     (quick-peek-hide)))
-
-;; (defun my/lsp-signature-overlay-dispay (str)
-;;   "Use flycheck-inline to show the STR signatureHelp string."
-;;   (if str
-;;       (let ((msg (propertize str 'face 'flycheck-inline-info)))
-;;         (flycheck-inline-phantom-display msg))
-;;     (flycheck-inline-hide-errors)))
-
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :after (corfu orderless posframe)
@@ -997,11 +1560,13 @@ Packages
   (lsp-eldoc-render-all nil)
   (lsp-enable-file-watchers t)
   (lsp-enable-indentation nil)
+  (lsp-enable-snippet nil)
   (lsp-enable-on-type-formatting t)
-  ;; (lsp-signature-function #'my/lsp-signature-dispay)
-  (lsp-signature-render-documentation nil)
+  (lsp-signature-render-documentation t)
   (lsp-eslint-auto-fix-on-save t)
-  (lsp-eslint-working-directories '((pattern "./*")))
+  (lsp-eslint-working-directories [(pattern "/Users/shfx/Developer/priv/*")
+                                   (pattern "/Users/shfx/Developer/work/*")])
+  (lsp-eslint-experimental '((seFlatConfig . t)))
   (lsp-file-watch-threshold 4000)
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-inlay-hint-enable nil)
@@ -1013,7 +1578,12 @@ Packages
   (lsp-typescript-format-enable nil)
   (lsp-use-plists "true")
   (lsp-yaml-custom-tags ["!reference sequence"])
-  (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json")))
+  (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
+  ;; needed for toolchains that don't support `rustup component add`
+  (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
+  :config
+  (add-to-list 'warning-suppress-log-types '(lsp-mode))
+  (add-to-list 'warning-suppress-types '(lsp-mode)))
 
 ;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
 ;; (lsp-rust-analyzer-display-chaining-hints t)
@@ -1066,29 +1636,14 @@ Packages
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
 #+end_src
 
-** Shell Maker
-
-#+begin_src emacs-lisp
-(use-package shell-maker
-  :ensure (shell-maker :fetcher github :repo "xenodium/shell-maker"))
-#+end_src
-
 ** ChatGPT
 
 #+begin_src emacs-lisp
 (defun shell-maker-welcome-message-ignore (config) "")
 
-(defun shfx-chatgpt-dwim ()
-  "Run dwim in any buffer with "
-  (interactive)
-  (if (region-active-p)
-      (chatgpt-shell-quick-modify-region)
-    (chatgpt-shell-quick-insert)))
-
 (use-package chatgpt-shell
-  :after shell-maker
   :bind
-  ("C-c C-a" . shfx-chatgpt-dwim)
+  ("C-c C-a" . chatgpt-shell-quick-insert)
   :custom
   (chatgpt-shell-openai-key (cadr (auth-source-user-and-password "chatgpt" "shfx")))
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
@@ -1128,7 +1683,9 @@ Packages
   :config
   (apheleia-global-mode +1)
   (setf (alist-get 'prisma-mode apheleia-mode-alist)
-      '(prettier)))
+        '(prettier))
+  (setf (alist-get 'svelte-ts-mode apheleia-mode-alist)
+        '(prettier)))
 #+end_src
 
 ** Treesitter
@@ -1213,8 +1770,6 @@ loaded before any language package
   :ensure (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
 #+end_src
 
-#+end_src
-
 ** COMMENT Combobulate
 
 #+begin_src emacs-lisp
@@ -1266,244 +1821,6 @@ loaded before any language package
   (:map project-prefix-map ("P" . project-tasks)))
 #+end_src
 
-** Dashboard
-
-#+begin_src emacs-lisp
-(use-package dashboard
-  :custom
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
-  (dashboard-startup-banner 'logo)
-  (dashboard-items '((recents  . 5)
-                     (bookmarks . 5)
-                     (projects . 5)
-                     (agenda . 5)
-                     (registers . 5)))
-  (dashboard-display-icons-p t)
-  (dashboard-icon-type 'all-the-icons)
-  (dashboard-modify-heading-icons '((recents . "file-text")
-                                    (bookmarks . "book")))
-  (dashboard-set-navigator t)
-  (dashboard-week-agenda t)
-  ;; Format: "(icon title help action face prefix suffix)"
-  (dashboard-navigator-buttons
-   `((("Homepage"
-       "Browse homepage"
-       (lambda (&rest _) (browse-url "homepage")))
-      ("Star" "Show stars" (lambda (&rest _) (show-stars)) warning)
-      ("?" "" "?/h" #'show-help nil "<" ">"))
-     ;; line 2
-     (("linkedin"
-       ""
-       (lambda (&rest _) (browse-url "homepage")))
-      ("⚑" nil "Show flags" (lambda (&rest _) (message "flag")) error))))
-  :config
-  (dashboard-setup-startup-hook))
-#+end_src
-
-** Bufler
-
-#+begin_src emacs-lisp
-(use-package bufler
-  :bind
-  ("C-x C-b" . bufler-list)
-  :custom
-  (bufler-workspace-switch-buffer-sets-workspace t))
-#+end_src
-
-** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
-
-*Eshell* is a shell written entirely in Emacs-Lisp, and it replicates
-most of the features and commands from GNU CoreUtils and the
-Bourne-like shells. So by re-writing common commands like ls and cp in
-Emacs-Lisp, Eshell will function identically on any environment Emacs
-itself runs on.
-
-PS. some config stolen from https://github.com/gopar/.emacs.d
-
-#+begin_src emacs-lisp
-(use-package eshell
-  :after (corfu cape pcmpl-args)
-  :ensure nil
-  :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
-  :defines (eshell-mode-map eshell-hist-mode-map)
-  :custom
-  (eshell-banner-message "")
-  (eshell-error-if-no-glob t)
-  (eshell-hist-ignoredups t)
-  (eshell-history-size 1024)
-  (eshell-input-filter 'me/eshell-input-filter)
-  (eshell-last-dir-ring-size 32)
-  (eshell-last-dir-unique t)
-  (eshell-pushd-dunique t)
-  (eshell-scroll-to-bottom-on-input t)
-  (eshell-visual-commands nil)
-  :bind
-  (:map eshell-mode-map
-        ("<up>" . previous-line)
-        ("<down>" . next-line)
-        ("M-r" . consult-history))
-
-  :hook
-  (eshell-mode . me/eshell-corfu-setup)
-  :config
-  (setenv "PAGER" "cat")
-  (setenv "TERM" "xterm-256color")
-
-  (defun me/eshell-input-filter (input)
-    "Do not save on the following:
-         - empty lines
-         - commands that start with a space, `ls`/`l`/`lsd`"
-    (and
-     (eshell-input-filter-default input)
-     (eshell-input-filter-initial-space input)
-     (not (string-prefix-p "ls " input))
-     (not (string-prefix-p "lsd " input))
-     (not (string-prefix-p "l " input))))
-
-  (defun me/adviced-eshell-add-input-to-history (orig-fun &rest r)
-    "Cd to relative paths aren't that useful in history. Change to absolute paths."
-    (require 'seq)
-    (let* ((input (nth 0 r))
-           (args (progn
-                   (set-text-properties 0 (length input) nil input)
-                   (split-string input))))
-      (if (and (equal "cd" (nth 0 args))
-               (not (seq-find (lambda (item)
-                                ;; Don't rewrite "cd /ssh:" in history.
-                                (string-prefix-p "/ssh:" item))
-                              args))
-               (not (seq-find (lambda (item)
-                                ;; Don't rewrite "cd -" in history.
-                                (string-equal "-" item))
-                              args)))
-          (apply orig-fun (list (format "cd %s"
-                                        (expand-file-name (concat default-directory
-                                                                  (nth 1 args))))))
-        (apply orig-fun r))))
-
-  (defun my\corfu-send-shell (&rest _)
-    "Send completion candidate when inside comint/eshell."
-    (cond
-     ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
-      (eshell-send-input))
-     ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
-      (comint-send-input))))
-
-  (defun me/eshell-corfu-setup ()
-    "Setup completion for EShell with ‘corfu’ and ‘cape’."
-    (setq-local
-     corfu-auto nil
-     corfu-quit-at-boundary t
-     corfu-quit-no-match t
-     corfu-separatvor nil
-     completion-at-point-functions (list #'pcomplete-completions-at-point #'cape-file)))
-
-  (advice-add #'eshell-add-input-to-history :around
-              #'me/adviced-eshell-add-input-to-history)
-
-  (advice-add #'corfu-insert :after
-              #'corfu-send-shell))
-
-(use-package em-hist
-  :after eshell
-  :ensure nil
-  :hook
-  (eshell-hist-mode . (lambda ()
-                        (unbind-key (kbd "<up>") eshell-hist-mode-map)
-                        (unbind-key (kbd "<down>") eshell-hist-mode-map)
-                        (unbind-key (kbd "M-r") eshell-hist-mode-map)
-                        (define-key eshell-hist-mode-map
-                                    (kbd "C-<up>")
-                                    'eshell-previous-matching-input-from-input)
-                        (define-key eshell-hist-mode-map
-                                    (kbd "C-<down>")
-                                    'eshell-next-matching-input-from-input))))
-
-(use-package eat
-  :hook
-  (eshell-load . eat-eshell-mode)
-  :custom
-  (eat-term-name "xterm"))
-
-(use-package pcmpl-args
-  :defer t
-  :after (pcomplete))
-
-(use-package pcmpl-homebrew
-  :defer t
-  :after (pcomplete))
-
-(defun eshell/gst (&rest args)
-  (magit-status (pop args) nil)
-  (eshell/echo))
-
-(defun eshell/ccat (file)
-  "Like `cat' but output with Emacs syntax highlighting."
-  (with-temp-buffer
-    (insert-file-contents file)
-    (let ((buffer-file-name file))
-      (delay-mode-hooks
-        (set-auto-mode)
-        (if (fboundp 'font-lock-ensure)
-            (font-lock-ensure)
-          (with-no-warnings
-            (font-lock-fontify-buffer)))))
-    (buffer-string)))
-
-(use-package multi-eshell
-  :ensure (multi-eshell :fetcher github :repo "emacsmirror/multi-eshell")
-  :bind (("s-s" . multi-eshell)
-         ;; ("s-n" . multi-eshell-switch)
-         ("s-p" . multi-eshell-go-back))
-  :custom
-  (multi-eshell-shell-function '(eshell))
-  (multi-eshell-name "*eshell*"))
-
-(use-package shrink-path
-  :after eshell
-  :preface
-  (defun me/eshell-set-outline-regexp ()
-    (setq-local
-     outline-regexp eshell-prompt-regexp))
-  :hook
-  (eshell-mode . me/eshell-set-outline-regexp)
-  :custom
-  ((eshell-prompt-regexp "^[^❯\n]* ❯ ")
-   (eshell-prompt-function
-    (lambda ()
-      (let ((base/dir (shrink-path-prompt default-directory)))
-        (concat (propertize (car base/dir)
-                            'face 'font-lock-comment-face)
-                (propertize (cdr base/dir)
-                            'face 'font-lock-constant-face)
-                (propertize " ❯" 'face 'eshell-prompt)
-                ;; needed for the input text to not have prompt face
-                (propertize " " 'face 'default)))))))
-#+end_src
-
-** Toogle undecorated frame
-
-#+begin_src emacs-lisp
-(defun toggle-frame-maximized-undecorated ()
-  (interactive)
-  (let* ((frame (selected-frame))
-         (on? (and (frame-parameter frame 'undecorated)
-                   (eq (frame-parameter frame 'fullscreen) 'maximized)))
-         (geom (frame-monitor-attribute 'geometry))
-         (initial-x (first geom))
-         (display-height (first (last geom))))
-    (if on?
-        (progn
-          (set-frame-parameter frame 'undecorated nil)
-          (toggle-frame-maximized))
-      (progn
-        (set-frame-position frame initial-x 0)
-        (set-frame-parameter frame 'fullscreen 'maximized)
-        (set-frame-parameter frame 'undecorated t)
-        (set-frame-height frame (- display-height 26) nil t)
-        (set-frame-position frame initial-x 0)))))
-#+end_src
-
 ** Scratch ([[https://github.com/ieure/scratch-el][link]])
 
 Scratch is an extension to Emacs that enables one to create scratch
@@ -1514,57 +1831,6 @@ using the Emacs formatting rules for that language.
 
 #+begin_src emacs-lisp
 (use-package scratch)
-#+end_src
-
-** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
-
-Simple functionality to show/hide eshell/ansi-term (or almost any
-other buffer, see eshell-toggle-init-function description below) at
-the bottom of active window with directory of its buffer.
-
-#+begin_src emacs-lisp
-(use-package eshell-toggle
-  :after eshell
-  :bind
-  ("s-`" . eshell-toggle)
-  :custom
-  (eshell-toggle-name-separator " ❯ ")
-  (eshell-toggle-size-fraction 3)
-  (eshell-toggle-use-projectile-root t))
-#+end_src
-
-** ESUP
-
-#+begin_src emacs-lisp
-(use-package esup)
-#+end_src
-
-** vterm
-
-#+begin_src emacs-lisp
-(use-package vterm
-  :defer 1
-  :custom
-  (vterm-always-compile-module t))
-
-(use-package multi-vterm
-  :after vterm
-  :bind (("C-c v" . multi-vterm)))
-#+end_src
-
-** Marginalia
-
-#+begin_src emacs-lisp
-;; Enable richer annotations using the Marginalia package
-(use-package marginalia
-  :demand t
-  :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
-  :custom
-  ;; (marginalia-max-relative-age)
-  (marginalia-align 'right)
-  :config
-  (marginalia-mode))
 #+end_src
 
 ** diff-hl
@@ -1579,7 +1845,6 @@ the bottom of active window with directory of its buffer.
   :config
   (global-diff-hl-mode))
 #+end_src
-
 
 ** Editor Config ([[https://github.com/editorconfig/editorconfig-emacs][link]])
 
@@ -1597,13 +1862,6 @@ with version control systems.
   (editorconfig-mode 1))
 #+end_src
 
-** Posframe
-
-#+begin_src emacs-lisp
-(use-package posframe
-  :demand t)
-#+end_src
-
 ** goggles (link)
 
 #+begin_src emacs-lisp
@@ -1613,26 +1871,10 @@ with version control systems.
   (goggles-pulse t))
 #+end_src
 
-** Expand region
-
-#+begin_src emacs-lisp
-(use-package expreg
-  :ensure t
-  :bind
-  ("C-=" . expreg-expand)
-  ("C--" . expreg-contract))
-#+end_src
-
 ** launchctl
 
 #+begin_src emacs-lisp
 (use-package launchctl)
-#+end_src
-
-** Restart Emacs
-
-#+begin_src emacs-lisp
-(use-package restart-emacs)
 #+end_src
 
 ** Matching Paren Overlay
@@ -1642,73 +1884,9 @@ with version control systems.
   :ensure
   (matching-paren-overlay
    :fetcher git
-   :url "https://codeberg.org/acdw/matching-paren-overlay.el.git"))
-#+end_src
-
-** Nerd Icons
-
-#+begin_src emacs-lisp
-(use-package emacs
-  :ensure nil
-  :if (and
-       (eq system-type 'darwin)
-       (not (file-exists-p "~//Library/Fonts/JetBrainsMono[wght].ttf")))
-  :ensure-system-package font-jetbrains-mono
+   :url "https://codeberg.org/acdw/matching-paren-overlay.el.git")
   :config
-  (set-face-attribute 'default nil :font "JetBrains Mono" :height 150))
-
-(use-package emacs
-  :ensure nil
-  :if (eq system-type 'gnu/linux)
-  :config
-  (when (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2"))
-    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
-  (set-face-attribute 'default nil :font "JetBrains Mono" :height 120))
-
-(use-package nerd-icons
-  :defines nerd-icons-regexp-icon-alist
-  :custom
-  (nerd-icons-color-icons t)
-  :config
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("_?test\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("_?test_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("_?spec\\.rb$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-red))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("_?spec_helper\\.rb$" nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-dred))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?spec\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?test\\.ts$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?spec\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?test\\.js$"        nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-lpurple))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?spec\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt))
-  (add-to-list 'nerd-icons-regexp-icon-alist
-    '("-?test\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt)))
-
-(use-package nerd-icons-dired
-  :hook (dired-mode . nerd-icons-dired-mode))
-
-(use-package nerd-icons-ibuffer
-  :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
-
-(use-package nerd-icons-completion
-  :after corfu marginalia
-  :functions (nerd-icons-completion-mode nerd-icons-completion-marginalia-setup)
-  :config
-  (nerd-icons-completion-mode)
-  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
-
-(use-package nerd-icons-corfu
-  :after corfu
-  :commands nerd-icons-corfu-formatter
-  :config
-  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+  (matching-paren-overlay-mode))
 #+end_src
 
 ** Treemacs
@@ -1737,72 +1915,6 @@ with version control systems.
   :after treemacs
   :config
   (treemacs-load-theme "nerd-icons"))
-#+end_src
-
-** Load theme
-
-#+begin_src emacs-lisp
-(use-package kanagawa-themes
-  :ensure t
-  :custom-face
-  (markdown-header-delimiter-face ((t (:inherit markdown-header-face))))
-  :custom
-  (kanagawa-themes-comment-italic nil)
-  (kanagawa-themes-keyword-italic nil)
-  :config
-  (load-theme 'kanagawa-wave t)
-
-  (dolist (face '(vertico-current
-                  flycheck-inline-info
-                  flycheck-inline-error
-                  flycheck-inline-warning
-                  completions-annotations))
-    (when (facep face)
-      (make-face-unitalic face))))
-#+end_src
-
-** Ligatures
-
-#+begin_src emacs-lisp
-;; This assumes you've installed the package via MELPA.
-(use-package ligature
-  :functions ligature-set-ligatures global-ligature-mode
-  :config
-  (ligature-set-ligatures
-   '(js-base-mode typescript-mode typescript-ts-mode)
-   '("?." "?=" "<>"
-     "</>" "/>" "<!--" "<#--" "-->" "=>"
-     "..." ".."
-     "//" "///"))
-
-  (ligature-set-ligatures
-   '(emacs-lisp-mode lisp-data-mode)
-   '(";;;" ";;"))
-
-  (ligature-set-ligatures
-   'go-mode
-   '(":="))
-
-  (ligature-set-ligatures
-   'prog-mode
-   '("--" "==" "===" "!=" "!==" "&&" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" "..." ".."))
-
-   ;; (ligature-set-ligatures
-   ;;  t
-   ;;  '("--" "---"
-   ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
-   ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
-   ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
-   ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
-   ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
-   ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
-   ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
-   ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
-   ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
-   ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
-   ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
-   ;;    "<:<" ";;;"))
-   (global-ligature-mode t))
 #+end_src
 
 ** Projectile ([[https://github.com/bbatsov/projectile][link]])
@@ -2000,9 +2112,9 @@ Consult users will also want the embark-consult package.
   (read-extended-command-predicate #'command-completion-default-include-p)
 
   :config
-  (global-corfu-mode)
-  (corfu-history-mode)
-  (corfu-popupinfo-mode))
+  (global-corfu-mode 1)
+  (corfu-history-mode 1)
+  (corfu-popupinfo-mode 1))
 
 ;; Use dabbrev with Corfu!
 (use-package dabbrev
@@ -2024,31 +2136,6 @@ Consult users will also want the embark-consult package.
          ("C-c /" . cape-dabbrev))
   :init
   (add-to-list 'completion-at-point-functions #'cape-file))
-#+end_src
-
-** Multiple Cursors ([[https://github.com/magnars/multiple-cursors.el][link]])
-
-Multiple cursors for Emacs. This is some pretty crazy functionality,
-so yes, there are kinks. Don't be afraid tho, I've been using it since
-2011 with great success and much merriment.
-
-#+begin_src emacs-lisp
-(use-package multiple-cursors
-  :defer 0.5
-  :hook
-  (multiple-cursors-mode
-   .
-   (lambda ()
-     (if multiple-cursors-mode
-         (progn
-           (message "multiple cursor on")
-           (corfu-mode 0))
-       (progn
-         (message "multiple cursor off")
-         (corfu-mode 1)))))
-  :bind
-  ("C->" . mc/mark-next-like-this)
-  ("C-<" . mc/mark-previous-like-this))
 #+end_src
 
 ** Org
@@ -2432,28 +2519,6 @@ fill those notes in with more details!"
   (org-download-screenshot-method "screencapture -i %s"))
 #+end_src
 
-** Key suffixes popup
-
-#+begin_src emacs-lisp
-(use-package which-key
-  :init
-  (which-key-mode)
-  :config
-  (add-to-list 'which-key-replacement-alist '(("TAB" . nil) . ("↹" . nil)))
-  (add-to-list 'which-key-replacement-alist '(("RET" . nil) . ("⏎" . nil)))
-  (add-to-list 'which-key-replacement-alist '(("DEL" . nil) . ("⇤" . nil)))
-  (add-to-list 'which-key-replacement-alist '(("SPC" . nil) . ("␣" . nil)))
-  :custom
-  ((which-key-sort-order #'which-key-prefix-then-key-order)
-   (which-key-add-column-padding 1)
-   (which-key-min-display-lines 6)
-   (which-key-side-window-location 'bottom)
-   (which-key-side-window-max-height 0.25)
-   (which-key-side-window-max-width 0.33)
-   (which-key-popup-type 'side-window)
-   (which-key-sort-uppercase-first nil)))
-#+end_src
-
 ** Better help dialogs
 
 #+begin_src emacs-lisp
@@ -2473,14 +2538,6 @@ fill those notes in with more details!"
   (pnpm-mode-command-prefix "C-c s-n"))
 #+end_src
 
-** Cycling between different var notations
-
-#+begin_src emacs-lisp
-(use-package string-inflection
-  :bind
-  ("C-c C-u" . string-inflection-all-cycle))
-#+end_src
-
 ** Open dash at point
 
 #+begin_src emacs-lisp
@@ -2488,14 +2545,6 @@ fill those notes in with more details!"
   :bind
   ("C-c d" . dash-at-point)
   ("C-c e" . dash-at-point-with-docset))
-#+end_src
-
-** Move lines using alt + arrows
-
-#+begin_src emacs-lisp
-(use-package move-text
-  :config
-  (move-text-default-bindings))
 #+end_src
 
 ** Anzu - current match / all matches in modeline
@@ -2515,15 +2564,20 @@ fill those notes in with more details!"
 
 #+begin_src emacs-lisp
 (use-package doom-modeline
+  :custom-face
+  (doom-modeline-bar ((t (:inherit default))))
   :custom
   (doom-modeline-hud t)
   (doom-modeline-icon t)
+  ;; hack
+  (doom-modeline-bar-width 1)
   (doom-modeline-major-mode-icon t)
   (doom-modeline-major-mode-color-icon t)
   (doom-modeline-buffer-state-icon t)
   (doom-modeline-buffer-modification-icon t)
   (doom-modeline-minor-modes nil)
-  (doom-modeline-checker-simple-format t)
+  (doom-modeline-github nil)
+  (doom-modeline-checker-simple-format nil)
   (doom-modeline-height 30)
   :config
   (doom-modeline-mode))
@@ -2536,52 +2590,6 @@ Hides modeline whenever this minor mode is active
 #+begin_src emacs-lisp
 (use-package hide-mode-line
   :commands hide-mode-line-mode)
-#+end_src
-
-** Flyspell
-
-#+begin_src emacs-lisp
-(use-package ispell
-  :if (executable-find "aspell")
-  :ensure nil
-  :defer t
-  :config
-  (add-to-list 'ispell-skip-region-alist '(":\\(PROPERTIES\\|LOGBOOK\\):" . ":END:"))
-  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_SRC" . "#\\+END_SRC"))
-  (add-to-list 'ispell-skip-region-alist '("#\\+BEGIN_EXAMPLE" . "#\\+END_EXAMPLE"))
-
-  (setq ispell-program-name "aspell"
-        ispell-extra-args   '("--sug-mode=ultra" "--run-together")
-        ispell-aspell-dict-dir (ispell-get-aspell-config-value "dict-dir")
-        ispell-aspell-data-dir (ispell-get-aspell-config-value "data-dir")
-        ispell-personal-dictionary (expand-file-name (concat "ispell/" ispell-dictionary ".pws")
-                                                     user-emacs-directory)))
-
-(use-package flyspell
-  :after ispell
-  :ensure nil
-  :defer t
-  :config
-  (setq flyspell-issue-welcome-flag nil
-        flyspell-issue-message-flag nil))
-
-(use-package flyspell-correct
-  :defer t
-  :bind
-  (([remap ispell-word] . flyspell-correct-at-point)
-   (:map flyspell-mode-map
-         ("C-;" . flyspell-correct-wrapper))))
-
-(use-package flyspell-correct-popup
-  :after flyspell-correct)
-
-(use-package flyspell-lazy
-  :defer t
-  :after flyspell
-  :config
-  (setq flyspell-lazy-idle-seconds 1
-        flyspell-lazy-window-idle-seconds 3)
-  (flyspell-lazy-mode +1))
 #+end_src
 
 ** Git
@@ -2598,10 +2606,15 @@ Hides modeline whenever this minor mode is active
   (vc-handled-backends nil)
   (magit-process-finish-apply-ansi-colors t)
   (magit-refresh-status-buffer t)
-  (magit-blame-goto-chunk-hook '(magit-blame-maybe-show-message))
   (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
   (magit-process-password-functions '(magit-process-password-auth-source))
+
+  ;; optimisation
+  (magit-diff-highlight-indentation nil)
+  (magit-diff-highlight-trailing nil)
+  (magit-diff-paint-whitespace nil)
+  
   :config
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
   ;; TODO: add to magit-process-password-functions an auth source
@@ -2621,15 +2634,15 @@ Hides modeline whenever this minor mode is active
   (add-to-list 'forge-alist '("gitlab.service.osa" "gitlab.service.osa/api/v4" "gitlab.service.osa" forge-gitlab-repository)))
 #+end_src
 
-*** magit-todos ([[https://github.com/alphapapa/magit-todos][link]])
+*** COMMENT delta
 
 #+begin_src emacs-lisp
-(use-package magit-todos
-  :after (magit)
-  :custom
-  (magit-todos-exclude-globs '(".git/"))
+(use-package magit-delta
+  :custom-face
+  (magit-diff-added-highlight ((t (:background "#1C3F20"))))
   :config
-  (magit-todos-mode 1))
+  (setq magit-delta-delta-args (append magit-delta-delta-args '("--features" "magit-delta")))
+  (magit-delta-mode 1))
 #+end_src
 
 *** Conventional Commit
@@ -2649,7 +2662,7 @@ Hides modeline whenever this minor mode is active
   :custom
   (browse-at-remote-remote-type-regexps
    '(
-     (:host "^git\\.oslo\\.osa"               :type "oslo")
+     (:host "^git\\.service\\.osa"               :type "oslo")
      (:host "^gitlab\\.services\\.ams\\.osa$" :type "gitlab")
      (:host "^gitlab\\.service\\.osa$"        :type "gitlab")
      (:host "^github\\.com$"                  :type "github")
@@ -2715,13 +2728,6 @@ Hides modeline whenever this minor mode is active
 (use-package pulsar
   :config
   (pulsar-global-mode 1))
-#+end_src
-
-** unfill
-
-#+begin_src emacs-lisp
-(use-package unfill
-  :bind ([remap fill-paragraph] . unfill-toggle))
 #+end_src
 
 ** Snippets
@@ -2853,6 +2859,19 @@ return windowTitle"))
           (write-region (cdr script) nil (concat (car script) ".applescript"))
           (shell-command (format "osacompile -t osas -o %s %s"
                                  (car script) (concat (car script) ".applescript"))))))))
+#+end_src
+
+** monkeytype
+
+#+begin_src emacs-lisp
+(use-package monkeytype
+  :hook (monkeytype . centered-cursor-mode))
+#+end_src
+
+** centered-cursor-mode
+
+#+begin_src emacs-lisp
+(use-package centered-cursor-mode)
 #+end_src
 
 * Prog modes
@@ -3028,15 +3047,13 @@ return windowTitle"))
 
 (use-package web-mode
   :mode
-  ("\\.html\\'"
-   "\\.svelte\\'")
+  ("\\.html\\'")
   :hook
   (web-mode . lsp-deferred)
   :custom
   (web-mode-content-types-alist
    '(("jsx" . "\\.tsx\\'")
      ("jsx" . "\\.jsx\\'")
-     ("svelte" . "\\.svelte\\'")
      ("html" . "\\.html\\'")))
   (web-mode-enable-auto-indentation nil)
   (web-mode-indentation-params
@@ -3065,6 +3082,21 @@ return windowTitle"))
   (poetry-tracking-mode))
 #+end_src
 
+** Svelte
+
+#+begin_src emacs-lisp
+(use-package svelte-ts-mode
+  :mode ("\\.svelte\\'")
+  :ensure (:host github :repo "leafOfTree/svelte-ts-mode")
+  :config
+  (add-hook 'editorconfig-after-apply-functions
+            (lambda (props)
+              (let* ((indent (string-to-number (gethash 'indent_size props "0"))))
+                (if (>= indent 0)
+                  (setq-local svelte-ts-mode-indent-offset indent)
+                  (setq-local css-indent-offset indent))))))
+#+end_src
+
 ** Dockerfile and docker-compose.yml
 
 #+begin_src emacs-lisp
@@ -3075,11 +3107,17 @@ return windowTitle"))
   :mode "docker-compose.yml.py$")
 #+end_src
 
+* Debug Emacs
+
+** Explain Pause
+
+#+begin_src emacs-lisp
+(use-package explain-pause-mode
+  :ensure (explain-pause-mode :fetcher github :repo "lastquestion/explain-pause-mode"))
+#+end_src
+
 * Other
 
 #+begin_src emacs-lisp
 (message ".emacs loaded successfully.")
-
-(put 'downcase-region 'disabled nil)
-(put 'upcase-region 'disabled nil)
 #+end_src

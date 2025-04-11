@@ -9,94 +9,94 @@
 ;; (setq max-specpdl-size 5)
 ;; (setq debug-on-error t)
 
-(setopt ad-redefinition-action 'accept)
-(setopt auto-revert-avoid-polling t)
-(setopt auto-revert-check-vc-info t)
-(setopt auto-revert-interval 1)
-(setopt auto-revert-stop-on-user-input nil)
-(setopt auto-revert-verbose t)
-(setopt auto-save-default t)
-(setopt auto-save-include-big-deletions t)
-(setopt auto-window-vscroll nil)
-(setopt backup-by-copying t)
-(setopt backup-by-copying-when-linked t)
-(setopt column-number-mode t)
-(setopt comint-buffer-maximum-size 2048)
-(setopt comint-prompt-read-only t)
-(setopt comment-empty-lines t)
-(setopt comment-multi-line t)
-(setopt compilation-always-kill t)
-(setopt compilation-ask-about-save nil)
-(setopt compilation-scroll-output 'first-error)
-(setopt confirm-nonexistent-file-or-buffer nil)
-(setopt create-lockfiles nil)
-(setopt cursor-in-non-selected-windows nil)
-(setopt delete-old-versions t)
-(setopt delete-pair-blink-delay 0.03)
-(setopt dired-clean-confirm-killing-deleted-buffers nil)
-(setopt dired-create-destination-dirs 'ask)
-(setopt dired-recursive-copies  'always)
-(setopt dired-recursive-deletes 'top)
-(setopt display-line-numbers-width 3)
-(setopt display-time-default-load-average nil)
-(setopt ediff-split-window-function #'split-window-horizontally)
-(setopt ediff-window-setup-function #'ediff-setup-windows-plain)
-(setopt eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-(setopt fast-but-imprecise-scrolling t)
-(setopt ffap-machine-p-known 'reject)
-(setopt find-file-suppress-same-file-warnings t)
-(setopt find-file-visit-truename t)
-(setopt frame-resize-pixelwise t)
-(setopt global-text-scale-adjust-resizes-frames nil)
-(setopt highlight-nonselected-windows nil)
-(setopt hscroll-margin 2)
-(setopt hscroll-step 1)
-(setopt idle-update-delay 0.5)
-(setopt indicate-empty-lines nil)
-(setopt kept-new-versions 5)
-(setopt kept-old-versions 5)
-(setopt kill-buffer-delete-auto-save-files t)
-(setopt kill-do-not-save-duplicates t)
-(setopt lazy-highlight-initial-delay 0)
-(setopt mac-command-modifier 'super)
-(setopt mac-option-modifier 'meta)
-(setopt make-backup-files nil)
-(setopt mouse-wheel-flip-direction t)
-(setopt mouse-wheel-scroll-amount '(1 ((shift) . hscroll)))
-(setopt mouse-wheel-scroll-amount-horizontal 1)
-(setopt mouse-wheel-tilt-scroll t)
-(setopt mouse-yank-at-point t)
-(setopt recentf-auto-cleanup 'mode)
-(setopt recentf-max-saved-items 300) ; default is 20
-(setopt resize-mini-windows 'grow-only)
-(setopt revert-without-query (list "."))
-(setopt ring-bell-function #'ignore)
-(setopt scroll-conservatively 0)
-(setopt scroll-error-top-bottom t)
-(setopt scroll-margin 15)
-(setopt scroll-preserve-screen-position t)
-(setopt scroll-step 1)
-(setopt sentence-end-double-space nil)
-(setopt sh-indent-after-continuation 'always)
-(setopt show-paren-delay 0.1)
-(setopt show-paren-highlight-openparen t)
-(setopt show-paren-when-point-in-periphery t)
-(setopt show-paren-when-point-inside-paren t)
-(setopt switch-to-buffer-obey-display-actions t)
-(setopt truncate-lines t)
-(setopt truncate-partial-width-windows nil)
-(setopt truncate-string-ellipsis "…")
-(setopt uniquify-buffer-name-style 'forward)
-(setopt vc-follow-symlinks t)
-(setopt vc-make-backup-files nil)
-(setopt version-control t)
-(setopt visible-bell nil)
-(setopt warning-suppress-types '((lexical-binding)))
-(setopt window-divider-default-bottom-width 1)
-(setopt window-divider-default-places t)
-(setopt window-divider-default-right-width 1)
-(setopt window-resize-pixelwise nil)
-(setopt x-underline-at-descent-line nil)
+(setopt
+ ad-redefinition-action 'accept
+ auto-revert-avoid-polling t
+ auto-revert-check-vc-info t
+ auto-revert-interval 1
+ auto-revert-stop-on-user-input nil
+ auto-revert-verbose t
+ auto-save-default t
+ auto-save-include-big-deletions t
+ auto-window-vscroll nil
+ backup-by-copying t
+ backup-by-copying-when-linked t
+ column-number-mode t
+ comint-buffer-maximum-size 2048
+ comint-prompt-read-only t
+ comment-empty-lines t
+ comment-multi-line t
+ compilation-always-kill t
+ compilation-ask-about-save nil
+ compilation-scroll-output 'first-error
+ confirm-nonexistent-file-or-buffer nil
+ create-lockfiles nil
+ cursor-in-non-selected-windows nil
+ delete-old-versions t
+ delete-pair-blink-delay 0.03
+ dired-clean-confirm-killing-deleted-buffers nil
+ dired-create-destination-dirs 'ask
+ dired-recursive-copies 'always
+ dired-recursive-deletes 'top
+ display-line-numbers-width 3
+ display-time-default-load-average nil
+ ediff-split-window-function #'split-window-horizontally
+ ediff-window-setup-function #'ediff-setup-windows-plain
+ eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly
+ ffap-machine-p-known 'reject
+ find-file-suppress-same-file-warnings t
+ find-file-visit-truename t
+ frame-resize-pixelwise t
+ global-text-scale-adjust-resizes-frames nil
+ highlight-nonselected-windows nil
+ hscroll-margin 2
+ hscroll-step 1
+ idle-update-delay 0.5
+ indicate-empty-lines nil
+ kept-new-versions 5
+ kept-old-versions 5
+ kill-buffer-delete-auto-save-files t
+ kill-do-not-save-duplicates t
+ lazy-highlight-initial-delay 0
+ mac-command-modifier 'super
+ mac-option-modifier 'meta
+ make-backup-files nil
+ mouse-wheel-flip-direction t
+ mouse-wheel-scroll-amount '(1 ((shift) . hscroll))
+ mouse-wheel-scroll-amount-horizontal 1
+ mouse-wheel-tilt-scroll t
+ mouse-yank-at-point t
+ recentf-auto-cleanup 'mode
+ recentf-max-saved-items 300
+ resize-mini-windows 'grow-only
+ revert-without-query (list ".")
+ ring-bell-function #'ignore
+ scroll-conservatively 0
+ scroll-error-top-bottom t
+ scroll-margin 15
+ scroll-preserve-screen-position t
+ scroll-step 1
+ sentence-end-double-space nil
+ sh-indent-after-continuation 'always
+ show-paren-delay 0.1
+ show-paren-highlight-openparen t
+ show-paren-when-point-in-periphery t
+ show-paren-when-point-inside-paren t
+ switch-to-buffer-obey-display-actions t
+ truncate-lines t
+ truncate-partial-width-windows nil
+ truncate-string-ellipsis "…"
+ uniquify-buffer-name-style 'forward
+ vc-follow-symlinks t
+ vc-make-backup-files nil
+ version-control t
+ visible-bell nil
+ warning-suppress-types '((lexical-binding))
+ window-divider-default-bottom-width 1
+ window-divider-default-places t
+ window-divider-default-right-width 1
+ window-resize-pixelwise nil
+ x-underline-at-descent-line nil)
 
 (add-hook 'after-init-hook #'window-divider-mode)
 
@@ -120,61 +120,7 @@
   (advice-add #'yes-or-no-p :override #'y-or-n-p))
 (defalias #'view-hello-file #'ignore)  ; Never show the hello file
 
-;; Elpaca
-
-(defvar elpaca-installer-version 0.9)
-(defvar elpaca-directory
-  (locate-user-emacs-file
-   (concat
-    (file-name-as-directory "var/elpaca")
-    emacs-version)))
-(defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
-(defvar elpaca-order
-  '(elpaca :repo "https://github.com/progfolio/elpaca.git"
-           :ref nil :depth 1 :inherit ignore
-           :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-           :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
-       (build (expand-file-name "elpaca/" elpaca-builds-directory))
-       (order (cdr elpaca-order))
-       (default-directory repo))
-  (add-to-list 'load-path (if (file-exists-p build) build repo))
-  (unless (file-exists-p repo)
-    (make-directory repo t)
-    (when (< emacs-major-version 28) (require 'subr-x))
-    (condition-case-unless-debug err
-        (if-let* ((buffer (pop-to-buffer-same-window "*elpaca-bootstrap*"))
-                  ((zerop (apply #'call-process `("git" nil ,buffer t "clone"
-                                                  ,@(when-let* ((depth (plist-get order :depth)))
-                                                      (list (format "--depth=%d" depth) "--no-single-branch"))
-                                                  ,(plist-get order :repo) ,repo))))
-                  ((zerop (call-process "git" nil buffer t "checkout"
-                                        (or (plist-get order :ref) "--"))))
-                  (emacs (concat invocation-directory invocation-name))
-                  ((zerop (call-process emacs nil buffer nil "-Q" "-L" "." "--batch"
-                                        "--eval" "(byte-recompile-directory \".\" 0 'force)")))
-                  ((require 'elpaca))
-                  ((elpaca-generate-autoloads "elpaca" repo)))
-            (progn (message "%s" (buffer-string)) (kill-buffer buffer))
-          (error "%s" (with-current-buffer buffer (buffer-string))))
-      ((error) (warn "%s" err) (delete-directory repo 'recursive))))
-  (unless (require 'elpaca-autoloads nil t)
-    (require 'elpaca)
-    (elpaca-generate-autoloads "elpaca" repo)
-    (load "./elpaca-autoloads")))
-(add-hook 'after-init-hook #'elpaca-process-queues)
-(elpaca `(,@elpaca-order))
-
-(require 'use-package)
-
-(elpaca elpaca-use-package
-  (elpaca-use-package-mode))
-
-;; Uncomment this to see the list of loaded packages
-;; (setq use-package-verbose t)
-
-(setq use-package-always-ensure t)
+(load-file (expand-file-name "elpaca.el" user-emacs-directory))
 
 (use-package no-littering
   :ensure (:wait t)
@@ -182,13 +128,11 @@
 
 (use-package system-packages
   :ensure (:wait t)
-  :demand t)
+  :demand t
+  :custom
+  (system-packages-noconfirm t))
 
 (use-package org
-  :ensure (:wait t)
-  :demand t)
-
-(use-package seq
   :ensure (:wait t)
   :demand t)
 
@@ -219,3 +163,4 @@
             (load custom-file 'noerror 'nomessage)))
 
 (put 'dired-find-alternate-file 'disabled nil)
+(put 'downcase-region 'disabled nil)

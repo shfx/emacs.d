@@ -72,7 +72,6 @@
 (push '(ns-appearance . dark) default-frame-alist)
 (push '(ns-transparent-titlebar . t) default-frame-alist)
 (push '(fullscreen . maximized) default-frame-alist)
-(push '(undecorated-round . t) default-frame-alist)
 (push '(internal-border-width . 8) default-frame-alist)
 
 ;; Disables modeline until theme is loaded
