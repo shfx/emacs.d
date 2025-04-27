@@ -45,8 +45,11 @@ brew install emacs-app-good
 
 # Disable font smoothing
 defaults write $(osascript -e 'id of app "Emacs"') AppleFontSmoothing -int 0
-defaults write NSGlobalDomain KeyRepeat -int 0.02
 
+# Key press and hold behaviour
+defaults write -g ApplePressAndHoldEnabled -bool false
+
+defaults write NSGlobalDomain AppleInterfaceStyle Dark
 defaults write com.apple.dock autohide -bool true
 defaults write com.apple.dock autohide-time-modifier -float 0.5
 killall Dock
@@ -422,7 +425,7 @@ Disable all mouse input
     (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160))
   :hook (after-make-frame-functions . my/set-font)
   :custom-face
-  (show-paren-match ((t (:foreground "#181825" :inherit 'match))))
+  (show-paren-match ((t (:foreground "#181825" :background "#aaaa33"))))
   :config
   (load-theme 'catppuccin t)
   (when (and (eq system-type 'darwin))
@@ -531,6 +534,7 @@ Disable all mouse input
 #+begin_src emacs-lisp
 (setopt jit-lock-defer-time 0)
 (setopt fast-but-imprecise-scrolling t)
+(pixel-scroll-precision-mode +1)
 #+end_src
 
 ** Focus new frame
@@ -697,13 +701,6 @@ Disable all mouse input
 (use-package eval-sexp-fu
   :config
   (require 'eval-sexp-fu))
-#+end_src
-
-** litable
-
-#+begin_src emacs-lisp
-(use-package litable
-  :hook (emacs-lisp-mode . litable-mode))
 #+end_src
 
 ** meow
@@ -1235,7 +1232,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 
 #+begin_src emacs-lisp
 (use-package eshell
-  :after (corfu cape pcmpl-args)
+  :after (corfu cape)
   :demand t
   :ensure nil
   :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
@@ -1558,15 +1555,13 @@ the bottom of active window with directory of its buffer.
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
   (lsp-eldoc-render-all nil)
-  (lsp-enable-file-watchers t)
+  (lsp-enable-file-watchers nil)
   (lsp-enable-indentation nil)
   (lsp-enable-snippet nil)
   (lsp-enable-on-type-formatting t)
   (lsp-signature-render-documentation t)
   (lsp-eslint-auto-fix-on-save t)
-  (lsp-eslint-working-directories [(pattern "/Users/shfx/Developer/priv/*")
-                                   (pattern "/Users/shfx/Developer/work/*")])
-  (lsp-eslint-experimental '((seFlatConfig . t)))
+  (lsp-eslint-working-directories [(pattern "/packages/*")])
   (lsp-file-watch-threshold 4000)
   (lsp-headerline-breadcrumb-enable nil)
   (lsp-inlay-hint-enable nil)
@@ -1617,8 +1612,11 @@ the bottom of active window with directory of its buffer.
 
 (use-package lsp-tailwindcss
   :after lsp-mode
+  :init
+  (setq lsp-tailwindcss-add-on-mode t)
   :custom
-  (lsp-tailwindcss-add-on-mode t))
+  (lsp-tailwindcss-major-modes
+   '(web-mode html-mode css-mode typescript-mode typescript-tsx-mode tsx-ts-mode svelte-ts-mode)))
 #+end_src
 
 ** Dabbrev
@@ -2415,7 +2413,7 @@ fill those notes in with more details!"
   :after org
   :custom
   (org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
-  (org-roam-directory "~/Dropbox/OrgRoam")
+  (org-roam-directory "~/Sync/OrgRoam")
   (org-roam-completion-everywhere nil)
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
@@ -2735,10 +2733,10 @@ Hides modeline whenever this minor mode is active
 #+begin_src emacs-lisp
 (use-package yasnippet
   :after lsp-mode
-  :hook (prog-mode . yas-minor-mode))
-
-(use-package yasnippet-snippets
-  :after yasnippet
+  :hook (prog-mode . yas-minor-mode)
+  :bind ("M-<tab>" . yas-insert-snippet)
+  :custom
+  (yas-wrap-around-region t)
   :config
   (yas-reload-all))
 #+end_src
@@ -2904,22 +2902,10 @@ return windowTitle"))
          ("C-x C-e" . eval-last-sexp))))
 #+end_src
 
-** rust
-
-#+begin_src emacs-lisp
-(use-package rust-mode
-  :defer 0.5
-  :custom
-  (rust-mode-treesitter-derive t)
-  :config
-  (setq auto-mode-alist (assoc-delete-all "\\.rs\\'" auto-mode-alist)))
-#+end_src
-
 ** rustic
 
 #+begin_src emacs-lisp
 (use-package rustic
-  :after (rust-mode)
   :mode ("\\.rs\\'" . rustic-mode)
   :preface
   (defun rustic-mode-auto-save-hook ()
@@ -3088,6 +3074,7 @@ return windowTitle"))
 (use-package svelte-ts-mode
   :mode ("\\.svelte\\'")
   :ensure (:host github :repo "leafOfTree/svelte-ts-mode")
+  :hook (svelte-ts-mode . lsp-deferred)
   :config
   (add-hook 'editorconfig-after-apply-functions
             (lambda (props)
