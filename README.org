@@ -223,7 +223,6 @@ of other emacsclients instances
   (undo-limit         50000000)
   (undo-strong-limit 100000000)
   (undo-outer-limit  300000000)
-  (switch-to-prev-buffer-skip t)
   (text-mode-ispell-word-completion nil)
   (remote-file-name-inhibit-cache nil)
   (async-shell-command-buffer 'new-buffer)
@@ -493,7 +492,7 @@ Disable all mouse input
   :functions ligature-set-ligatures global-ligature-mode
   :config
   (ligature-set-ligatures
-   '(js-base-mode typescript-mode typescript-ts-mode)
+   '(js-base-mode typescript-ts-mode)
    '("?." "?=" "<>"
      "</>" "/>" "<!--" "<#--" "-->" "=>"
      "..." ".."
@@ -1616,7 +1615,7 @@ the bottom of active window with directory of its buffer.
   (setq lsp-tailwindcss-add-on-mode t)
   :custom
   (lsp-tailwindcss-major-modes
-   '(web-mode html-mode css-mode typescript-mode typescript-tsx-mode tsx-ts-mode svelte-ts-mode)))
+   '(web-mode html-mode css-mode typescript-mode typescript-ts-mode tsx-ts-mode svelte-ts-mode)))
 #+end_src
 
 ** Dabbrev
@@ -3018,15 +3017,15 @@ return windowTitle"))
 ** JS
 
 #+begin_src emacs-lisp
-(use-package typescript-mode
+(use-package typescript-ts-mode
   :after (lsp-mode)
   :mode "\\.ts$"
-  :hook (typescript-mode . lsp-deferred))
+  :hook (typescript-ts-mode . lsp-deferred))
 
-(use-package js2-mode
+(use-package js-ts-mode
   :after (lsp-mode)
   :mode ("\\.[cm]*js$")
-  :hook (js-base-mode . lsp-deferred))
+  :hook (js-ts-mode . lsp-deferred))
 
 (use-package eslintd-fix
   :hook ((js-base-mode) . eslintd-fix-mode))
@@ -3094,6 +3093,7 @@ return windowTitle"))
   :mode "docker-compose.yml.py$")
 #+end_src
 
+#+end_src
 * Debug Emacs
 
 ** Explain Pause
