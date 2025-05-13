@@ -39,6 +39,8 @@ EOF
 
 ** Install Emacs with ~homebrew~
 
+should check this one https://github.com/mathiasbynens/dotfiles/blob/master/.macos
+
 #+begin_src shell
 brew tap jimeh/emacs-builds
 brew install emacs-app-good
@@ -674,7 +676,7 @@ Disable all mouse input
     (global-set-key (kbd (concat margin "<mouse-3>")) 'ignore)))
 #+end_src
 
-** ultra-scrol
+** ultra-scroll
 
 #+begin_src emacs-lisp
 (use-package ultra-scroll
@@ -684,6 +686,15 @@ Disable all mouse input
   (scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
+#+end_src
+
+** zoom
+
+#+begin_src emacs-lisp
+(use-package zoom
+  :custom
+  (zoom-size '(0.618 . 0.618))
+  (zoom-ignored-buffer-name-regexps '("^*calc")))
 #+end_src
 
 * Editing
@@ -1206,7 +1217,7 @@ also helpful emacs config just for vertico
   :after (consult flycheck))
 #+end_src
 
-** Consult Dir ([[https://github.com/karthink/consult-dir][link]])
+** TODO Consult Dir ([[https://github.com/karthink/consult-dir][link]])
 
 #+begin_src emacs-lisp
 (use-package consult-dir
@@ -1215,6 +1226,15 @@ also helpful emacs config just for vertico
          :map vertico-map
          ("C-x C-d" . consult-dir)
          ("C-x C-j" . consult-dir-jump-file)))
+#+end_src
+
+** Consult todo
+
+#+begin_src emacs-lisp
+(use-package consult-todo
+  :bind
+  ("M-s t" . consult-todo)
+  ("M-s T" . consult-todo-project))
 #+end_src
 
 * Terminals, Shells
@@ -3017,14 +3037,15 @@ return windowTitle"))
 ** JS
 
 #+begin_src emacs-lisp
-(use-package typescript-ts-mode
+(use-package typescript-mode
   :after (lsp-mode)
-  :mode "\\.ts$"
+  :mode ("\\.ts$" . typescript-ts-mode)
   :hook (typescript-ts-mode . lsp-deferred))
 
-(use-package js-ts-mode
+(use-package js
+  :ensure nil
   :after (lsp-mode)
-  :mode ("\\.[cm]*js$")
+  :mode ("\\.[cm]*js$" . js-ts-mode)
   :hook (js-ts-mode . lsp-deferred))
 
 (use-package eslintd-fix
@@ -3093,7 +3114,15 @@ return windowTitle"))
   :mode "docker-compose.yml.py$")
 #+end_src
 
+** Hyprland
+
+#+begin_src emacs-lisp
+(use-package hyprlang-ts-mode
+  :ensure t
+  :custom
+  (hyprlang-ts-mode-indent-offset 2))
 #+end_src
+
 * Debug Emacs
 
 ** Explain Pause
