@@ -495,9 +495,8 @@ Disable all mouse input
   :config
   (ligature-set-ligatures
    '(js-base-mode typescript-ts-mode)
-   '("?." "?=" "<>"
+   '("?." "?=" "<>" "&&" "?:" "..."
      "</>" "/>" "<!--" "<#--" "-->" "=>"
-     "..." ".."
      "//" "///"))
 
   (ligature-set-ligatures
@@ -509,25 +508,29 @@ Disable all mouse input
    '(":="))
 
   (ligature-set-ligatures
+   '(rust-mode rustic-mode)
+   '("->" "<=" "=>" "#[" ".."))
+ 
+  (ligature-set-ligatures
    'prog-mode
-   '("--" "==" "===" "!=" "!==" "&&" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" "..." ".."))
+   '("--" "==" "===" "!=" "!==" "&&" "||" "<<" ">>" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" ))
 
-   ;; (ligature-set-ligatures
-   ;;  t
-   ;;  '("--" "---"
-   ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
-   ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
-   ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
-   ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
-   ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
-   ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
-   ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
-   ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
-   ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
-   ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
-   ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
-   ;;    "<:<" ";;;"))
-   (global-ligature-mode t))
+  ;; (ligature-set-ligatures
+  ;;  t
+  ;;  '("--" "---"
+  ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
+  ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
+  ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
+  ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
+  ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
+  ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
+  ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
+  ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
+  ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
+  ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
+  ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
+  ;;    "<:<" ";;;"))
+  (global-ligature-mode t))
 #+end_src
 
 * Buffers, Windows, Frames and scrolling
@@ -717,17 +720,15 @@ Disable all mouse input
 
 #+begin_src emacs-lisp
 (use-package meow
-  :preface
+  :defer t
+  :config
   (defun meow-setup ()
     (setq meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
-    (meow-motion-overwrite-define-key
+    (meow-motion-define-key
      '("j" . meow-next)
      '("k" . meow-prev)
      '("<escape>" . ignore))
     (meow-leader-define-key
-     ;; SPC j/k will run the original command in MOTION state.
-     '("j" . "H-j")
-     '("k" . "H-k")
      ;; Use SPC (0-9) for digit arguments.
      '("1" . meow-digit-argument)
      '("2" . meow-digit-argument)
@@ -1648,7 +1649,6 @@ the bottom of active window with directory of its buffer.
          ("C-M-/" . dabbrev-expand))
   :config
   (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
-  ;; Since 29.1, use `dabbrev-ignored-buffer-regexps' on older.
   (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
 #+end_src
@@ -1662,6 +1662,7 @@ the bottom of active window with directory of its buffer.
   :bind
   ("C-c C-a" . chatgpt-shell-quick-insert)
   :custom
+  (chatgpt-shell-root-path (no-littering-expand-var-file-name "."))
   (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
 #+end_src
