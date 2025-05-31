@@ -68,24 +68,32 @@
 ;; Disable GC before while we load rest of the config
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
-(defvar my/pre-init-gc-cons-threshold 100000000) ;; or gc-cons-threshold
+(defvar my/pre-init-gc-cons-threshold 800000000) ;; or gc-cons-threshold
 (defvar my/pre-init-gc-cons-percentage gc-cons-percentage)
 
 (setq file-name-handler-alist nil
       gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.6)
 
-(defun restore-post-init-settings ()
+(defun my/restore-pre-init-settings ()
   "Restore some values previously savet in early-init.el"
   (setq file-name-handler-alist my/pre-init-file-name-handler-alist
         gc-cons-threshold my/pre-init-gc-cons-threshold
         gc-cons-percentage my/pre-init-gc-cons-percentage)
   (message "Restore previous GC threshold and file-name-handler-alist values"))
 
+(defun my/minibuffer-setup-hook ()
+  (setq gc-cons-threshold most-positive-fixnum))
+
 (add-hook 'after-init-hook
           (lambda ()
-            (when (functionp 'restore-post-init-settings)
-              (restore-post-init-settings))))
+            (when (functionp 'my/restore-pre-init-settings)
+              (my/restore-pre-init-settings)
+
+              (add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hook)
+              (add-hook 'minibuffer-exit-hook #'my/restore-pre-init-settings)
+
+              (run-with-idle-timer 1.2 t 'garbage-collect))))
 
 ;; Set default-frame-alist before init.el
 

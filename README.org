@@ -1662,7 +1662,7 @@ the bottom of active window with directory of its buffer.
   :bind
   ("C-c C-a" . chatgpt-shell-quick-insert)
   :custom
-  (chatgpt-shell-openai-key (cadr (auth-source-user-and-password "chatgpt" "shfx")))
+  (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
 #+end_src
 
@@ -1714,70 +1714,13 @@ loaded before any language package
 (use-package treesit
   :ensure nil
   :custom
-  (treesit-font-lock-level 4))
-
-(use-package treesit-auto
-  :custom
-  (treesit-auto-install 'prompt)
-  :functions global-treesit-auto-mode
-  :defines globatrel-treesit-auto-modes
-  :preface
-  (defun my/ts-mode-p (mode)
-    (let* ((mode-name (symbol-name mode)))
-      (cond
-       ((string-suffix-p "ts-mode" mode-name) t)
-       (t nil))))
-
-  (defun my/bring-previous-mode-hooks ()
-    (let ((mode-name (symbol-name major-mode)))
-      (if (not (my/ts-mode-p major-mode))
-          (warn "Current mode does not contain -ts suffix: %s" mode-name)
-        (let* (
-               (non-ts-mode-name      (concat (string-remove-suffix "-ts" (string-remove-suffix "-mode" mode-name)) "-mode"))
-               (non-ts-mode-hook-name (concat non-ts-mode-name "-hook")))
-
-          (if (not (intern non-ts-mode-hook-name))
-              (message "There is no hook list named %s" non-ts-mode-hook-name)
-            (run-hooks (intern non-ts-mode-hook-name))
-            (message "Ran hook for %s" non-ts-mode-hook-name))))))
-
-  (defun my/get-treesit-auto-modes ()
-    "Extracts all available treesit auto modes"
-    (unless global-treesit-auto-modes
-      (error "global-treesit-auto-modes vartable does not exist, can't transfer hooks from non treesit modes"))
-    (seq-filter 'my/ts-mode-p global-treesit-auto-modes))
-
-  :config
-
-  (add-to-list 'treesit-auto-langs 'svelte)
-
-  (add-to-list 'treesit-auto-recipe-list
-               (make-treesit-auto-recipe
-                :lang 'prisma
-                :ts-mode 'prisma-ts-mode
-                :remap '(prisma-mode)
-                :url "https://github.com/victorhqc/tree-sitter-prisma"
-                :revision "master"
-                :source-dir "src"
-                :ext "\\.prisma\\'"))
-
-  (add-to-list 'treesit-auto-recipe-list
-               (make-treesit-auto-recipe
-                :lang 'svelte
-                :ts-mode 'svelte-ts-mode
-                :remap 'svelte-mode
-                :url "https://github.com/Himujjal/tree-sitter-svelte"
-                :source-dir "./src"
-                :ext "\\.svelte\\'"))
-
-  (treesit-auto-add-to-auto-mode-alist 'all)
-  (global-treesit-auto-mode)
-
-  ;; add lambda function hook to list of emacs hooks
-  (dolist (mode (my/get-treesit-auto-modes))
-    (let* ((mode-name (symbol-name mode))
-           (hook-name (concat mode-name "-hook")))
-      (add-hook (intern hook-name) #'my/bring-previous-mode-hooks))))
+  (treesit-font-lock-level 4)
+  (treesit-language-source-alist
+   (append
+    '((hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang" nil nil nil nil)
+      (prisma "https://github.com/victorhqc/tree-sitter-prisma" nil nil nil nil)
+      (svelte "https://github.com/Himujjal/tree-sitter-svelte" "master" nil nil nil))
+    treesit-language-source-alist)))
 #+end_src
 
 ** Treesit fold
@@ -2637,10 +2580,13 @@ Hides modeline whenever this minor mode is active
   ;; TODO: add to magit-process-password-functions an auth source
   (transient-define-suffix magit-submodule-update-all ()
     "Update all submodules"
-    :description "Update All (git submodule update --init --recursive)"
+    :description "Update All     git submodule update --init --recursive"
     (interactive)
     (magit-with-toplevel
-      (magit-run-git-async "submodule" "update" "--init" "--recursive"))))
+      (magit-run-git-async "submodule" "update" "--init" "--recursive")))
+
+  (transient-append-suffix 'magit-submodule "u"
+    '("U" magit-submodule-update-all)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2961,10 +2907,17 @@ return windowTitle"))
 #+begin_src emacs-lisp
 (use-package markdown-ts-mode
   :mode ("\\.md\\'" . markdown-ts-mode)
-  :defer 't
-  :config
-  (add-to-list 'treesit-language-source-alist '(markdown "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src"))
-  (add-to-list 'treesit-language-source-alist '(markdown-inline "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src")))
+  :defer t
+  :custom
+  (treesit-language-source-alist
+   (append
+    '((markdown
+       "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+       "split_parser" "tree-sitter-markdown/src")
+      (markdown-inline
+       "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
+       "split_parser" "tree-sitter-markdown-inline/src"))
+    treesit-language-source-alist)))
 
 (use-package grip-mode
   :bind
@@ -3016,7 +2969,7 @@ return windowTitle"))
 #+begin_src emacs-lisp
 (use-package css-mode
   :ensure nil
-  :mode "\\.css")
+  :mode ("\\.css" . css-ts-mode))
 #+end_src
 
 ** SCSS
