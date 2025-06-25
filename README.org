@@ -1579,7 +1579,7 @@ the bottom of active window with directory of its buffer.
 (use-package jq-mode
   :after (org-mode json-mode)
   :commands (jq-mode jq-interactively)
-  :mode ("\\.jq$" . js-mode)
+  :mode ("\\.jq$" . jq-mode)
   :bind (:map json-mode-map
               ("C-c C-j" . jq-interactively))
   :config
@@ -2974,7 +2974,7 @@ return windowTitle"))
 
 #+begin_src emacs-lisp
 (use-package yaml-mode
-  :mode "\\.yaml")
+  :mode ("\\.yaml" . yaml-ts-mode))
 #+end_src
 
 ** GO
@@ -2999,6 +2999,55 @@ return windowTitle"))
   :interpreter "json"
   :config
   (setq js-indent-level 2))
+
+#+end_src
+
+** JSON5
+
+#+begin_src emacs-lisp
+(use-package json5-ts-mode
+  :ensure (json5-ts-mode :host github :repo "dochang/json5-ts-mode")
+  :mode ("\\.json5\\'" . json5-ts-mode)
+  :config
+  (setq treesit-language-source-alist
+   (append
+    '((json5 "https://github.com/Joakker/tree-sitter-json5"))
+    treesit-language-source-alist)))
+#+end_src
+
+** JSONNET
+
+Install jsonnet-language-server to enable lsp support
+
+#+begin_src emacs-lisp
+(use-package jsonnet-mode
+  :after lsp-mode
+  :mode
+  ("\\.jsonnet\\'" . jsonnet-mode)
+  ("\\.jsonnet.TEMPLATE\\'" . jsonnet-mode)
+  :hook
+  (jsonnet-mode . lsp-deferred)
+  :config
+
+  ;; https://github.com/grafana/jsonnet-language-server/releases
+  (defcustom lsp-jsonnet-executable (no-littering-expand-var-file-name "lsp/server/jsonnet/jsonnet-language-server")
+    "Jsonnet lsp executable"
+    :group 'lsp-jsonnet
+    :risky t
+    :type 'file)
+
+  (add-to-list 'lsp-language-id-configuration '(jsonnet-mode . "jsonnet"))
+
+  (lsp-register-client
+   (make-lsp-client
+    :server-id 'jsonnet
+    :new-connection (lsp-stdio-connection (lambda () lsp-jsonnet-executable))
+    :activation-fn (lsp-activate-on "jsonnet")
+    :initialized-fn (lambda (workspace)
+                      (with-lsp-workspace workspace
+                        (lsp--set-configuration
+                         ;; TODO: jsonnet-language-server settings should use a prefix
+                         (ht-get (lsp-configuration-section "jsonnet") "jsonnet")))))))
 
 #+end_src
 
