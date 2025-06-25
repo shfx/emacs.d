@@ -35,35 +35,35 @@
 
 ;; set custom variable should be done by setopt but
 ;; byte-compile-warnings does not allow not keyword
-(setq byte-compile-warnings '(not obsolete))
 ;; (setopt byte-compile-warnings '(not obsolete))
+(setq byte-compile-warnings '(not obsolete))
 
 ;; Speed & optimization
 
 (setopt auto-mode-case-fold nil)
 (setopt bidi-inhibit-bpa t)
 (setopt inhibit-compacting-font-caches t)
-(setopt read-process-output-max (* 1024 1024)) ;; 1mb
 (setopt inhibit-default-init t)
 (setopt inhibit-x-resources t)
-(setq site-run-file nil)
+(setopt read-process-output-max (* 1024 1024)) ;; 1mb
+
 (setq bidi-display-reordering 'left-to-right)
 (setq bidi-paragraph-direction 'left-to-right)
+(setq site-run-file nil)
 
 ;; Preferences
 
+(setopt default-input-method nil)
 (setopt frame-inhibit-implied-resize t)
 (setopt frame-resize-pixelwise t)
-(setopt default-input-method nil)
-(setopt use-dialog-box nil)
-(setopt use-file-dialog nil)
 (setopt inhibit-splash-screen t)
 (setopt inhibit-startup-buffer-menu t)
-
 (setopt inhibit-startup-screen t)
 (setopt initial-buffer-choice nil)
 (setopt initial-major-mode 'fundamental-mode)
 (setopt initial-scratch-message nil)
+(setopt use-dialog-box nil)
+(setopt use-file-dialog nil)
 
 ;; Disable GC before while we load rest of the config
 
@@ -89,7 +89,6 @@
           (lambda ()
             (when (functionp 'my/restore-pre-init-settings)
               (my/restore-pre-init-settings)
-
               (add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hook)
               (add-hook 'minibuffer-exit-hook #'my/restore-pre-init-settings)
 
@@ -106,10 +105,11 @@
 (push '(fullscreen . maximized) default-frame-alist)
 (push '(internal-border-width . 8) default-frame-alist)
 
-;; Disables modeline until theme is loaded and set vertical border
+;; Disables modeline and set some default until theme is loaded
 
 (setq-default mode-line-format nil)
 (set-face-foreground 'vertical-border "#0c0c0f")
+(set-face-background 'default "#1e1e2e")
 
 ;; This is needed by lsp-mode
 
