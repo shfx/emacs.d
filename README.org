@@ -556,7 +556,7 @@ Disable all mouse input
   (global-ligature-mode t))
 #+end_src
 
-* Buffers, Windows, Frames and scrolling
+* Buffers, Windows, Frames, Tabs and scrolling
 
 #+begin_src emacs-lisp
 (setopt jit-lock-defer-time 0)
@@ -616,29 +616,6 @@ Disable all mouse input
   :config
   (popper-mode +1)
   (popper-echo-mode +1))
-#+end_src
-
-** tab-bar
-
-#+begin_src emacs-lisp
-(use-package tab-bar
-  :ensure nil
-  :custom
-  ;; Do not show buttons.
-  (tab-bar-new-button-show t)
-  (tab-bar-close-button-show t)
-  (tab-bar-tab-hints t))
-#+end_src
-
-** tab-line
-
-#+begin_src emacs-lisp
-(use-package tab-line
-  :ensure nil
-  :custom
-  (tab-line-separator " | ")
-  (tab-line-close-button-show nil)
-  (tab-line-new-button-show nil))
 #+end_src
 
 ** transient
@@ -721,6 +698,43 @@ Disable all mouse input
   :custom
   (zoom-size '(0.618 . 0.618))
   (zoom-ignored-buffer-name-regexps '("^*calc")))
+#+end_src
+
+** tab-bar
+
+#+begin_src emacs-lisp
+(use-package tab-bar
+  :ensure nil
+  :custom
+  ;; Do not show buttons.
+  (tab-bar-new-button-show t)
+  (tab-bar-close-button-show t)
+  (tab-bar-tab-hints t))
+#+end_src
+
+** vim-tab-bar
+
+A simple styling for tab bars
+
+#+begin_src emacs-lisp
+(use-package vim-tab-bar
+  :ensure t
+  :commands vim-tab-bar-mode
+  :hook
+  (after-init . vim-tab-bar-mode)
+  :custom
+  (vim-tab-bar-show-groups t))
+#+end_src
+
+** tab-line
+
+#+begin_src emacs-lisp
+(use-package tab-line
+  :ensure nil
+  :custom
+  (tab-line-separator " | ")
+  (tab-line-close-button-show nil)
+  (tab-line-new-button-show nil))
 #+end_src
 
 * Editing
