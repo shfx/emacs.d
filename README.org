@@ -242,7 +242,6 @@ of other emacsclients instances
   (switch-to-buffer-obey-display-actions t)
   (transient-mark-mode t)
   (use-dialog-box nil)
-  (vc-handled-backends nil)
   (visible-bell t)
   (x-stretch-cursor t)
   (undo-limit         50000000)
@@ -1491,16 +1490,38 @@ the bottom of active window with directory of its buffer.
 ** Tramp
 
 #+begin_src emacs-lisp
+;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+
 (use-package tramp
   :ensure nil
   :custom
   (tramp-inline-compress-start-size 1000)
-  (tramp-copy-size-limit 10000)
-  (vc-handled-backends '(Git))
-  (tramp-default-method "scp")
   (tramp-use-ssh-controlmaster-options nil)
   (projectile--mode-line "Projectile")
-  (tramp-verbose 1))
+  (tramp-verbose 1)
+
+  (remote-file-name-inhibit-locks t)
+  (tramp-use-scp-direct-remote-copying t)
+  (remote-file-name-inhibit-auto-save-visited t)
+  (magit-tramp-pipe-stty-settings 'pty)
+  (tramp-copy-size-limit (* 1024 1024))
+
+  :custom
+  (connection-local-set-profile-variables
+   'remote-direct-async-process
+   '((tramp-direct-async-process . t)))
+
+  ;; (connection-local-set-profiles
+  ;;  '(:application tramp :machine "server")
+  ;;  'remote-direct-async-process)
+  (with-eval-after-load 'tramp
+    (with-eval-after-load 'compile
+      (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options)))
+
+  ;; Maybe remove those hooks
+  ;; (remove-hook 'evil-insert-state-exit-hook #'doom-modeline-update-buffer-file-name)
+  ;; (remove-hook 'find-file-hook #'doom-modeline-update-buffer-file-name)
+  ;; (remove-hook 'find-file-hook 'forge-bug-reference-setup))
 #+end_src
 
 * Displaying errors
@@ -1835,11 +1856,13 @@ using the Emacs formatting rules for that language.
 
 #+begin_src emacs-lisp
 (use-package diff-hl
-  :commands global-diff-hl-mode
   :hook
-  ((magit-pre-refresh . diff-hl-magit-pre-refresh)
-   (magit-post-refresh . diff-hl-magit-post-refresh)
+  ((magit-post-refresh . diff-hl-magit-post-refresh)
    (dired-mode . diff-hl-dired-mode))
+  :custom
+  (vc-handled-backends '(Git))
+  (diff-hl-update-async t)
+  (diff-hl-draw-borders nil)
   :config
   (global-diff-hl-mode))
 #+end_src
@@ -2597,13 +2620,14 @@ Hides modeline whenever this minor mode is active
 #+begin_src emacs-lisp
 (use-package magit
   :after transient
-  :bind ("C-x g" . magit-status)
+  :bind
+  (("C-x g" . magit-status)
+   :map magit-blob-mode-map
+   ("C-j" . magit-blob-visit-file))
   :hook
   (git-commit-mode . flyspell-mode)
   :custom
-  (vc-handled-backends nil)
   (magit-process-finish-apply-ansi-colors t)
-  (magit-refresh-status-buffer t)
   (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
   (magit-process-password-functions '(magit-process-password-auth-source))
@@ -2612,6 +2636,8 @@ Hides modeline whenever this minor mode is active
   (magit-diff-highlight-indentation nil)
   (magit-diff-highlight-trailing nil)
   (magit-diff-paint-whitespace nil)
+  (magit-branch-direct-configure nil)
+  (magit-refresh-status-buffer nil)
   
   :config
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
@@ -2794,6 +2820,11 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (dired-dwim-target t)
   (dired-vc-rename-file t)
   (dired-auto-revert-buffer t)
+  :bind
+  (:map dired-mode-map 
+        ;; Disable mouse interaction with directories in dired
+        ("<follow-link>" . nil)
+        ("<mouse-2>" . nil))
   :config
   (cond ((string-equal system-type "darwin")
          (setq insert-directory-program "gls"
