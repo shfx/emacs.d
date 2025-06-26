@@ -1288,11 +1288,8 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 
 #+begin_src emacs-lisp
 (use-package eshell
-  :after (corfu cape)
-  :demand t
   :ensure nil
-  :functions (eshell-previous-matching-input-from-input eshell-next-matching-input-from-input)
-  :defines (eshell-mode-map eshell-hist-mode-map)
+  :demand t
   :custom
   (eshell-banner-message "")
   (eshell-error-if-no-glob t)
@@ -1305,6 +1302,8 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
   (eshell-scroll-to-bottom-on-input t)
   (eshell-visual-commands nil)
   :preface
+  (require 'eshell)
+  
   (defun my/eshell-corfu-setup ()
     "Setup completion for EShell with ‘corfu’ and ‘cape’."
     (setq-local
@@ -1315,15 +1314,12 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
      completion-at-point-functions (list #'pcomplete-completions-at-point #'cape-file)))
 
   (defun my/eshell-input-filter (input)
-    "Do not save on the following:
-       - empty lines
-       - commands that start with a space, `ls`/`l`/`lsd`"
     (and
      (eshell-input-filter-default input)
      (eshell-input-filter-initial-space input)
      (not (string-prefix-p "ls " input))
-     (not (string-prefix-p "lsd " input)
-          (not (string-prefix-p "l " input)))))
+     (not (string-prefix-p "lsd " input))
+     (not (string-prefix-p "l " input))))
 
   (defun my\corfu-send-shell (&rest _)
     "Send completion candidate when inside comint/eshell."
@@ -1333,13 +1329,19 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
      ((and (derived-mode-p 'comint-mode)  (fboundp 'comint-send-input))
       (comint-send-input))))
 
+  (defun my/eshell-update-env ()
+    (message "updating env")
+    (setq eshell-path-env-list nil)
+    (exec-path-from-shell-copy-env "PATH"))
+
   :bind
   (:map eshell-mode-map
         ("<up>" . previous-line)
         ("<down>" . next-line)
         ("M-r" . consult-history))
   :hook
-  (eshell-mode . (my/eshell-corfu-setup hide-mode-line))
+  (eshell-mode . my/eshell-corfu-setup)
+  (eshell-after-prompt-hook . my/eshell-update-env)
   :config
   (setenv "PAGER" "cat")
   (setenv "TERM" "xterm-256color")
@@ -1349,27 +1351,6 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 (use-package em-hist
   :after eshell
   :ensure nil
-  :preface
-  (defun my/adviced-eshell-add-input-to-history (orig-fun &rest r)
-    "Cd to relative paths aren't that useful in history. Change to absolute paths."
-    (require 'seq)
-    (let* ((input (nth 0 r))
-           (args (progn
-                   (set-text-properties 0 (length input) nil input)
-                   (split-string input))))
-      (if (and (equal "cd" (nth 0 args))
-               (not (seq-find (lambda (item)
-                                ;; Don't rewrite "cd /ssh:" in history.
-                                (string-prefix-p "/ssh:" item))
-                              args))
-               (not (seq-find (lambda (item)
-                                ;; Don't rewrite "cd -" in history.
-                                (string-equal "-" item))
-                              args)))
-          (apply orig-fun (list (format "cd %s"
-                                        (expand-file-name (concat default-directory
-                                                                  (nth 1 args))))))
-        (apply orig-fun r))))
   :hook
   (eshell-hist-mode
    . (lambda ()
@@ -1379,10 +1360,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
        (define-key eshell-hist-mode-map (kbd "C-<up>")
                    'eshell-previous-matching-input-from-input)
        (define-key eshell-hist-mode-map (kbd "C-<down>")
-                   'eshell-next-matching-input-from-input)))
-  :config
-  (advice-add #'eshell-add-input-to-history :around
-              #'my/adviced-eshell-add-input-to-history))
+                   'eshell-next-matching-input-from-input))))
 
 (use-package eat
   :hook
