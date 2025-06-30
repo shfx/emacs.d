@@ -327,7 +327,6 @@ of other emacsclients instances
 
 (global-set-key (kbd "s-=") 'my/increase-font-size)
 (global-set-key (kbd "s--") 'my/decrease-font-size)
-(global-set-key (kbd "C-l") 'goto-line)
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 (global-set-key (kbd "M-s-<right>") 'tab-next)
 (global-set-key (kbd "M-s-<left>") 'tab-previous)
@@ -1289,7 +1288,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 #+begin_src emacs-lisp
 (use-package eshell
   :ensure nil
-  :demand t
+  :defer t
   :custom
   (eshell-banner-message "")
   (eshell-error-if-no-glob t)
@@ -1302,8 +1301,6 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
   (eshell-scroll-to-bottom-on-input t)
   (eshell-visual-commands nil)
   :preface
-  (require 'eshell)
-  
   (defun my/eshell-corfu-setup ()
     "Setup completion for EShell with ‘corfu’ and ‘cape’."
     (setq-local
@@ -1494,12 +1491,12 @@ the bottom of active window with directory of its buffer.
   ;;  'remote-direct-async-process)
   (with-eval-after-load 'tramp
     (with-eval-after-load 'compile
-      (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options)))
+      (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options))))
 
-  ;; Maybe remove those hooks
-  ;; (remove-hook 'evil-insert-state-exit-hook #'doom-modeline-update-buffer-file-name)
-  ;; (remove-hook 'find-file-hook #'doom-modeline-update-buffer-file-name)
-  ;; (remove-hook 'find-file-hook 'forge-bug-reference-setup))
+;; Maybe remove those hooks
+;; (remove-hook 'evil-insert-state-exit-hook #'doom-modeline-update-buffer-file-name)
+;; (remove-hook 'find-file-hook #'doom-modeline-update-buffer-file-name)
+;; (remove-hook 'find-file-hook 'forge-bug-reference-setup))
 #+end_src
 
 * Displaying errors
