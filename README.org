@@ -1827,6 +1827,14 @@ using the Emacs formatting rules for that language.
 (use-package scratch)
 #+end_src
 
+** Persistend Scratch
+
+#+begin_src emacs-lisp
+(use-package persistent-scratch
+  :config
+  (persistent-scratch-setup-default))
+#+end_src
+
 ** diff-hl
 
 #+begin_src emacs-lisp
