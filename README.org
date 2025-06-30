@@ -2554,29 +2554,15 @@ fill those notes in with more details!"
   ("C-M-%" . anzu-query-replace-regexp))
 #+end_src
 
-** Modeline
-
-*** Doom Modeline
+** Mood Line
 
 #+begin_src emacs-lisp
-(use-package doom-modeline
-  :custom-face
-  (doom-modeline-bar ((t (:inherit default))))
-  :custom
-  (doom-modeline-hud t)
-  (doom-modeline-icon t)
-  ;; hack
-  (doom-modeline-bar-width 1)
-  (doom-modeline-major-mode-icon t)
-  (doom-modeline-major-mode-color-icon t)
-  (doom-modeline-buffer-state-icon t)
-  (doom-modeline-buffer-modification-icon t)
-  (doom-modeline-minor-modes nil)
-  (doom-modeline-github nil)
-  (doom-modeline-checker-simple-format nil)
-  (doom-modeline-height 30)
+(use-package mood-line
   :config
-  (doom-modeline-mode))
+  (mood-line-mode)
+  :custom
+  (mood-line-glyph-alist mood-line-glyphs-unicode)
+  (mood-line-format mood-line-format-default-extended))
 #+end_src
 
 *** Hide Modeline
