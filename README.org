@@ -778,6 +778,7 @@ A simple styling for tab bars
        (?v . paragraph)
        (?c . line)
        (?x . buffer)))
+    (meow-use-clipboard t)
     :config
     (defun meow-setup ()
       ;; (meow-normal-define-key
@@ -822,6 +823,7 @@ A simple styling for tab bars
        '("8" . meow-expand-8)
        '("9" . meow-expand-9)
        '("'" . meow-reverse)
+       '("-" . negative-argument)
 
        ;; movement
        '("i" . meow-prev)
