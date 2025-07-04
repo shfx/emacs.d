@@ -440,22 +440,36 @@ Disable all mouse input
 ** Load theme
 
 #+begin_src emacs-lisp
-(use-package catppuccin-theme
+(use-package kanagawa-themes
   :demand t
   :preface
   (defun my/set-font (frame)
     (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160))
   :hook (after-make-frame-functions . my/set-font)
   :custom-face
-  (show-paren-match ((t (:foreground "#181825" :background "#aaaa33"))))
+  (org-block ((t (:background "#181820" :extend t))))
+  (magit-blame-name ((t (:background "#181820"))))
+  (magit-blame-dimmer ((t (:background "#181820"))))
+  (magit-blame-hash ((t (:background "#181820"))))
+  (magit-blame-heading ((t (:background "#181820"))))
+  (magit-blame-highlight ((t (:background "#181820"))))
+  (magit-blame-margin ((t (:background "#181820"))))
+  (magit-blame-summary ((t (:background "#181820"))))
+  (magit-blame-date ((t (:background "#181820"))))
   :config
-  (load-theme 'catppuccin t)
+  (load-theme 'kanagawa-wave :no-confim)
+  ;; disable itailic font
+  ;; install jetbrains font
   (when (and (eq system-type 'darwin))
     (system-packages-install "font-jetbrains-mono"))
   (when (and (eq system-type 'gnu/linux)
              (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
     (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
-  (my/set-font nil))
+  (my/set-font nil)
+  (mapc (lambda (face)
+          (when (facep face)
+            (set-face-attribute face nil :slant 'normal)))
+        (face-list)))
 #+end_src
 
 ** Nerd Icons
