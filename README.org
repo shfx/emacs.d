@@ -1141,17 +1141,6 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
   (vertico-mode 1)
   (vertico-multiform-mode 1)
 
-  ;; https://github.com/robbert-vdh/dotfiles/blob/master/modules/emacs/doom/config.org#vertico
-  (define-advice marginalia--buffer-file (:around (fn &rest args) my/marginalia--buffer-file)
-    (let ((buffer-path (apply fn args)))
-      (if (and (not (string-empty-p buffer-path)) (file-exists-p buffer-path))
-          (if-let* ((absolute-root (marginalia--project-root))
-                    (project-root (abbreviate-file-name absolute-root))
-                    (is-prefix (string-prefix-p project-root buffer-path)))
-              (string-remove-prefix project-root buffer-path)
-            (shrink-path-file buffer-path))
-        buffer-path))))
-
 (use-package vertico-posframe
   :after vertico
   :custom
@@ -1202,6 +1191,7 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 ;; Enable richer annotations using the Marginalia package
 (use-package marginalia
+  :after shrink-path
   :demand t
   :bind (:map minibuffer-local-map
          ("M-A" . marginalia-cycle))
@@ -1209,6 +1199,16 @@ also helpful emacs config just for vertico
   ;; (marginalia-max-relative-age)
   (marginalia-align 'right)
   :config
+  ;; https://github.com/robbert-vdh/dotfiles/blob/master/modules/emacs/doom/config.org#vertico
+  (define-advice marginalia--buffer-file (:around (fn &rest args) my/marginalia--buffer-file)
+    (let ((buffer-path (apply fn args)))
+      (if (and (not (string-empty-p buffer-path)) (file-exists-p buffer-path))
+          (if-let* ((absolute-root (marginalia--project-root))
+                    (project-root (abbreviate-file-name absolute-root))
+                    (is-prefix (string-prefix-p project-root buffer-path)))
+              (string-remove-prefix project-root buffer-path)
+            (shrink-path-file buffer-path))
+        buffer-path))))  
   (marginalia-mode))
 #+end_src
 
@@ -1480,7 +1480,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
     (buffer-string)))
 
 (use-package shrink-path
-  :after eshell
+  :commands (shrink-path-file shrink-path-prompt)
   :preface
   (defun my/eshell-set-outline-regexp ()
     (setq-local
