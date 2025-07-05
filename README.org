@@ -575,6 +575,9 @@ Disable all mouse input
 (setopt jit-lock-defer-time 0)
 (setopt fast-but-imprecise-scrolling t)
 (pixel-scroll-precision-mode +1)
+(setopt pixel-resolution-fine-flag t)
+(setopt pixel-scroll-precision-interpolate-page t)
+(setopt pixel-scroll-precision-use-momentum t)
 #+end_src
 
 ** Focus new frame
