@@ -444,7 +444,11 @@ Disable all mouse input
   :demand t
   :preface
   (defun my/set-font (frame)
-    (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160))
+    (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160)
+      (mapc (lambda (face)
+          (when (facep face)
+            (set-face-attribute face nil :slant 'normal)))
+        (face-list)))
   :hook (after-make-frame-functions . my/set-font)
   :custom-face
   (org-block ((t (:background "#181820" :extend t))))
@@ -456,6 +460,7 @@ Disable all mouse input
   (magit-blame-margin ((t (:background "#181820"))))
   (magit-blame-summary ((t (:background "#181820"))))
   (magit-blame-date ((t (:background "#181820"))))
+  (fringe ((t (:background unspecified))))
   :config
   (load-theme 'kanagawa-wave :no-confim)
   ;; disable itailic font
@@ -465,11 +470,7 @@ Disable all mouse input
   (when (and (eq system-type 'gnu/linux)
              (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
     (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
-  (my/set-font nil)
-  (mapc (lambda (face)
-          (when (facep face)
-            (set-face-attribute face nil :slant 'normal)))
-        (face-list)))
+  (my/set-font nil))
 #+end_src
 
 ** Nerd Icons
@@ -1139,7 +1140,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
      (t posframe)))
   :config
   (vertico-mode 1)
-  (vertico-multiform-mode 1)
+  (vertico-multiform-mode 1))
 
 (use-package vertico-posframe
   :after vertico
@@ -1208,7 +1209,7 @@ also helpful emacs config just for vertico
                     (is-prefix (string-prefix-p project-root buffer-path)))
               (string-remove-prefix project-root buffer-path)
             (shrink-path-file buffer-path))
-        buffer-path))))  
+        buffer-path)))  
   (marginalia-mode))
 #+end_src
 
