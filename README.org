@@ -1638,6 +1638,20 @@ the bottom of active window with directory of its buffer.
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
 
+** flyover
+
+#+begin_src emacs-lisp
+(use-package flyover
+  :ensure (flyover :fetcher github :repo "konrad1977/flyover")
+  :custom
+  (flyover-use-theme-colors t)
+  (flyover-show-at-eol t)
+  (flyover-show-virtual-line nil)
+  (flyover-background-lightness 35)
+  (flyover-text-tint 'lighter)
+  :config (flyover-mode))
+#+end_src
+
 * Packages
 
 ** command-log
