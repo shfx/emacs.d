@@ -1554,6 +1554,21 @@ the bottom of active window with directory of its buffer.
   :bind (("C-c v" . multi-vterm)))
 #+end_src
 
+* Project management
+
+** consult jump project
+
+#+begin_src emacs-lisp
+(use-package consult-jump-project
+  :ensure (consult-jump-project :fetcher github :repo "jdtsmith/consult-jump-project")
+  :custom 
+  (consult-jump-direct-jump-modes '(dired-mode))
+  (recentf-filename-handlers (lambda (f)  ; avoid remote ~/abbreviations to recentf files can be matched
+			       (if (file-remote-p f) f
+				 (abbreviate-file-name f))))
+  :bind ("C-x p p" . consult-jump-project))
+#+end_src
+
 * Remote work
 
 ** Tramp
