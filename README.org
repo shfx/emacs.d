@@ -445,10 +445,10 @@ Disable all mouse input
   :preface
   (defun my/set-font (frame)
     (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160)
-      (mapc (lambda (face)
-          (when (facep face)
-            (set-face-attribute face nil :slant 'normal)))
-        (face-list)))
+    (mapc (lambda (face)
+            (when (facep face)
+              (set-face-attribute face nil :slant 'normal)))
+          (face-list)))
   :hook (after-make-frame-functions . my/set-font)
   :custom-face
   (org-block ((t (:background "#181820" :extend t))))
@@ -569,7 +569,7 @@ Disable all mouse input
   (global-ligature-mode t))
 #+end_src
 
-* Buffers, Windows, Frames, Tabs and scrolling
+* Buffers, Windows, Frames, Tabs and Scrolling
 
 #+begin_src emacs-lisp
 (setopt jit-lock-defer-time 0)
