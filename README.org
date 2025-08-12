@@ -42,6 +42,9 @@ EOF
 should check this one https://github.com/mathiasbynens/dotfiles/blob/master/.macos
 
 #+begin_src shell
+# turn off spotlight
+sudo mdutil -i off
+
 brew tap jimeh/emacs-builds
 brew install emacs-app-good
 
@@ -250,7 +253,6 @@ of other emacsclients instances
   (text-mode-ispell-word-completion nil)
   (remote-file-name-inhibit-cache nil)
   (async-shell-command-buffer 'new-buffer)
-  (tramp-verbose 1)
   (vc-ignore-dir-regexp
    (format "%s\\|%s"
            vc-ignore-dir-regexp
@@ -264,7 +266,7 @@ of other emacsclients instances
   (line-number-mode 0)
   (column-number-mode 0)
   (delete-selection-mode 1)
-  (global-auto-revert-mode 1)
+  (global-auto-revert-mode 0)
   (menu-bar-mode 0)
   (save-place-mode 1)
   (recentf-mode 1)
@@ -760,6 +762,14 @@ A simple styling for tab bars
   (tab-line-new-button-show nil))
 #+end_src
 
+** visible-auto-revert
+#+begin_src emacs-lisp
+(use-package visible-auto-revert
+  :ensure (:fetcher github :repo "kn66/visible-auto-revert.el")
+  :config
+  (visible-auto-revert-mode +1))
+#+end_src
+
 * Editing
 
 #+begin_src emacs-lisp
@@ -787,6 +797,13 @@ A simple styling for tab bars
   (meow-cheatsheet-command ((t (:height unspecified))))
   (region ((t (:bakground "#181825"))))
   :custom
+  (meow-mode-state-list
+   '((conf-mode . normal)    
+     (fundamental-mode . normal)
+     (help-mode . motion)
+     (prog-mode . normal)
+     (text-mode . normal)
+     (eat-mode . insert)))
   (meow-cheatsheet-layout meow-cheatsheet-layout-qwerty)
   (meow-char-thing-table
    '((?f . round)
@@ -1071,14 +1088,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 Some of the config is borrowed straight from [[https://kristofferbalintona.me/posts/vertico-marginalia-all-the-icons-completion-and-orderless/][Kristoffer Balintonas blog post]] from
 
 #+begin_src emacs-lisp
-(defun my/vertico-multiform-flat-toggle ()
-  "Toggle between flat and reverse."
-  (interactive)
-  (vertico-multiform--display-toggle 'vertico-flat-mode)
-  (if vertico-flat-mode
-      (vertico-multiform--temporary-mode 'vertico-reverse-mode -1)
-    (vertico-multiform--temporary-mode 'vertico-reverse-mode 1)))
-
 (defun my/vertico-quick-embark (&optional arg)
   "Embark on candidate using quick keys."
   (interactive)
@@ -1096,18 +1105,16 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               ("C-M-n" . vertico-next-group)
               ("C-M-p" . vertico-previous-group)
               ("M-o" . my/vertico-quick-embark)
-              ("C-l" . my/vertico-multiform-flat-toggle)
               ("C-i" . vertico-quick-insert)
               ("C-o" . vertico-quick-exit)
               ("M-G" . vertico-multiform-grid)
               ("M-F" . vertico-multiform-flat)
               ("M-R" . vertico-multiform-reverse)
               ("M-U" . vertico-multiform-unobtrusive)
-              ("<backspace>" . vertico-directory-delete-char)
-              ("C-w" . vertico-directory-delete-word)
               ("C-<backspace>" . vertico-directory-delete-word)
+              ;; ("C-w" . vertico-directory-delete-word)
+              ;; ("C-<backspace>" . vertico-directory-delete-word)
               ("RET" . vertico-directory-enter))
-
   :custom
   (vertico-resize nil)
   (vertico-cycle t)
@@ -1141,7 +1148,14 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
       ;; vertico-buffer-mode will be used as fallback at the
       ;; moment.
       (vertico-posframe-fallback-mode . vertico-buffer-mode))
-     (t posframe)))
+     (t
+      posframe
+      (vertico-posframe-border-width . 10)
+      ;; NOTE: This is useful when emacs is used in both in X and
+      ;; terminal, for posframe do not work well in terminal, so
+      ;; vertico-buffer-mode will be used as fallback at the
+      ;; moment.
+      (vertico-posframe-fallback-mode . vertico-buffer-mode))))
   :config
   (vertico-mode 1)
   (vertico-multiform-mode 1))
@@ -1658,13 +1672,15 @@ the bottom of active window with directory of its buffer.
 #+begin_src emacs-lisp
 (use-package flyover
   :ensure (flyover :fetcher github :repo "konrad1977/flyover")
+  ;;:hook
+  ;;(flycheck-mode . flyover-mode)
   :custom
   (flyover-use-theme-colors t)
-  (flyover-show-at-eol t)
-  (flyover-show-virtual-line nil)
+  (flyover-show-at-eol nil)
+  (flyover-show-virtual-line t)
+  (flyover-hide-when-cursor-is-on-same-line nil)
   (flyover-background-lightness 35)
-  (flyover-text-tint 'lighter)
-  :config (flyover-mode))
+  (flyover-text-tint 'lighter))
 #+end_src
 
 * Packages
@@ -1818,9 +1834,21 @@ the bottom of active window with directory of its buffer.
   :bind
   ("C-c C-a" . chatgpt-shell-quick-insert)
   :custom
+  (chatgpt-shell-model-version "gpt-4.1")
   (chatgpt-shell-root-path (no-littering-expand-var-file-name "chatgpt"))
   (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
   (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
+#+end_src
+
+** ClaudeCode
+
+#+begin_src emacs-lisp
+(use-package claude-code
+  :ensure (claude-code :fetcher github :repo "stevemolitor/claude-code.el" :rev :newest)
+  :config
+  (setq claude-code-notification-function 'claude-code-default-notification)
+  
+  :bind-keymap ("C-c c" . claude-code-command-map))
 #+end_src
 
 ** Proced
@@ -2218,7 +2246,7 @@ Consult users will also want the embark-consult package.
   :custom
   (completion-cycle-threshold nil)
   (corfu-auto t)
-  (corfu-auto-delay 0)
+  (corfu-auto-delay 0.2)
   (corfu-auto-prefix 1)
   (corfu-count 14)
   (corfu-cycle t)
@@ -2229,8 +2257,8 @@ Consult users will also want the embark-consult package.
   (corfu-preview-current t)
   (corfu-preselect 'prompt)
   (corfu-separator ?\s)
-  (corfu-quit-at-boundary :separator)
-  (corfu-quit-no-match t)
+  (corfu-quit-at-boundary 'separator)
+  (corfu-quit-no-match 'separator)
   (corfu-scroll-margin 4)
   (corfu-popupinfo-delay '(0.3 . 0.1))
   (corfu-popupinfo-hide nil)
@@ -2692,8 +2720,8 @@ fill those notes in with more details!"
   :config
   (mood-line-mode)
   :custom
-  (mood-line-glyph-alist mood-line-glyphs-unicode)
-  (mood-line-format mood-line-format-default-extended))
+  (mood-line-glyph-alist mood-line-glyphs-fira-code)
+  (mood-line-format mood-line-format-default))
 #+end_src
 
 *** Hide Modeline
@@ -2732,6 +2760,7 @@ Hides modeline whenever this minor mode is active
   (magit-refresh-status-buffer nil)
   
   :config
+  (magit-auto-revert-mode -1)
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
   ;; TODO: add to magit-process-password-functions an auth source
   (transient-define-suffix magit-submodule-update-all ()
@@ -2742,7 +2771,11 @@ Hides modeline whenever this minor mode is active
       (magit-run-git-async "submodule" "update" "--init" "--recursive")))
 
   (transient-append-suffix 'magit-submodule "u"
-    '("U" magit-submodule-update-all)))
+    '("U" magit-submodule-update-all))
+
+  (let ((git-path "/Applications/Xcode.app/Contents/Developer/usr/bin/git"))
+    (when (file-exists-p git-path)
+      (setq magit-git-executable git-path))))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -3203,7 +3236,7 @@ Install jsonnet-language-server to enable lsp support
 (use-package typescript-mode
   :after (lsp-mode)
   :mode ("\\.ts$" . typescript-ts-mode)
-  :hook (typescript-ts-mode . lsp-deferred))
+  :hook ((typescript-ts-mode tsx-ts-mode) . lsp-deferred))
 
 (use-package js
   :ensure nil
