@@ -1451,7 +1451,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
   (setenv "PAGER" "cat")
   (setenv "TERM" "xterm-256color")
   (advice-add #'corfu-insert :after
-              #'corfu-send-shell))
+              #'my/corfu-send-shell))
 
 (use-package em-hist
   :after eshell
@@ -3304,9 +3304,11 @@ Install jsonnet-language-server to enable lsp support
 
 #+begin_src emacs-lisp
 (use-package dockerfile-mode
+  :hook (dockerfile-mode . lsp-deferred)
   :mode "Dockerfile$")
 
 (use-package docker-compose-mode
+  :hook (docker-compose-mode . lsp-deferred)
   :mode "docker-compose.yml.py$")
 #+end_src
 
