@@ -797,6 +797,8 @@ A simple styling for tab bars
   (meow-cheatsheet-command ((t (:height unspecified))))
   (region ((t (:bakground "#181825"))))
   :custom
+  (meow-use-enhanced-selection-effect t)
+  (meow-use-cursor-position-hack t)
   (meow-mode-state-list
    '((conf-mode . normal)    
      (fundamental-mode . normal)
@@ -1334,24 +1336,10 @@ also helpful emacs config just for vertico
   (setq consult-preview-key "M-.")
   (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-  (autoload 'projectile-project-root "projectile")
-  (setq consult-project-root-function #'projectile-project-root)
-
   (defun consult-info-emacs ()
     "Search through Emacs info pages."
     (interactive)``
     (consult-info "emacs" "efaq" "elisp" "cl" "compat")))
-#+end_src
-
-** Consult Projectile ([[https://github.com/emacsmirror/consult-projectile][link]])
-
-#+begin_src emacs-lisp
-(use-package consult-projectile
-  :bind-keymap ("C-c p" . projectile-command-map)
-  :bind (:map projectile-command-map
-              ("p" . consult-projectile))
-  :custom
-  (projectile-switch-project-action 'consult-projectile))
 #+end_src
 
 ** Consult flycheck ([[https://github.com/minad/consult-flycheck][link]])
@@ -1426,7 +1414,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
      (not (string-prefix-p "lsd " input))
      (not (string-prefix-p "l " input))))
 
-  (defun my\corfu-send-shell (&rest _)
+  (defun my/corfu-send-shell (&rest _)
     "Send completion candidate when inside comint/eshell."
     (cond
      ((and (derived-mode-p 'eshell-mode) (fboundp 'eshell-send-input))
@@ -1471,6 +1459,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
   :hook
   (eshell-load . eat-eshell-mode)
   :custom
+  (process-adaptive-read-buffering nil)
   (eat-term-name "xterm"))
 
 (use-package pcmpl-args
@@ -1570,6 +1559,35 @@ the bottom of active window with directory of its buffer.
 
 * Project management
 
+#+begin_src emacs-lisp
+(defun project-try-local (dir)
+  (if-let ((root (if (listp ".project")
+                     (seq-some (lambda (n)
+                                 (locate-dominating-file dir n))
+                               ".project")
+                   (locate-dominating-file dir ".project"))))
+      (cons 'local root)))
+
+
+(defun project-try-packagejson (dir)
+  (if-let ((root (if (listp "package.json")
+                     (seq-some (lambda (n)
+                                 (locate-dominating-file dir n))
+                               "package.json")
+                   (locate-dominating-file dir "package.json"))))
+      (cons 'packagejson root)))
+
+(cl-defmethod project-root ((project (head local)))
+  (cdr project))
+
+(cl-defmethod project-root ((project (head packagejson)))
+  (cdr project))
+
+
+(add-hook 'project-find-functions 'project-try-packagejson -1)
+(add-hook 'project-find-functions 'project-try-local 90)
+#+end_src
+
 ** consult jump project
 
 #+begin_src emacs-lisp
@@ -1595,7 +1613,6 @@ the bottom of active window with directory of its buffer.
   :custom
   (tramp-inline-compress-start-size 1000)
   (tramp-use-ssh-controlmaster-options nil)
-  (projectile--mode-line "Projectile")
   (tramp-verbose 1)
 
   (remote-file-name-inhibit-locks t)
@@ -1740,6 +1757,7 @@ the bottom of active window with directory of its buffer.
    (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
   (lsp-auto-guess-root t)
+  (lsp-auto-execute-action nil)
   (lsp-clients-typescript-prefer-use-project-ts-server t)
   (lsp-clients-typescript-preferences '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
   (lsp-completion-default-behaviour :insert)
@@ -1805,10 +1823,12 @@ the bottom of active window with directory of its buffer.
 (use-package lsp-tailwindcss
   :after lsp-mode
   :init
-  (setq lsp-tailwindcss-add-on-mode t)
   :custom
+  ;; You might want to set it in dir-locals to someing else than nil
+  (lsp-tailwindcss-experimental-config-file nil)
+  (lsp-tailwindcss-add-on-mode t)
   (lsp-tailwindcss-major-modes
-   '(web-mode html-mode css-mode typescript-mode typescript-ts-mode tsx-ts-mode svelte-ts-mode)))
+   '(web-mode html-mode css-mode typescript-ts-mode tsx-ts-mode svelte-ts-mode)))
 #+end_src
 
 ** Dabbrev
@@ -2062,74 +2082,10 @@ with version control systems.
   (treemacs-filewatch-mode t)
   (treemacs-fringe-indicator-mode 'always))
 
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
 (use-package treemacs-nerd-icons
   :after treemacs
   :config
   (treemacs-load-theme "nerd-icons"))
-#+end_src
-
-** Projectile ([[https://github.com/bbatsov/projectile][link]])
-
-Projectile is a project interaction library for Emacs. Its goal is to
-provide a nice set of features operating on a project level without
-introducing external dependencies (when feasible)
-
-#+begin_src emacs-lisp
-(use-package projectile
-  :demand t
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
-  :custom
-  (projectile-enable-caching nil)
-  (projectile-sort-order 'recently-active)
-  (projectile-project-search-path '("~/Developer/"))
-  (projectile-ignored-projects `("~/"
-                                 "/opt/homebrew"
-                                 "/tmp/"
-                                 "/private/tmp/"
-                                 "~/Developer/work"
-                                 ,package-user-dir))
-  (projectile-track-known-projects-automatically nil)
-  :config
-  (projectile-mode)
-  ;; Projectile is testing in the reverse order so more specific must me at the end
-
-  (projectile-register-project-type
-   'npm '("package.json")
-   :compile "npm i"
-   :test "npm test"
-   :run "npm start"
-   :test-suffix ".spec.js")
-
-  (projectile-register-project-type
-   'opera
-   '("desktop/BUILD.gn" "desktop/gn_opera.py")
-   :project-file "desktop/BUILD.gn"
-   :run (concat "open $HOME/Developer/work/chromium/src/out/Release/Opera.app --args"
-                " --allow-running-insecure-content"
-                " --disable-web-security"
-                " --ignore-certificate-errors"
-                " --remote-debugging-port=9222"
-                " --sticky-site-url-override=https://gxcorner.games"
-                " --user-data-dir=$HOME/Developer/clean-profile/$(date +\"%Y-%m-%dT%H:%M:%S\")"
-                " --use-mock-keychain")
-   :configure "$HOME/goma/goma_ctl.py ensure_start && desktop/gn_opera.py --release product=\\\"gx\\\" use_jumbo_build=false use_remoteexec=true goma_dir=\"\\\"/Users/opera_user/goma\\\"\""
-   :compile "autoninja -C chromium/src/out/Release opera"))
-#+end_src
-
-** ibuffer-projectile ([[https://github.com/purcell/ibuffer-projectile][link]])
-
-#+begin_src emacs-lisp
-(use-package ibuffer-projectile
-  :hook
-  (ibuffer . (lambda ()
-               (ibuffer-projectile-set-filter-groups)
-               (unless (eq ibuffer-sorting-mode 'alphabetic)
-                 (ibuffer-do-sort-by-alphabetic)))))
 #+end_src
 
 ** Embark ([[https://github.com/oantolin/embark/][link]])
@@ -2758,7 +2714,7 @@ Hides modeline whenever this minor mode is active
   (magit-diff-paint-whitespace nil)
   (magit-branch-direct-configure nil)
   (magit-refresh-status-buffer nil)
-  
+  (global-magit-file-mode t)
   :config
   (magit-auto-revert-mode -1)
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)

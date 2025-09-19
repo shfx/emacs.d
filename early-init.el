@@ -45,7 +45,7 @@
 (setopt inhibit-compacting-font-caches t)
 (setopt inhibit-default-init t)
 (setopt inhibit-x-resources t)
-(setopt read-process-output-max (* 1024 1024)) ;; 1mb
+(setopt read-process-output-max (* 4 1024 1024))
 
 (setq bidi-display-reordering 'left-to-right)
 (setq bidi-paragraph-direction 'left-to-right)
