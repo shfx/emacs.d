@@ -2806,12 +2806,35 @@ Hides modeline whenever this minor mode is active
   (format "%s/commit/?id=%s" (browse-at-remote-oslo-format-url repo-url) commithash))
 #+end_src
 
-*** gitlab-pipeline
+*** lab - gitlab integration
 
 #+begin_src emacs-lisp
-(use-package gitlab-pipeline
+(use-package lab
+  :ensure (lab :fetcher github :repo "isamert/lab.el")
+  :after magit
+  :bind-keymap
+  ("C-x l" . lab-map)
   :custom
-  (gitlab-pipeline-host "gitlab.services.ams.osa/api/v4"))
+  (lab-action-handler #'completing-read)
+  (lab-host "https://gitlab.service.osa")
+  (lab-group "274")
+  :config
+  (when (functionp 'magit-push-current-to-pushremote)
+    (define-advice magit-push-current-to-pushremote (:after (&rest _) start-watching-pipeline)
+      (lab-watch-pipeline-for-last-commit))))
+
+(use-package diff-mode
+  :ensure nil
+  :hook
+  (diff-mode . outline-minor-mode)
+  :custom
+  (diff-font-lock-syntax 'hunk-also)
+  (diff-font-lock-prettify t)
+  :bind
+  (:map diff-mode-map
+        ("1" . (lambda () (interactive) (outline-hide-sublevels 1)))
+        ("2" . (lambda () (interactive) (outline-hide-sublevels 2)))
+        ("3" . #'outline-show-all)))
 #+end_src
 
 ** docker
