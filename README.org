@@ -1765,7 +1765,6 @@ the bottom of active window with directory of its buffer.
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
   (lsp-eldoc-render-all nil)
-  (lsp-enable-file-watchers nil)
   (lsp-enable-indentation nil)
   (lsp-enable-snippet nil)
   (lsp-enable-on-type-formatting t)
@@ -1788,7 +1787,11 @@ the bottom of active window with directory of its buffer.
   (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
   :config
   (add-to-list 'warning-suppress-log-types '(lsp-mode))
-  (add-to-list 'warning-suppress-types '(lsp-mode)))
+  (add-to-list 'warning-suppress-types '(lsp-mode))
+
+  (advice-add 'lsp :before
+              (lambda (&rest _args)
+                (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht))))))
 
 ;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
 ;; (lsp-rust-analyzer-display-chaining-hints t)
