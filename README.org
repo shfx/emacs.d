@@ -1455,12 +1455,12 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
        (define-key eshell-hist-mode-map (kbd "C-<down>")
                    'eshell-next-matching-input-from-input))))
 
+;; run (eat-compile-terminfo) if shell smells funny
 (use-package eat
   :hook
   (eshell-load . eat-eshell-mode)
   :custom
-  (process-adaptive-read-buffering nil)
-  (eat-term-name "xterm"))
+  (process-adaptive-read-buffering nil))
 
 (use-package pcmpl-args
   :defer t
