@@ -2360,23 +2360,28 @@ syste.
 (use-package org-habit
   :ensure nil)
 
-(use-package org-starless
-  :hook (org-mode . org-starless-mode)
-  :ensure (org-starless :fetcher github :repo "TonCherAmi/org-starless"))
+(defun my/presentation-setup ()
+  (hide-mode-line-mode 1)
+  (org-display-inline-images)
+  (setq text-scale-mode-amount 2)
+  (text-scale-mode 1))
+
+(defun my/presentation-end ()
+  (hide-mode-line-mode 0)
+  (text-scale-mode 0))
 
 (use-package org-tree-slide
+  :hook ((org-tree-slide-play . my/presentation-setup)
+         (org-tree-slide-stop . my/presentation-end))
   :custom
-  (org-tree-slide-skip-outline-level 4)
-  (org-tree-slide-skip-done nil)
+  (org-tree-slide-skip-outline-level 0) 
+  (org-tree-slide-header nil)
+  (org-tree-slide-slide-in-effect nil)
+  (org-tree-slide-activate-message "Presentation started!")
+  (org-tree-slide-deactivate-message "Presentation finished!")
+  (org-image-actual-width nil)
   :bind
-  ("<f8>" . org-tree-slide-mode)
-  ("S-<f8>" . org-tree-slide-skip-done-toggle)
-  (:map org-tree-slide-mode-map
-        ("<f9>" . org-tree-slide-move-previous-tree)
-        ("<f10>" . org-tree-slide-move-next-tree)
-        ("<f11>" . org-tree-slide-content))
-  :config
-  (org-tree-slide-narrowing-control-profile))
+  ("<f8>" . org-tree-slide-mode))
 
 ;; org-babel
 (org-babel-add-langs
