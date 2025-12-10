@@ -1045,14 +1045,6 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 (use-package flyspell-correct-popup
   :after flyspell-correct)
-
-(use-package flyspell-lazy
-  :defer t
-  :after flyspell
-  :config
-  (setq flyspell-lazy-idle-seconds 1
-        flyspell-lazy-window-idle-seconds 3)
-  (flyspell-lazy-mode +1))
 #+end_src
 
 ** unfill
