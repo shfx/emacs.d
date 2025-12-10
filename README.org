@@ -445,13 +445,12 @@ Disable all mouse input
 (use-package kanagawa-themes
   :demand t
   :preface
-  (defun my/set-font (frame)
-    (set-face-attribute 'default frame :font "JetBrains Mono" :weight 'normal :height 160)
+  (defun my/set-font ()
+    (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
     (mapc (lambda (face)
             (when (facep face)
               (set-face-attribute face nil :slant 'normal)))
           (face-list)))
-  :hook (after-make-frame-functions . my/set-font)
   :custom-face
   (org-block ((t (:background "#181820" :extend t))))
   (magit-blame-name ((t (:background "#181820"))))
@@ -472,7 +471,7 @@ Disable all mouse input
   (when (and (eq system-type 'gnu/linux)
              (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
     (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
-  (my/set-font nil))
+  (my/set-font))
 #+end_src
 
 ** Nerd Icons
@@ -519,7 +518,7 @@ Disable all mouse input
 
 (use-package nerd-icons-corfu
   :after corfu
-  :commands nerd-icons-corfu-formatter
+  :functions nerd-icons-corfu-formatter
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
 #+end_src
@@ -710,7 +709,7 @@ Disable all mouse input
 (use-package ultra-scroll
   :ensure (ultra-scroll :fetcher github :repo "jdtsmith/ultra-scroll")
   :custom
-  (scroll-conservatively 101)
+  (scroll-conservatively 3)
   (scroll-margin 0)
   :config
   (ultra-scroll-mode 1))
@@ -1160,7 +1159,9 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
       (vertico-posframe-fallback-mode . vertico-buffer-mode))))
   :config
   (vertico-mode 1)
-  (vertico-multiform-mode 1))
+  (vertico-multiform-mode 1)
+  (require 'vertico-buffer)
+  (require 'vertico-grid))
 
 (use-package vertico-posframe
   :after vertico
@@ -1437,7 +1438,6 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
   (eshell-after-prompt-hook . my/eshell-update-env)
   :config
   (setenv "PAGER" "cat")
-  (setenv "TERM" "xterm-256color")
   (advice-add #'corfu-insert :after
               #'my/corfu-send-shell))
 
@@ -1488,7 +1488,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
     (buffer-string)))
 
 (use-package shrink-path
-  :commands (shrink-path-file shrink-path-prompt)
+  :defer t
   :preface
   (defun my/eshell-set-outline-regexp ()
     (setq-local
@@ -1583,9 +1583,21 @@ the bottom of active window with directory of its buffer.
 (cl-defmethod project-root ((project (head packagejson)))
   (cdr project))
 
+(setq project-packagejson-ignore '("node_modules/" ".pnpm-store/" ".dist/" ".tsBuild/"))
 
-(add-hook 'project-find-functions 'project-try-packagejson -1)
-(add-hook 'project-find-functions 'project-try-local 90)
+(cl-defmethod project-ignores ((project (head packagejson)) dir)
+  (let* ((root (project-root project)))
+    (append
+     (project--value-in-dir 'project-packagejson-ignore root)
+     (mapcar
+      (lambda (dir)
+        (concat dir "/"))
+      vc-directory-exclusion-list))))
+
+(setq project-find-functions
+      '(project-try-packagejson
+        project-try-local
+        project-try-vc))
 #+end_src
 
 ** consult jump project
@@ -1612,16 +1624,15 @@ the bottom of active window with directory of its buffer.
   :ensure nil
   :custom
   (tramp-inline-compress-start-size 1000)
-  (tramp-use-ssh-controlmaster-options nil)
   (tramp-verbose 1)
-
+  (tramp-use-connection-share nil)
   (remote-file-name-inhibit-locks t)
   (tramp-use-scp-direct-remote-copying t)
   (remote-file-name-inhibit-auto-save-visited t)
   (magit-tramp-pipe-stty-settings 'pty)
   (tramp-copy-size-limit (* 1024 1024))
 
-  :custom
+  :config
   (connection-local-set-profile-variables
    'remote-direct-async-process
    '((tramp-direct-async-process . t)))
@@ -1750,13 +1761,13 @@ the bottom of active window with directory of its buffer.
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :after (corfu orderless posframe)
   :defer 0.5
   :hook
   ((lsp-mode . lsp-enable-which-key-integration)
    (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
   (lsp-auto-guess-root t)
+  (lsp-keep-workspace-alive nil)
   (lsp-auto-execute-action nil)
   (lsp-clients-typescript-prefer-use-project-ts-server t)
   (lsp-clients-typescript-preferences '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
@@ -1766,9 +1777,12 @@ the bottom of active window with directory of its buffer.
   (lsp-diagnostics-modeline-scope :workspace)
   (lsp-eldoc-render-all nil)
   (lsp-enable-indentation nil)
-  (lsp-enable-snippet nil)
-  (lsp-enable-on-type-formatting t)
-  (lsp-signature-render-documentation t)
+  (lsp-enable-snippet t)
+  (lsp-enable-on-type-formatting nil)
+  (lsp-enable-text-document-color nil)
+  (lsp-modeline-diagnostics-enable nil)
+  (lsp-modeline-code-actions-enable nil)
+  (lsp-signature-doc-lines 1)
   (lsp-eslint-auto-fix-on-save t)
   (lsp-eslint-working-directories [(pattern "/packages/*")])
   (lsp-file-watch-threshold 4000)
@@ -1787,11 +1801,7 @@ the bottom of active window with directory of its buffer.
   (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
   :config
   (add-to-list 'warning-suppress-log-types '(lsp-mode))
-  (add-to-list 'warning-suppress-types '(lsp-mode))
-
-  (advice-add 'lsp :before
-              (lambda (&rest _args)
-                (eval '(setf (lsp-session-server-id->folders (lsp-session)) (ht))))))
+  (add-to-list 'warning-suppress-types '(lsp-mode)))
 
 ;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
 ;; (lsp-rust-analyzer-display-chaining-hints t)
@@ -2325,7 +2335,7 @@ syste.
   (org-fontify-done-headline t)
   (org-fontify-quote-and-verse-blocks t)
   (org-tags-column 0)
-  (org-indent-indentation-per-level 0)
+  (org-indent-indentation-per-level 1)
   (org-directory "~/Dropbox/org")
   (org-default-notes-file "notes.org")
   (org-refile-targets '((org-agenda-files :maxlevel . 1)))
@@ -3222,7 +3232,9 @@ Install jsonnet-language-server to enable lsp support
 #+begin_src emacs-lisp
 (use-package typescript-mode
   :after (lsp-mode)
-  :mode ("\\.ts$" . typescript-ts-mode)
+  :mode
+  ("\\.ts$" . typescript-ts-mode)
+  ("\\.tsx$" . tsx-ts-mode)
   :hook ((typescript-ts-mode tsx-ts-mode) . lsp-deferred))
 
 (use-package js
