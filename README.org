@@ -437,6 +437,26 @@ Disable all mouse input
   (reb-re-syntax 'string))
 #+end_src
 
+** proced
+
+#+begin_src emacs-lisp
+(use-package proced
+  :ensure nil
+  :commands proced
+  :bind (("C-M-p" . proced))
+  :custom
+  (proced-auto-update-flag t)
+  (proced-goal-attribute nil)
+  (proced-show-remote-processes t)
+  (proced-enable-color-flag t)
+  (proced-format 'custom)
+  :config
+  (add-to-list
+   'proced-format-alist
+   '(custom user pid ppid sess tree pcpu pmem rss start time state (args comm))))
+
+#+end_src
+
 * Themes, Fonts, Colors
 
 ** Load theme
@@ -3103,7 +3123,16 @@ return windowTitle"))
 ** rustic
 
 #+begin_src emacs-lisp
+(use-package rust-mode
+  :defer t
+  :custom
+  (rust-mode-treesitter-derive t)
+  :config
+  (let (auto-mode-alist)
+    (require 'rustic nil t)))
+
 (use-package rustic
+  :defer t
   :mode ("\\.rs\\'" . rustic-mode)
   :preface
   (defun rustic-mode-auto-save-hook ()
@@ -3111,7 +3140,9 @@ return windowTitle"))
     (when buffer-file-name
       (setq-local compilation-ask-about-save nil)))
   :hook
-  (rustic-mode-hook . rustic-mode-auto-save-hook))
+  (rustic-mode-hook . (rustic-flycheck-setup rustic-mode-auto-save-hook))
+  :custom
+  (rustic-cargo-use-last-stored-arguments t))
 #+end_src
 
 ** .env
@@ -3360,6 +3391,14 @@ Install jsonnet-language-server to enable lsp support
   :ensure t
   :custom
   (hyprlang-ts-mode-indent-offset 2))
+#+end_src
+
+** SQL
+
+#+begin_src emacs-lisp
+(use-package pgmacs
+  :ensure (pgmacs :fetcher github :repo "emarsden/pgmacs")
+  :defer t)
 #+end_src
 
 * Debug Emacs
