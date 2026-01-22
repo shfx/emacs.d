@@ -459,18 +459,32 @@ Disable all mouse input
 
 * Themes, Fonts, Colors
 
+#+begin_src emacs-lisp
+(defvar after-enable-theme-hook nil
+  "Normal hook run after enabling a theme.")
+
+(define-advice enable-theme (:after (theme) run-after-enable-theme-hook)
+  "Run `after-enable-theme-hook'."
+  (run-hook-with-args 'after-enable-theme-hook theme))
+#+end_src
+
 ** Load theme
 
 #+begin_src emacs-lisp
+(defun my/remove-slant-attribute ()
+  "Iterate over all faces and resets slant attributs to `':normal`'.
+Call it on custom-define-hook so any defered packages will be reset
+with this function."
+  (mapc (lambda (face)
+          (when (not (eq (face-attribute face :slant) 'normal))
+            (set-face-attribute face nil :slant 'normal)))
+        (face-list)))
+
 (use-package kanagawa-themes
   :demand t
-  :preface
-  (defun my/set-font ()
-    (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
-    (mapc (lambda (face)
-            (when (facep face)
-              (set-face-attribute face nil :slant 'normal)))
-          (face-list)))
+  :hook
+  ;; lazy loaded modules can define slat faces, this removes them
+  (custom-define . my/remove-slant-attribute)
   :custom-face
   (org-block ((t (:background "#181820" :extend t))))
   (magit-blame-name ((t (:background "#181820"))))
@@ -484,14 +498,14 @@ Disable all mouse input
   (fringe ((t (:background unspecified))))
   :config
   (load-theme 'kanagawa-wave :no-confim)
-  ;; disable itailic font
-  ;; install jetbrains font
+  (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
+  (my/remove-slant-attribute)
   (when (and (eq system-type 'darwin))
+    (add-to-list 'face-font-rescale-alist '("Apple Color Emoji" . 0.82))
     (system-packages-install "font-jetbrains-mono"))
   (when (and (eq system-type 'gnu/linux)
              (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
-    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\""))
-  (my/set-font))
+    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\"")))
 #+end_src
 
 ** Nerd Icons
