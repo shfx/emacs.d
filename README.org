@@ -1703,6 +1703,78 @@ the bottom of active window with directory of its buffer.
   (flyover-text-tint 'lighter))
 #+end_src
 
+* AI
+
+** ClaudeCode
+
+#+begin_src emacs-lisp
+(defun my-claude-notify (title message)
+  "Display a macOS notification with sound."
+  (call-process "osascript" nil nil nil
+                "-e" (format "display notification \"%s\" with title \"%s\" sound name \"Glass\""
+                             message title)))
+
+(use-package claude-code
+  :ensure (claude-code :fetcher github :repo "stevemolitor/claude-code.el" :rev :newest)
+  :bind-keymap ("C-c c" . claude-code-command-map)
+  :hook
+  (claude-code-start . (lambda ()
+                         ;; Reduce line spacing to fix vertical bar gaps
+                         (setq-local line-spacing 0.1)))
+  (claude-code-mode . monet-mode)
+  :custom
+  (claude-code-notification-function #'my-claude-notify)
+  (use-default-font-for-symbols nil)
+  :config
+  (add-to-list 'display-buffer-alist
+                 '("^\\*claude"
+                   (display-buffer-in-side-window)
+                   (side . right)
+                   (window-width . 90)))
+    ;; optional IDE integration with Monet
+  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
+  (monet-mode 1)
+
+  (claude-code-mode))
+#+end_src
+
+** ChatGPT
+
+#+begin_src emacs-lisp
+(defun shell-maker-welcome-message-ignore (config) "")
+
+(use-package chatgpt-shell
+  :bind
+  ("C-c C-a" . chatgpt-shell-quick-insert)
+  :custom
+  (chatgpt-shell-model-version "gpt-4.1")
+  (chatgpt-shell-root-path (no-littering-expand-var-file-name "chatgpt"))
+  (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
+  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
+#+end_src
+
+** Monet - Claude Code IDE integration
+
+#+begin_src emacs-lisp
+(use-package monet
+  :ensure (monet :fetcher github :repo "stevemolitor/monet" :rev :newest))
+#+end_src
+
+** agent-shell
+
+#+begin_src emacs-lisp
+(use-package agent-shell
+  :ensure t
+  :ensure-system-package
+  ;; Add agent installation configs here
+  ((claude . "brew install claude-code")
+   (claude-code-acp . "mise install npm:@zed-industries/claude-code-acp"))
+  :custom
+  (agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config))
+  (agent-shell-anthropic-default-session-mode-id "default")
+  (agent-shell-anthropic-default-model-id "claude-opus-4-5@20251101"))
+#+end_src
+
 * Packages
 
 ** command-log
@@ -1852,32 +1924,6 @@ the bottom of active window with directory of its buffer.
   (add-to-list 'dabbrev-ignored-buffer-regexps "\\` ")
   (add-to-list 'dabbrev-ignored-buffer-modes 'doc-view-mode)
   (add-to-list 'dabbrev-ignored-buffer-modes 'pdf-view-mode))
-#+end_src
-
-** ChatGPT
-
-#+begin_src emacs-lisp
-(defun shell-maker-welcome-message-ignore (config) "")
-
-(use-package chatgpt-shell
-  :bind
-  ("C-c C-a" . chatgpt-shell-quick-insert)
-  :custom
-  (chatgpt-shell-model-version "gpt-4.1")
-  (chatgpt-shell-root-path (no-littering-expand-var-file-name "chatgpt"))
-  (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
-  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
-#+end_src
-
-** ClaudeCode
-
-#+begin_src emacs-lisp
-(use-package claude-code
-  :ensure (claude-code :fetcher github :repo "stevemolitor/claude-code.el" :rev :newest)
-  :config
-  (setq claude-code-notification-function 'claude-code-default-notification)
-  
-  :bind-keymap ("C-c c" . claude-code-command-map))
 #+end_src
 
 ** Proced

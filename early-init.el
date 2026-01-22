@@ -68,7 +68,7 @@
 ;; Disable GC before while we load rest of the config
 
 (defvar my/pre-init-file-name-handler-alist file-name-handler-alist)
-(defvar my/pre-init-gc-cons-threshold 800000000) ;; or gc-cons-threshold
+(defvar my/pre-init-gc-cons-threshold 100000000) ;; or gc-cons-threshold
 (defvar my/pre-init-gc-cons-percentage gc-cons-percentage)
 
 (setq file-name-handler-alist nil
@@ -82,15 +82,10 @@
         gc-cons-percentage my/pre-init-gc-cons-percentage)
   (message "Restore previous GC threshold and file-name-handler-alist values"))
 
-(defun my/minibuffer-setup-hook ()
-  (setq gc-cons-threshold most-positive-fixnum))
-
 (add-hook 'after-init-hook
           (lambda ()
             (when (functionp 'my/restore-pre-init-settings)
               (my/restore-pre-init-settings)
-              (add-hook 'minibuffer-setup-hook #'my/minibuffer-setup-hook)
-              (add-hook 'minibuffer-exit-hook #'my/restore-pre-init-settings)
 
               (run-with-idle-timer 1.2 t 'garbage-collect))))
 
@@ -101,9 +96,7 @@
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (push '(horizontal-scroll-bars . nil) default-frame-alist)
 (push '(ns-appearance . dark) default-frame-alist)
-(push '(ns-transparent-titlebar . t) default-frame-alist)
 (push '(fullscreen . maximized) default-frame-alist)
-(push '(internal-border-width . 8) default-frame-alist)
 
 ;; Disables modeline and set some default until theme is loaded
 
