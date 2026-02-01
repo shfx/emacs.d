@@ -1153,7 +1153,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
    '((consult-line
       posframe
       (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-      (vertico-posframe-border-width . 10)
+      (vertico-posframe-border-width . 5)
       (vertico-posframe-fallback-mode . vertico-buffer-mode))
      (consult-grep buffer)
      (consult-ripgrep buffer)
@@ -1169,7 +1169,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
      (consult-line
       posframe
       (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-      (vertico-posframe-border-width . 10)
+      (vertico-posframe-border-width . 5)
       ;; NOTE: This is useful when emacs is used in both in X and
       ;; terminal, for posframe do not work well in terminal, so
       ;; vertico-buffer-mode will be used as fallback at the
@@ -1177,7 +1177,7 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
       (vertico-posframe-fallback-mode . vertico-buffer-mode))
      (t
       posframe
-      (vertico-posframe-border-width . 10)
+      (vertico-posframe-border-width . 5)
       ;; NOTE: This is useful when emacs is used in both in X and
       ;; terminal, for posframe do not work well in terminal, so
       ;; vertico-buffer-mode will be used as fallback at the
@@ -1185,12 +1185,12 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
       (vertico-posframe-fallback-mode . vertico-buffer-mode))))
   :config
   (vertico-mode 1)
-  (vertico-multiform-mode 1)
-  (require 'vertico-buffer)
-  (require 'vertico-grid))
+  (vertico-multiform-mode 1))
 
 (use-package vertico-posframe
   :after vertico
+  :custom-face
+  (vertico-posframe-border ((t (:background unspecified :inherit shadow))))
   :custom
   (vertico-posframe-parameters
    '((left-fringe . 8)

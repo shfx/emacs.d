@@ -145,10 +145,20 @@
 (use-package exec-path-from-shell
   :functions exec-path-from-shell-initialize
   :custom
-  (exec-path-from-shell-variables '("PATH" "MANPATH" "LSP_USE_PLISTS" "GOPATH"))
+  (exec-path-from-shell-variables
+   '("PATH"
+     "MANPATH"
+     "LSP_USE_PLISTS" 
+     "ANTHROPIC_API_KEY"
+     "OPENAI_API_KEY"
+     "OLLAMA_API_BASE"
+     "OPENAI_API_URL"
+     "ANTHROPIC_API_URL"
+     "ECA_CONFIG"
+     "XDG_CONFIG_HOME"))
   (exec-path-from-shell-arguments '("-l"))
   :config
-  (when (or (memq window-system '(ns x))
+  (when (or (memq window-system '(mac ns x))
             (daemonp))
     (exec-path-from-shell-initialize)))
 
