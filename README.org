@@ -402,7 +402,7 @@ Very annoying binding, lets get rid of it.
 (global-unset-key (kbd "C-z"))
 #+end_src
 
-** Hardtimes
+** COMMENT Hardtimes
 
 #+begin_src emacs-lisp
 (use-package hardtime
@@ -411,7 +411,7 @@ Very annoying binding, lets get rid of it.
   (hardtime-mode))
 #+end_src
 
-** Inhibit mouse
+** COMMENT Inhibit mouse
 
 Disable all mouse input
 
