@@ -1852,7 +1852,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 #+begin_src emacs-lisp
 (defun my/corfu-setup-lsp ()
   "Use orderless completion style with lsp-capf instead of the
-  default lsp-passthrough."
+    default lsp-passthrough."
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
         '(orderless)))
 
@@ -1880,7 +1880,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (lsp-eslint-auto-fix-on-save nil)
   (lsp-eslint-working-directories [(pattern "/packages/*")])
   (lsp-eslint-multi-root nil)
-  (lsp-eslint-server-command (list "node" (concat (expand-file-name user-emacs-directory) "var/lsp/server/eslint/unzipped/extension/server/out/eslintServer.js") "--stdio" "--max-old-space-size=80000"))
+  (lsp-eslint-server-command (list "node" "--max-old-space-size=8192" (concat (expand-file-name user-emacs-directory) "var/lsp/server/eslint/unzipped/extension/server/out/eslintServer.js") "--stdio"))
   (lsp-file-watch-threshold 4000)
   (lsp-enable-file-watchers t)
   (lsp-headerline-breadcrumb-enable nil)
@@ -1902,15 +1902,11 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
   :config
   (add-to-list 'warning-suppress-log-types '(lsp-mode))
-  (add-to-list 'warning-suppress-types '(lsp-mode)))
+  (add-to-list 'warning-suppress-types '(lsp-mode))
 
-;; (lsp-rust-analyzer-display-lifetime-elision-hints-enable t) ;; can be cahnged to "skip_trivial"
-;; (lsp-rust-analyzer-display-chaining-hints t)
-;; (lsp-rust-analyzer-display-lifetime-elision-hints-use-parameter-names t)
-;; (lsp-rust-analyzer-display-closure-return-type-hints t)
-;; (lsp-rust-analyzer-display-parameter-hints t)
-;; (lsp-rust-analyzer-display-reborrow-hints t)
-;; (lsp-inlay-hint-enable nil)
+  ;; disable eslint server check to override server command
+  (defun lsp-eslint-server-exists? (eslint-server-command)
+    t))
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1933,16 +1929,6 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (lsp-ui-sideline-enable nil)
   (lsp-ui-peek-always-show nil)
   (lsp-ui-sideline-show-hover nil))
-
-(use-package lsp-tailwindcss
-  :after lsp-mode
-  :init
-  :custom
-  ;; You might want to set it in dir-locals to someing else than nil
-  (lsp-tailwindcss-experimental-config-file nil)
-  (lsp-tailwindcss-add-on-mode t)
-  (lsp-tailwindcss-major-modes
-   '(web-mode html-mode css-mode typescript-ts-mode tsx-ts-mode svelte-ts-mode)))
 #+end_src
 
 ** Dabbrev
@@ -2269,14 +2255,6 @@ Consult users will also want the embark-consult package.
   :after orderless
 
   :preface
-  (defun corfu-enable-always-in-minibuffer ()
-    "Enable Corfu in the minibuffer if Vertico/Mct are not active."
-    (unless (or (bound-and-true-p mct--active) ; Useful if I ever use MCT
-                (bound-and-true-p vertico--input))
-      (setq-local corfu-auto nil) ; Ensure auto completion is disabled
-      (corfu-mode 1)))
-
-  :hook (minibuffer-setup . corfu-enable-always-in-minibuffer)
   :bind (:map corfu-map
               ("C-n" . corfu-next)
               ("C-p" . corfu-previous)
@@ -2290,6 +2268,7 @@ Consult users will also want the embark-consult package.
   :custom
   (completion-cycle-threshold nil)
   (corfu-auto t)
+  (global-corfu-minibuffer nil)
   (corfu-auto-delay 0.2)
   (corfu-auto-prefix 1)
   (corfu-count 14)
