@@ -1655,7 +1655,7 @@ the bottom of active window with directory of its buffer.
 (use-package consult-jump-project
   :ensure (consult-jump-project :fetcher github :repo "jdtsmith/consult-jump-project")
   :custom 
-  (consult-jump-direct-jump-modes '(dired-mode))
+  (consult-jump-project-direct-jump-modes '(dired-mode))
   (recentf-filename-handlers (lambda (f)  ; avoid remote ~/abbreviations to recentf files can be matched
 			       (if (file-remote-p f) f
 				 (abbreviate-file-name f))))
@@ -1741,6 +1741,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   :custom
   (flycheck-display-errors-delay 0)
   (flycheck-idle-change-delay 0)
+  (flycheck-idle-change-delay 0.5)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
 
@@ -2477,7 +2478,8 @@ syste.
 ;; org-babel
 (org-babel-add-langs
  ((emacs-lisp . t)
-  (shell . t)))
+  (shell . t)
+  (sql . t)))
 
 (use-package ob-restclient
   :defer 2
@@ -2813,6 +2815,7 @@ Hides modeline whenever this minor mode is active
   (global-magit-file-mode t)
   :config
   (magit-auto-revert-mode -1)
+  (remove-hook 'magit-section-movement-hook #'magit-hunk-set-window-start)
   (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
   ;; TODO: add to magit-process-password-functions an auth source
   (transient-define-suffix magit-submodule-update-all ()
