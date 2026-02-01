@@ -51,6 +51,9 @@ brew install emacs-app-good
 # Disable font smoothing
 defaults write $(osascript -e 'id of app "Emacs"') AppleFontSmoothing -int 0
 
+# Disable Language Selector Bubble 
+defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled -bool false
+
 # Key press and hold behaviour
 defaults write -g ApplePressAndHoldEnabled -bool false
 
