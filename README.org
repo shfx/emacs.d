@@ -2936,6 +2936,11 @@ Hides modeline whenever this minor mode is active
   (yas-wrap-around-region t)
   :config
   (yas-reload-all))
+
+(use-package yasnippet-capf
+  :after yasnippet
+  :config
+  (add-to-list 'completion-at-point-functions #'yasnippet-capf))
 #+end_src
 
 ** keyfreq
@@ -3383,6 +3388,12 @@ Install jsonnet-language-server to enable lsp support
 (use-package pgmacs
   :ensure (pgmacs :fetcher github :repo "emarsden/pgmacs")
   :defer t)
+#+end_src
+
+** Eask
+
+#+begin_src emacs-lisp
+(use-package eask-mode)
 #+end_src
 
 * Debug Emacs
