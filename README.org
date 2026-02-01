@@ -806,6 +806,19 @@ A simple styling for tab bars
   (visible-auto-revert-mode +1))
 #+end_src
 
+** pulsar
+
+Highlights a line when switching buffers, windows and frames.
+
+#+begin_src emacs-lisp
+(use-package pulsar
+  :custom
+  ;; disable region operation highlights as we're using goggles-mode for that
+  (pulsar-pulse-region-functions nil)
+  :config
+  (pulsar-global-mode 1))
+#+end_src
+
 * Editing
 
 #+begin_src emacs-lisp
@@ -1646,37 +1659,37 @@ the bottom of active window with directory of its buffer.
 
 ** Tramp
 
-#+begin_src emacs-lisp
-;; https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+This file documents TRAMP 2.8.1, a remote file editing package for Emacs.
 
+TRAMP stands for “Transparent Remote (file) Access, Multiple
+Protocol”. This package provides an easy, convenient, and consistent
+interface to editing remote files transparently, just as if they are
+local files. This extends to editing, version control, dired, and
+more.
+
+Added some changes based on this article:
+https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
+
+#+begin_src emacs-lisp
 (use-package tramp
   :ensure nil
   :custom
-  (tramp-inline-compress-start-size 1000)
   (tramp-verbose 1)
-  (tramp-use-connection-share nil)
+  (tramp-completion-use-auth-sources nil)
   (remote-file-name-inhibit-locks t)
-  (tramp-use-scp-direct-remote-copying t)
   (remote-file-name-inhibit-auto-save-visited t)
   (magit-tramp-pipe-stty-settings 'pty)
+  (tramp-inline-compress-start-size 1000)
+  (tramp-use-connection-share nil)
+  (tramp-use-scp-direct-remote-copying t)
   (tramp-copy-size-limit (* 1024 1024))
-
   :config
   (connection-local-set-profile-variables
    'remote-direct-async-process
    '((tramp-direct-async-process . t)))
-
-  ;; (connection-local-set-profiles
-  ;;  '(:application tramp :machine "server")
-  ;;  'remote-direct-async-process)
   (with-eval-after-load 'tramp
     (with-eval-after-load 'compile
       (remove-hook 'compilation-mode-hook #'tramp-compile-disable-ssh-controlmaster-options))))
-
-;; Maybe remove those hooks
-;; (remove-hook 'evil-insert-state-exit-hook #'doom-modeline-update-buffer-file-name)
-;; (remove-hook 'find-file-hook #'doom-modeline-update-buffer-file-name)
-;; (remove-hook 'find-file-hook 'forge-bug-reference-setup))
 #+end_src
 
 * Displaying errors
@@ -2948,14 +2961,6 @@ Hides modeline whenever this minor mode is active
 (use-package goto-line-preview
   :bind ([remap goto-line] . goto-line-preview)
   :config)
-#+end_src
-
-** pulsar
-
-#+begin_src emacs-lisp
-(use-package pulsar
-  :config
-  (pulsar-global-mode 1))
 #+end_src
 
 ** Snippets
