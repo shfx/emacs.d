@@ -460,6 +460,30 @@ Disable all mouse input
 
 #+end_src
 
+** eager-state
+
+For the end-user, it provides a simple way to periodically run a
+subset of `kill-emacs-hook', ensuring that state variables are written
+to disk long before something happens to your Emacs session.
+
+#+begin_src emacs-lisp
+(use-package eager-state
+  :ensure (eager-state :fetcher github :repo "meedstrom/eager-state")
+  :custom
+  (eager-state-kill-emacs-hook-subset
+   '(bookmark-exit-hook-internal
+     savehist-autosave
+     transient-maybe-save-history
+     org-clock-save
+     org-id-locations-save
+     save-place-kill-emacs-hook
+     recentf-save-list
+     recentf-cleanup))
+  (eager-state-kill-emacs-query-functions-subset
+   '(eshell-save-some-history
+     eshell-save-some-last-dir)))
+#+end_src
+
 * Themes, Fonts, Colors
 
 #+begin_src emacs-lisp
