@@ -541,20 +541,22 @@ with this function."
     '("-?test\\.jsx$"       nerd-icons-mdicon "nf-md-test_tube" :face nerd-icons-blue-alt)))
 
 (use-package nerd-icons-dired
+  :after nerd-icons
   :hook (dired-mode . nerd-icons-dired-mode))
 
 (use-package nerd-icons-ibuffer
+  :after nerd-icons
   :hook (ibuffer-mode . nerd-icons-ibuffer-mode))
 
 (use-package nerd-icons-completion
-  :after corfu marginalia
+  :after corfu marginalia nerd-icons
   :functions (nerd-icons-completion-mode nerd-icons-completion-marginalia-setup)
   :config
   (nerd-icons-completion-mode)
   (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup))
 
 (use-package nerd-icons-corfu
-  :after corfu
+  :after corfu nerd-icon
   :functions nerd-icons-corfu-formatter
   :config
   (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
@@ -568,42 +570,20 @@ with this function."
   :functions ligature-set-ligatures global-ligature-mode
   :config
   (ligature-set-ligatures
-   '(js-base-mode typescript-ts-mode)
-   '("?." "?=" "<>" "&&" "?:" "..."
-     "</>" "/>" "<!--" "<#--" "-->" "=>"
-     "//" "///"))
-
-  (ligature-set-ligatures
-   '(emacs-lisp-mode lisp-data-mode)
-   '(";;;" ";;"))
-
-  (ligature-set-ligatures
-   'go-mode
-   '(":="))
-
-  (ligature-set-ligatures
-   '(rust-mode rustic-mode)
-   '("->" "<=" "=>" "#[" ".."))
- 
-  (ligature-set-ligatures
    'prog-mode
-   '("--" "==" "===" "!=" "!==" "&&" "||" "<<" ">>" "=/=" "++" "#!" "<=" ">=" "||" "|>" "<|" ))
-
-  ;; (ligature-set-ligatures
-  ;;  t
-  ;;  '("--" "---"
-  ;;    "=:=" "&&&" "&="  "+++" "***" ";;" "!!"
-  ;;    "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
-  ;;    "<<" ">>" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
-  ;;    "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
-  ;;    "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
-  ;;    "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
-  ;;    "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
-  ;;    "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
-  ;;    "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "||>" "<||"
-  ;;    "|||>" "<|||" "<|>" ".=" "..<" ".?" "::" ":::" "::="
-  ;;    ":?" ":?>" "//" "///" "/=" "//=" "/==" "@_" "__" "???"
-  ;;    "<:<" ";;;"))
+   '("--" "---" "==" "===" "!=" "!==" "=!="
+     "=:=" "=/=" "<=" ">=" "&&" "&&&" "&=" "++" "+++" "***" "!!"
+     "??" "???" "?:" "?." "?=" "<:" ":<" ":>" ">:" "<:<" "<>" "<<<" ">>>"
+     "<<" ">>" "||" "-|" "_|_" "|-" "||-" "|=" "||=" "##" "###" "####"
+     "#{" "#[" "]#" "#(" "#?" "#_" "#_(" "#:" "#!" "#=" "^=" "<$>" "<$"
+     "$>" "<+>" "<+" "+>" "<*>" "<*" "*>" "</" "</>" "/>" "<!--" "<#--"
+     "-->" "->" "->>" "<<-" "<-" "<=<" "=<<" "<<=" "<==" "<=>" "<==>"
+     "==>" "=>" "=>>" ">=>" ">>=" ">>-" ">-" "-<" "-<<" ">->" "<-<" "<-|"
+     "<=|" "|=>" "|->" "<->" "<~~" "<~" "<~>" "~~" "~~>" "~>" "~-" "-~"
+     "~@" "[||]" "|]" "[|" "|}" "{|" "[<" ">]" "|>" "<|" "||>" "<||"
+     "|||>" "<|||" "<|>" "..." ".." ".=" "..<" ".?" "::" ":::" "::="
+     ":?" ":?>" "//" "///" "/*" "*/" "/=" "//=" "/==" "@_" "__" "???"
+     "<:<"))
   (global-ligature-mode t))
 #+end_src
 
@@ -1252,13 +1232,13 @@ also helpful emacs config just for vertico
 
 ** Marginalia
 
+Enable richer annotations using the Marginalia package
+
 #+begin_src emacs-lisp
-;; Enable richer annotations using the Marginalia package
 (use-package marginalia
-  :after shrink-path
-  :demand t
+  :defer t
   :bind (:map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+              ("M-A" . marginalia-cycle))
   :custom
   ;; (marginalia-max-relative-age)
   (marginalia-align 'right)
@@ -1272,7 +1252,8 @@ also helpful emacs config just for vertico
                     (is-prefix (string-prefix-p project-root buffer-path)))
               (string-remove-prefix project-root buffer-path)
             (shrink-path-file buffer-path))
-        buffer-path)))  
+        buffer-path)))
+  :init
   (marginalia-mode))
 #+end_src
 
@@ -1531,6 +1512,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 
 (use-package shrink-path
   :defer t
+  :commands (shrink-path-file shrink-path-prompt)
   :preface
   (defun my/eshell-set-outline-regexp ()
     (setq-local
