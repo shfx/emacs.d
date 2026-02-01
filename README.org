@@ -1583,45 +1583,46 @@ the bottom of active window with directory of its buffer.
 
 * Project management
 
+** project.el
+
 #+begin_src emacs-lisp
-(defun project-try-local (dir)
-  (if-let ((root (if (listp ".project")
-                     (seq-some (lambda (n)
-                                 (locate-dominating-file dir n))
-                               ".project")
-                   (locate-dominating-file dir ".project"))))
+(use-package project
+  :ensure nil
+  :config
+  (defvar project-packagejson-ignore '("node_modules/" ".pnpm-store/" ".dist/" ".tsBuild/"))
+  
+  (defun parent-node-modules-p (path)
+    "Return non-nil if PATH is  `node_modules'"
+    (let* ((absolute-path (expand-file-name path))
+           (splitted-path (split-string absolute-path "/" t)))
+      (and (seq-find (lambda (segment) (equal segment "node_modules")) splitted-path) t)))
+
+  (defun project-try-local (dir)
+    (when-let* ((root (locate-dominating-file dir ".project")))
       (cons 'local root)))
 
-
-(defun project-try-packagejson (dir)
-  (if-let ((root (if (listp "package.json")
-                     (seq-some (lambda (n)
-                                 (locate-dominating-file dir n))
-                               "package.json")
-                   (locate-dominating-file dir "package.json"))))
+  (defun project-try-packagejson (dir)
+    (when-let* ((root (locate-dominating-file dir "package.json"))
+                (inside-node-modules (not (parent-node-modules-p dir))))
       (cons 'packagejson root)))
 
-(cl-defmethod project-root ((project (head local)))
-  (cdr project))
+  (cl-defmethod project-root ((project (head local)))
+    (cdr project))
+  
+  (cl-defmethod project-root ((project (head packagejson)))
+    (cdr project))
 
-(cl-defmethod project-root ((project (head packagejson)))
-  (cdr project))
-
-(setq project-packagejson-ignore '("node_modules/" ".pnpm-store/" ".dist/" ".tsBuild/"))
-
-(cl-defmethod project-ignores ((project (head packagejson)) dir)
-  (let* ((root (project-root project)))
-    (append
-     (project--value-in-dir 'project-packagejson-ignore root)
-     (mapcar
-      (lambda (dir)
-        (concat dir "/"))
-      vc-directory-exclusion-list))))
-
-(setq project-find-functions
-      '(project-try-packagejson
-        project-try-local
-        project-try-vc))
+  (cl-defmethod project-ignores ((project (head packagejson)) dir)
+    (let* ((root (project-root project)))
+      (append
+       (project--value-in-dir 'project-packagejson-ignore root)
+       (mapcar
+        (lambda (dir)
+          (concat dir "/"))
+        vc-directory-exclusion-list))))
+  (setq project-find-functions '(project-try-packagejson
+                                 project-try-local
+                                 project-try-vc)))
 #+end_src
 
 ** consult jump project
