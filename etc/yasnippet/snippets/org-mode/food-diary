@@ -1,0 +1,8 @@
+# key: fd
+# name: food diary
+# --
+* $1
+
+| godzina | Co + ilosc (gramy/kromka/lyzka) | sennosc, oslabienie, zmeczenie, najedzenie, glod? |
+|---------+---------------------------------+---------------------------------------------------|
+| $0        |                                 |                                                   |

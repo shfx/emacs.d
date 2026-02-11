@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: vitest description
+# key: desc
+# --
+describe("$1", () => {
+  $0
+});

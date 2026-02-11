@@ -88,7 +88,7 @@ not both
 
 #+begin_src emacs-lisp
 (define-advice keyboard-quit
-    (:around (quit) quit-current-context)
+    (:around (keyboard-quit) quit-current-context)
   "Quit the current context.
 
 When there is an active minibuffer and we are not inside it close
@@ -102,7 +102,7 @@ are defining or executing a macro."
         (abort-recursive-edit))
     (unless (or defining-kbd-macro
                 executing-kbd-macro)
-      (funcall-interactively quit))))
+      (funcall-interactively keyboard-quit))))
 #+end_src
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
@@ -616,10 +616,12 @@ with this function."
 #+begin_src emacs-lisp
 (setopt jit-lock-defer-time 0)
 (setopt fast-but-imprecise-scrolling t)
-(pixel-scroll-precision-mode +1)
 (setopt pixel-resolution-fine-flag t)
 (setopt pixel-scroll-precision-interpolate-page t)
 (setopt pixel-scroll-precision-use-momentum t)
+(setopt ns-pop-up-frames nil)
+
+(pixel-scroll-precision-mode +1)
 #+end_src
 
 ** Focus new frame
