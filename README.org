@@ -1458,9 +1458,13 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
 ;; run (eat-compile-terminfo) if shell smells funny
 (use-package eat
   :hook
-  (eshell-load . eat-eshell-mode)
+  (eshell-first-time-mode-hook . eat-eshell-mode)
   :custom
-  (process-adaptive-read-buffering nil))
+  (process-adaptive-read-buffering t)
+  (eat-term-scrollback-size 300000)
+  :config
+  (setopt eat-semi-char-non-bound-keys (seq-difference eat-semi-char-non-bound-keys '([C-left] [C-right]))))
+
 
 (use-package pcmpl-args
   :defer t
@@ -1638,8 +1642,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   ;; (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :custom
   (flycheck-display-errors-delay 0)
-  (flycheck-idle-change-delay 0)
-  (flycheck-idle-change-delay 0.5)
+  (flycheck-idle-change-delay 0.3)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
 
@@ -1899,6 +1902,8 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 
 #+begin_src emacs-lisp
 (use-package apheleia
+  :commands apheleia-global-mode
+  :defines apheleia-mode-alist
   :config
   (apheleia-global-mode +1)
   (setf (alist-get 'prisma-mode apheleia-mode-alist)
@@ -2699,7 +2704,7 @@ Hides modeline whenever this minor mode is active
   (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
   (magit-process-password-functions '(magit-process-password-auth-source))
-
+  (magit-list-refs-sortby "-creatordate")
   ;; optimisation
   (magit-diff-highlight-indentation nil)
   (magit-diff-highlight-trailing nil)
