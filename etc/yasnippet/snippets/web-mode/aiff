@@ -1,9 +1,0 @@
-# -*- mode: snippet -*-
-# name: async iife
-# key: aiff
-# --
-(async () => {
-  $0
-})().catch((e) => {
-  logger.error(e);
-});n
