@@ -527,7 +527,7 @@ with this function."
   (load-theme 'kanagawa-wave :no-confim)
   (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
   (my/remove-slant-attribute)
-  (when (and (eq system-type 'darwin))
+  (when (eq system-type 'darwin)
     (add-to-list 'face-font-rescale-alist '("Apple Color Emoji" . 0.82))
     (system-packages-install "font-jetbrains-mono"))
   (when (and (eq system-type 'gnu/linux)
@@ -732,20 +732,6 @@ with this function."
   (winner-mode 1))
 #+end_src
 
-** perfect-margin
-
-#+begin_src emacs-lisp
-(use-package perfect-margin
-  :custom
-  (perfect-margin-visible-width 128)
-  :config
-  (perfect-margin-mode nil)
-  (setq perfect-margin-ignore-regexps '("^minibuf" "^[[:space:]]\\*"))
-  (dolist (margin '("<left-margin> " "<right-margin> "))
-    (global-set-key (kbd (concat margin "<mouse-1>")) 'ignore)
-    (global-set-key (kbd (concat margin "<mouse-3>")) 'ignore)))
-#+end_src
-
 ** ultra-scroll
 
 #+begin_src emacs-lisp
@@ -777,20 +763,6 @@ with this function."
   (tab-bar-new-button-show t)
   (tab-bar-close-button-show t)
   (tab-bar-tab-hints t))
-#+end_src
-
-** vim-tab-bar
-
-A simple styling for tab bars
-
-#+begin_src emacs-lisp
-(use-package vim-tab-bar
-  :ensure t
-  :commands vim-tab-bar-mode
-  :hook
-  (after-init . vim-tab-bar-mode)
-  :custom
-  (vim-tab-bar-show-groups t))
 #+end_src
 
 ** tab-line
@@ -1161,8 +1133,6 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
               ("M-R" . vertico-multiform-reverse)
               ("M-U" . vertico-multiform-unobtrusive)
               ("C-<backspace>" . vertico-directory-delete-word)
-              ;; ("C-w" . vertico-directory-delete-word)
-              ;; ("C-<backspace>" . vertico-directory-delete-word)
               ("RET" . vertico-directory-enter))
   :custom
   (vertico-resize nil)
@@ -1171,40 +1141,21 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
   (vertico-grid-lookahead 50)
   (vertico-buffer-display-action '(display-buffer-reuse-window))
   (vertico-sort-function 'vertico-sort-history-alpha)
-  (vertico-multiform-categories
-   '((consult-line
-      posframe
-      (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-      (vertico-posframe-border-width . 5)
-      (vertico-posframe-fallback-mode . vertico-buffer-mode))
-     (consult-grep buffer)
-     (consult-ripgrep buffer)
-     (consult-buffer reverse indexed)
-     (imenu buffer)
-     (library indexed)
-     (org-roam-node posframe indexed)
-     (t posframe)))
   (vertico-multiform-commands
    '((consult-imenu
       posframe
-      (vertico-sort-function . nil))
+      (vertico-sort-function . nil)
+      (vertico-posframe-fallback-mode . vertico-buffer-mode))
      (consult-line
       posframe
       (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
       (vertico-posframe-border-width . 5)
-      ;; NOTE: This is useful when emacs is used in both in X and
-      ;; terminal, for posframe do not work well in terminal, so
-      ;; vertico-buffer-mode will be used as fallback at the
-      ;; moment.
-      (vertico-posframe-fallback-mode . vertico-buffer-mode))
-     (t
-      posframe
-      (vertico-posframe-border-width . 5)
-      ;; NOTE: This is useful when emacs is used in both in X and
-      ;; terminal, for posframe do not work well in terminal, so
-      ;; vertico-buffer-mode will be used as fallback at the
-      ;; moment.
       (vertico-posframe-fallback-mode . vertico-buffer-mode))))
+  (vertico-multiform-categories
+   '((imenu buffer)
+     (library indexed)
+     (org-roam-node posframe indexed)
+     (t posframe)))
   :config
   (vertico-mode 1)
   (vertico-multiform-mode 1))
@@ -1302,7 +1253,7 @@ Enable richer annotations using the Marginalia package
   :defer t
   :after no-littering
   :custom
-  (history-length 100)
+  (history-length 500)
   :config
   (savehist-mode 1)
   (add-to-list 'savehist-additional-variables 'corfu-history))
@@ -1594,62 +1545,7 @@ the bottom of active window with directory of its buffer.
 (use-package esup)
 #+end_src
 
-** vterm
-
-#+begin_src emacs-lisp
-(use-package vterm
-  :defer 1
-  :custom
-  (vterm-always-compile-module t))
-
-(use-package multi-vterm
-  :after vterm
-  :bind (("C-c v" . multi-vterm)))
-#+end_src
-
 * Project management
-
-** project.el
-
-#+begin_src emacs-lisp
-(use-package project
-  :ensure nil
-  :config
-  (defvar project-packagejson-ignore '("node_modules/" ".pnpm-store/" ".dist/" ".tsBuild/"))
-  
-  (defun parent-node-modules-p (path)
-    "Return non-nil if PATH is  `node_modules'"
-    (let* ((absolute-path (expand-file-name path))
-           (splitted-path (split-string absolute-path "/" t)))
-      (and (seq-find (lambda (segment) (equal segment "node_modules")) splitted-path) t)))
-
-  (defun project-try-local (dir)
-    (when-let* ((root (locate-dominating-file dir ".project")))
-      (cons 'local root)))
-
-  (defun project-try-packagejson (dir)
-    (when-let* ((root (locate-dominating-file dir "package.json"))
-                (inside-node-modules (not (parent-node-modules-p dir))))
-      (cons 'packagejson root)))
-
-  (cl-defmethod project-root ((project (head local)))
-    (cdr project))
-  
-  (cl-defmethod project-root ((project (head packagejson)))
-    (cdr project))
-
-  (cl-defmethod project-ignores ((project (head packagejson)) dir)
-    (let* ((root (project-root project)))
-      (append
-       (project--value-in-dir 'project-packagejson-ignore root)
-       (mapcar
-        (lambda (dir)
-          (concat dir "/"))
-        vc-directory-exclusion-list))))
-  (setq project-find-functions '(project-try-packagejson
-                                 project-try-local
-                                 project-try-vc)))
-#+end_src
 
 ** consult jump project
 
@@ -2267,11 +2163,7 @@ targets."
 Consult users will also want the embark-consult package.
 
 #+begin_src emacs-lisp
-(use-package embark-consult
-  :after (embark consult)
-  :demand t
-  :hook
-  (embark-collect-mode . consult-preview-at-point-mode))
+(use-package embark-consult)
 #+end_src
 
 ** Corfu ([[https://github.com/minad/corfu][link]])
