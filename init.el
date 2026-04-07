@@ -122,6 +122,12 @@
 
 (load-file (expand-file-name "elpaca.el" user-emacs-directory))
 
+(elpaca elpaca-use-package
+  ;; Enable use-package :ensure support for Elpaca.
+  (elpaca-use-package-mode))
+
+(setq use-package-always-ensure t)
+
 (use-package no-littering
   :ensure (:wait t)
   :demand t)

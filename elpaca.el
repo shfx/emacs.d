@@ -1,26 +1,14 @@
 ;;; -*- lexical-binding: t -*-
 
-(require 'use-package)
-
-(defun my/remove-patch (version)
-  "Remove the patch component from a semantic version string VERSION."
-  (if (string-match "\\`\\([0-9]+\\)" version)
-      (match-string 1 version)
-    version))
-
-(defvar elpaca-installer-version 0.11)
-(defvar elpaca-directory
-  (locate-user-emacs-file
-   (concat
-    (file-name-as-directory "var/elpaca")
-    emacs-version)))
+(defvar elpaca-installer-version 0.12)
+(defvar elpaca-directory (expand-file-name "var/elpaca/" user-emacs-directory))
 (defvar elpaca-builds-directory (expand-file-name "builds/" elpaca-directory))
-(defvar elpaca-repos-directory (expand-file-name "repos/" elpaca-directory))
+(defvar elpaca-sources-directory (expand-file-name "sources/" elpaca-directory))
 (defvar elpaca-order '(elpaca :repo "https://github.com/progfolio/elpaca.git"
                               :ref nil :depth 1 :inherit ignore
                               :files (:defaults "elpaca-test.el" (:exclude "extensions"))
-                              :build (:not elpaca--activate-package)))
-(let* ((repo  (expand-file-name "elpaca/" elpaca-repos-directory))
+                              :build (:not elpaca-activate)))
+(let* ((repo  (expand-file-name "elpaca/" elpaca-sources-directory))
        (build (expand-file-name "elpaca/" elpaca-builds-directory))
        (order (cdr elpaca-order))
        (default-directory repo))
@@ -50,11 +38,3 @@
     (let ((load-source-file-function nil)) (load "./elpaca-autoloads"))))
 (add-hook 'after-init-hook #'elpaca-process-queues)
 (elpaca `(,@elpaca-order))
-
-(elpaca elpaca-use-package
-  (elpaca-use-package-mode))
-
-;; Uncomment this to see the list of loaded packages
-;; (setq use-package-verbose t)
-
-(setq use-package-always-ensure t)
