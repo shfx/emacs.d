@@ -519,33 +519,23 @@ to disk long before something happens to your Emacs session.
 #+begin_src emacs-lisp
 (defun my/remove-slant-attribute ()
   "Iterate over all faces and resets slant attributs to `':normal`'.
-Call it on custom-define-hook so any defered packages will be reset
-with this function."
+  Call it on custom-define-hook so any defered packages will be reset
+  with this function."
   (mapc (lambda (face)
           (when (not (eq (face-attribute face :slant) 'normal))
             (set-face-attribute face nil :slant 'normal)))
         (face-list)))
 
-(use-package kanagawa-themes
+(use-package kanagawa-theme
+  :ensure (kanagawa-theme :fetcher github :repo "arouene/emacs-kanagawa-theme" :files ("kanagawa-theme.el"))
   :demand t
   :hook
   ;; lazy loaded modules can define slat faces, this removes them
   (custom-define . my/remove-slant-attribute)
-  :custom-face
-  (org-block ((t (:background "#181820" :extend t))))
-  (magit-blame-name ((t (:background "#181820"))))
-  (magit-blame-dimmer ((t (:background "#181820"))))
-  (magit-blame-hash ((t (:background "#181820"))))
-  (magit-blame-heading ((t (:background "#181820"))))
-  (magit-blame-highlight ((t (:background "#181820"))))
-  (magit-blame-margin ((t (:background "#181820"))))
-  (magit-blame-summary ((t (:background "#181820"))))
-  (magit-blame-date ((t (:background "#181820"))))
-  (fringe ((t (:background unspecified))))
   :config
-  (load-theme 'kanagawa-wave :no-confim)
+  (load-theme 'kanagawa :no-confim)
   (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
-  (my/remove-slant-attribute)
+  ;; (my/remove-slant-attribute)
   (when (eq system-type 'darwin)
     (add-to-list 'face-font-rescale-alist '("Apple Color Emoji" . 0.82))
     (system-packages-install "font-jetbrains-mono"))
