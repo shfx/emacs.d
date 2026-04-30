@@ -3146,17 +3146,42 @@ return windowTitle"))
        "split_parser" "tree-sitter-markdown-inline/src"))
     treesit-language-source-alist)))
 
+;; (use-package md-ts-mode
+;;   :ensure t
+;;   :custom
+;;   (md-ts-hide-markup nil)
+;;   :custom-face
+;;   (md-ts-delimiter ((t (:inherit default))))
+;;   :init
+;;   (md-ts-mode-enable-global)
+;;   :config
+;;   (defun md-ts--fontify-thematic-break (node override start end &rest _) nil))
+
 (use-package grip-mode
-  :bind
-  (:map markdown-mode-command-map
-        ("g" . grip-mode))
-  :config
-  (let ((credential (auth-source-user-and-password "github.com")))
-    (setq grip-github-user (car credential)
-          grip-github-password (cadr credential))))
+  :ensure t
+  :config (setq grip-command 'mdopen) ;; auto, grip, go-grip or mdopen
+  :bind (:map markdown-mode-command-map
+         ("g" . grip-mode)))
 
 (use-package edit-indirect
   :after markdown-mode)
+#+end_src
+
+** Justfile
+
+#+begin_src emacs-lisp
+(use-package just-ts-mode
+  :custom
+  (treesit-language-source-alist
+   (append
+    '((just
+       "https://github.com/IndianBoy42/tree-sitter-just"
+       "main" "src"))
+    treesit-language-source-alist)))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package justl)
 #+end_src
 
 ** YAML
