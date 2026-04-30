@@ -1137,25 +1137,19 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
   :custom
   (vertico-resize nil)
   (vertico-cycle t)
+  (vertico-count 20)
   (vertico-grid-separator "        ")
   (vertico-grid-lookahead 50)
   (vertico-buffer-display-action '(display-buffer-reuse-window))
   (vertico-sort-function 'vertico-sort-history-alpha)
   (vertico-multiform-commands
-   '((consult-imenu
-      posframe
-      (vertico-sort-function . nil)
-      (vertico-posframe-fallback-mode . vertico-buffer-mode))
-     (consult-line
-      posframe
-      (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-      (vertico-posframe-border-width . 5)
-      (vertico-posframe-fallback-mode . vertico-buffer-mode))))
+   '((t posframe)))
   (vertico-multiform-categories
    '((imenu buffer)
      (library indexed)
-     (org-roam-node posframe indexed)
-     (t posframe)))
+     (org-roam-node indexed)
+     (symbol (vertico-sort-function . vertico-sort-alpha))
+     (file (vertico-sort-override-function . vertico-sort-directories-first))))
   :config
   (vertico-mode 1)
   (vertico-multiform-mode 1))
@@ -1165,6 +1159,10 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
   :custom-face
   (vertico-posframe-border ((t (:background unspecified :inherit shadow))))
   :custom
+  (vertico-posframe-width 110)
+  (vertico-posframe-height 20)
+  (vertico-posframe-border-width 10)
+  (vertico-posframe-fallback-mode 'vertico-buffer-mode)
   (vertico-posframe-parameters
    '((left-fringe . 8)
      (right-fringe . 8))))
@@ -1175,29 +1173,16 @@ also helpful emacs config just for vertico
 #+begin_src emacs-lisp
 (use-package emacs
   :ensure nil
-  :bind
-  ("s-," . (lambda () (interactive)
-             (find-file (concat user-emacs-directory "README.org"))))
-  :init
-  (defun crm-indicator (args)
-    (cons (format "[CRM%s] %s"
-                  (replace-regexp-in-string
-                   "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-                   crm-separator)
-                  (car args))
-          (cdr args)))
-  (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
-
   :custom
+  ;; Support opening new minibuffers from inside existing minibuffers.
+  (enable-recursive-minibuffers t)
+  ;; Hide commands in M-x which do not work in the current mode.  Vertico
+  ;; commands are hidden in normal buffers. This setting is useful beyond
+  ;; Vertico.
+  (read-extended-command-predicate #'command-completion-default-include-p)
   ;; Do not allow the cursor in the minibuffer prompt
   (minibuffer-prompt-properties
-   '(read-only t cursor-intangible t face minibuffer-prompt))
-  ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-  ;; Vertico commands are hidden in normal buffers.
-  (read-extended-command-predicate
-        #'command-completion-default-include-p)
-  ;; Enable recursive minibuffers
-  (enable-recursive-minibuffers t))
+   '(read-only t cursor-intangible t face minibuffer-prompt)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -1238,11 +1223,12 @@ Enable richer annotations using the Marginalia package
 
 #+begin_src emacs-lisp
 (use-package orderless
-  :defer 0.5
-  :init
-  (setq completion-styles '(orderless basic)
-        completion-category-defaults nil
-        completion-category-overrides '((file (styles partial-completion)))))
+  :defer t
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles partial-completion))))
+  (completion-category-defaults nil)
+  (completion-pcm-leading-wildcard t))
 #+end_src
 
 ** Savehist
@@ -1372,6 +1358,15 @@ Enable richer annotations using the Marginalia package
 
 * Terminals, Shells
 
+** ghostel
+
+#+begin_src emacs-lisp
+(use-package ghostel
+  :ensure t
+  :custom
+  (ghostel-module-auto-install 'download))
+#+end_src
+
 ** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
 
 *Eshell* is a shell written entirely in Emacs-Lisp, and it replicates
@@ -1428,11 +1423,6 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
     (setq eshell-path-env-list nil)
     (exec-path-from-shell-copy-env "PATH"))
 
-  :bind
-  (:map eshell-mode-map
-        ("<up>" . previous-line)
-        ("<down>" . next-line)
-        ("M-r" . consult-history))
   :hook
   (eshell-mode . my/eshell-corfu-setup)
   (eshell-after-prompt-hook . my/eshell-update-env)
