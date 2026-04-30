@@ -767,11 +767,24 @@ to disk long before something happens to your Emacs session.
 #+begin_src emacs-lisp
 (use-package tab-bar
   :ensure nil
+  :bind
+  ("s-t" . tab-bar-new-tab)
+  ("s-w" . tab-bar-close-tab)
+  (:map tab-bar-mode-map
+        ("c-<TAB>"  . nil))
   :custom
   ;; Do not show buttons.
-  (tab-bar-new-button-show t)
-  (tab-bar-close-button-show t)
-  (tab-bar-tab-hints t))
+  (tab-bar-new-button-show nil)
+  (tab-bar-close-button-show nil)
+  (tab-bar-tab-hints t)
+  (tab-bar-select-tab-modifiers "super")
+  (tab-bar-new-tab-choice "*dashboard*")
+  (tab-bar-separator ""))
+
+(use-package vim-tab-bar
+  :commands vim-tab-bar-mode
+  :hook
+  (tab-bar-mode . vim-tab-bar-mode))
 #+end_src
 
 ** tab-line
@@ -786,9 +799,14 @@ to disk long before something happens to your Emacs session.
 #+end_src
 
 ** visible-auto-revert
+
 #+begin_src emacs-lisp
 (use-package visible-auto-revert
   :ensure (:fetcher github :repo "kn66/visible-auto-revert.el")
+  :custom
+  (auto-revert-use-notify nil)
+  (auto-revert-verbose nil)
+  (auto-revert-interval 0.5)
   :config
   (visible-auto-revert-mode +1))
 #+end_src
@@ -1662,6 +1680,37 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 #+end_src
 
 * AI
+
+** Pi coding agent
+
+#+begin_src emacs-lisp
+(use-package pi-coding-agent
+  :ensure t
+  :init (defalias 'pi 'pi-coding-agent)
+  :custom
+  (pi-coding-agent-input-window-height 10)        ; Height of input window
+  (pi-coding-agent-tool-preview-lines 10)         ; Lines shown before collapsing tool output
+  (pi-coding-agent-bash-preview-lines 5)          ; Lines shown for bash output
+  (pi-coding-agent-context-warning-threshold 70)  ; Warn when context exceeds this %
+  (pi-coding-agent-context-error-threshold 90)    ; Critical when context exceeds this %
+  (pi-coding-agent-visit-file-other-window t)     ; RET opens file in other window (nil for same)
+  (pi-coding-agent-hot-tail-turn-count 3)         ; Recent headed turns that re-wrap on resize
+  ;; (pi-coding-agent-thinking-display 'visible)      ; Expand completed thinking by default
+  ;; (pi-coding-agent-thinking-hidden-preview nil)    ; Always use generic "Thinking hidden…" stubs
+  ;; (pi-coding-agent-copy-raw-markdown t)            ; Keep raw markdown on copy (default: strip hidden markup)
+  ;; (pi-coding-agent-input-markdown-highlighting t)  ; tree-sitter markdown highlighting in input buffer
+  :config
+
+  (defun pi-coding-agent--format-startup-header ()
+    "Format the startup header string with styled separator."
+    (let ((separator (pi-coding-agent--make-separator "Pi Coding Agent for Emacs")))
+      (concat
+       separator "\n"
+       "C-c C-c   send prompt\n"
+       "C-c C-k   abort\n"
+       "C-c C-r   resume session\n"
+       "C-c C-p   menu\n"))))
+#+end_src
 
 ** ClaudeCode
 
