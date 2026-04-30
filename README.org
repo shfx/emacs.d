@@ -2647,12 +2647,11 @@ fill those notes in with more details!"
   :ensure (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
   :defer 2
   :after (org-roam websocket)
-  ;;         if you don't care about startup time, use
   :custom
   (org-roam-ui-sync-theme t)
   (org-roam-ui-follow t)
   (org-roam-ui-update-on-save t)
-  (org-roam-ui-open-on-start t)
+  (org-roam-ui-open-on-start nil)
   :config
   (org-roam-ui-mode 1))
 #+end_src
@@ -2788,7 +2787,7 @@ Hides modeline whenever this minor mode is active
   (add-to-list 'forge-alist '("gitlab.service.osa" "gitlab.service.osa/api/v4" "gitlab.service.osa" forge-gitlab-repository)))
 #+end_src
 
-*** COMMENT delta
+*** delta
 
 #+begin_src emacs-lisp
 (use-package magit-delta
@@ -2808,7 +2807,7 @@ Hides modeline whenever this minor mode is active
   (git-commit-mode . conventional-commit-setup))
 #+end_src
 
-*** browse-at-remote (link)
+*** COMMENT browse-at-remote (link)
 
 #+begin_src emacs-lisp
 (use-package browse-at-remote
