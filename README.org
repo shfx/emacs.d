@@ -1974,15 +1974,11 @@ loaded before any language package
    (append
     '((hyprlang "https://github.com/tree-sitter-grammars/tree-sitter-hyprlang" nil nil nil nil)
       (prisma "https://github.com/victorhqc/tree-sitter-prisma" nil nil nil nil)
-      (svelte "https://github.com/Himujjal/tree-sitter-svelte" "master" nil nil nil))
-    treesit-language-source-alist)))
-#+end_src
-
-** Treesit fold
-
-#+begin_src emacs-lisp
-(use-package treesit-fold
-  :ensure (treesit-fold :fetcher github :repo "emacs-tree-sitter/treesit-fold"))
+      (svelte "https://github.com/themixednuts/tree-sitter-htmlx" "master" nil nil nil))
+    treesit-language-source-alist))
+  :config
+  
+  (setq treesit--install-language-grammar-out-dir-history (list (no-littering-expand-var-file-name "treesit"))))
 #+end_src
 
 ** COMMENT Combobulate
@@ -2907,6 +2903,15 @@ Hides modeline whenever this minor mode is active
   :bind ("M-<tab>" . yas-insert-snippet)
   :custom
   (yas-wrap-around-region t)
+  ;; We don't want to expand non keywords, like a function call chain
+  ;; This will go back all the alpha chars back and see if there is a
+  ;; whitespace or an 
+  (yas-buffer-local-condition
+   (lambda ()
+     (save-excursion
+       (skip-chars-backward "a-zA-Z")
+       (when (or (bobp) (memq (char-before) '(?\n ?\s ?\t ?\()))
+         t))))
   :config
   (yas-reload-all))
 
