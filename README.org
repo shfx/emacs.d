@@ -87,22 +87,19 @@ inside an advice to ~keyboard-quit~ thus making it quit minibuffer when
 not both  
 
 #+begin_src emacs-lisp
-(define-advice keyboard-quit
-    (:around (keyboard-quit) quit-current-context)
-  "Quit the current context.
+(defun +keyboard-quit-dwim ()
+  (interactive)
+  (cond
+   ((region-active-p)
+    (keyboard-quit))
+   ((derived-mode-p 'completion-list-mode)
+    (delete-completion-window))
+   ((> (minibuffer-depth) 0)
+    (abort-recursive-edit))
+   (t
+    (keyboard-quit))))
 
-When there is an active minibuffer and we are not inside it close
-it.  When we are inside the minibuffer use the regular
-`minibuffer-keyboard-quit' which quits any active region before
-exiting.  When there is no minibuffer `keyboard-quit' unless we
-are defining or executing a macro."
-  (if (active-minibuffer-window)
-      (if (minibufferp)
-          (minibuffer-keyboard-quit)
-        (abort-recursive-edit))
-    (unless (or defining-kbd-macro
-                executing-kbd-macro)
-      (funcall-interactively keyboard-quit))))
+(keymap-global-set "C-g" #'+keyboard-quit-dwim)
 #+end_src
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
