@@ -260,6 +260,7 @@ of other emacsclients instances
   (read-buffer-completion-ignore-case t)
   (ring-bell-function 'ignore)
   (scroll-margin 0)
+  (scroll-conservatively 10000)
   (scroll-preserve-screen-position t)
   (scroll-step 1)
   (show-trailing-whitespace nil)
@@ -771,7 +772,7 @@ to disk long before something happens to your Emacs session.
   ("s-t" . tab-bar-new-tab)
   ("s-w" . tab-bar-close-tab)
   (:map tab-bar-mode-map
-        ("c-<TAB>"  . nil))
+        ("C-<tab>"  . nil))
   :custom
   ;; Do not show buttons.
   (tab-bar-new-button-show nil)
@@ -782,7 +783,6 @@ to disk long before something happens to your Emacs session.
   (tab-bar-separator ""))
 
 (use-package vim-tab-bar
-  :commands vim-tab-bar-mode
   :hook
   (tab-bar-mode . vim-tab-bar-mode))
 #+end_src
