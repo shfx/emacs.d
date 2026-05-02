@@ -1129,23 +1129,21 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
 
 (use-package vertico
   :demand t
-  :hook ((rfn-eshadow-update-overlay . vertico-directory-tidy)
-         (minibuffer-setup . vertico-repeat-save))
-  :bind (:map vertico-map
-              ("<tab>" . vertico-insert)
-              ("<escape>" . minibuffer-keyboard-quit)
-              ("?" . minibuffer-completion-help)
-              ("C-M-n" . vertico-next-group)
-              ("C-M-p" . vertico-previous-group)
-              ("M-o" . my/vertico-quick-embark)
-              ("C-i" . vertico-quick-insert)
-              ("C-o" . vertico-quick-exit)
-              ("M-G" . vertico-multiform-grid)
-              ("M-F" . vertico-multiform-flat)
-              ("M-R" . vertico-multiform-reverse)
-              ("M-U" . vertico-multiform-unobtrusive)
-              ("C-<backspace>" . vertico-directory-delete-word)
-              ("RET" . vertico-directory-enter))
+  :hook
+  ((rfn-eshadow-update-overlay . vertico-directory-tidy)
+   (minibuffer-setup . vertico-repeat-save))
+  :bind
+  (:map vertico-map
+        ("<tab>" . vertico-insert)
+        ("<escape>" . minibuffer-keyboard-quit)
+        ("?" . minibuffer-completion-help)
+        ("C-M-n" . vertico-next-group)
+        ("C-M-p" . vertico-previous-group)
+        ("M-o" . my/vertico-quick-embark)
+        ("C-i" . vertico-quick-insert)
+        ("C-o" . vertico-quick-exit)
+        ("C-<backspace>" . vertico-directory-delete-word)
+        ("RET" . vertico-directory-enter))
   :custom
   (vertico-resize nil)
   (vertico-cycle t)
@@ -1164,7 +1162,26 @@ Some of the config is borrowed straight from [[https://kristofferbalintona.me/po
      (file (vertico-sort-override-function . vertico-sort-directories-first))))
   :config
   (vertico-mode 1)
-  (vertico-multiform-mode 1))
+  (vertico-multiform-mode 1)
+
+  (defvar +vertico-default-action #'vertico-exit
+    "`vertico-exit' or `vertico-directory-enter' are good choices.")
+
+  (defun +embark-act-all-noconfirm ()
+    "`embark-act-all' but never ask for confirmation."
+    (interactive)
+    (let (embark-confirm-act-all)
+      (call-interactively #'embark-act-all)))
+
+  (defun +vertico-actall-or-default ()
+    "`embark-act-all' if there are selections otherwise run `+vertico-default-action'."
+    (interactive)
+    (if (bound-and-true-p embark--selection)
+        (call-interactively #'+embark-act-all-noconfirm)
+      (call-interactively +vertico-default-action)))
+
+  (keymap-set vertico-map "C-SPC" #'embark-select)
+  (keymap-set vertico-map "<return>" #'+vertico-actall-or-default))
 
 (use-package vertico-posframe
   :after vertico
@@ -1805,8 +1822,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 
 #+begin_src emacs-lisp
 (defun my/corfu-setup-lsp ()
-  "Use orderless completion style with lsp-capf instead of the
-    default lsp-passthrough."
+  "Use orderless completion style with lsp-capf instead of the default lsp-passthrough."
   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
         '(orderless)))
 
@@ -3371,6 +3387,10 @@ Install jsonnet-language-server to enable lsp support
 (use-package pgmacs
   :ensure (pgmacs :fetcher github :repo "emarsden/pgmacs")
   :defer t)
+
+(use-package sql-indent
+  :hook
+  (sql-mode . sqlind-minor-mode))
 #+end_src
 
 ** Eask

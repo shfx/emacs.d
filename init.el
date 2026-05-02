@@ -12,10 +12,7 @@
 (setopt
  ad-redefinition-action 'accept
  auto-revert-avoid-polling t
- auto-revert-check-vc-info t
- auto-revert-interval 1
  auto-revert-stop-on-user-input nil
- auto-revert-verbose t
  auto-save-default t
  auto-save-include-big-deletions t
  auto-window-vscroll nil
