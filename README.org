@@ -1653,29 +1653,10 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   :hook
   (prog-mode . flycheck-mode)
   (flycheck-mode . my/flycheck-prefer-eldoc)
-  ;; :custom-face
-  ;; (flycheck-error ((t (:underline (:color "#e74c3c" :style wave) :background unspecified))))
-  ;; (flycheck-info ((t (:underline (:color "#b6e63e" :style wave) :background unspecified))))
   :custom
   (flycheck-display-errors-delay 0)
   (flycheck-idle-change-delay 0.3)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-#+end_src
-
-** flyover
-
-#+begin_src emacs-lisp
-(use-package flyover
-  :ensure (flyover :fetcher github :repo "konrad1977/flyover")
-  ;;:hook
-  ;;(flycheck-mode . flyover-mode)
-  :custom
-  (flyover-use-theme-colors t)
-  (flyover-show-at-eol nil)
-  (flyover-show-virtual-line t)
-  (flyover-hide-when-cursor-is-on-same-line nil)
-  (flyover-background-lightness 35)
-  (flyover-text-tint 'lighter))
 #+end_src
 
 * AI
