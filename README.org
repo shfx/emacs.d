@@ -87,19 +87,18 @@ inside an advice to ~keyboard-quit~ thus making it quit minibuffer when
 not both  
 
 #+begin_src emacs-lisp
-(defun +keyboard-quit-dwim ()
-  (interactive)
+(define-advice keyboard-quit
+    (:around (quit) keyboard-quit-dwim)
   (cond
    ((region-active-p)
-    (keyboard-quit))
-   ((derived-mode-p 'completion-list-mode)
-    (delete-completion-window))
-   ((> (minibuffer-depth) 0)
-    (abort-recursive-edit))
-   (t
-    (keyboard-quit))))
-
-(keymap-global-set "C-g" #'+keyboard-quit-dwim)
+    (funcall-interactively quit))
+   ((active-minibuffer-window)
+    (if (minibufferp)
+        (minibuffer-keyboard-quit)
+      (abort-recursive-edit)))
+   (t 
+    (unless (or defining-kbd-macro executing-kbd-macro)
+      (funcall-interactively quit)))))
 #+end_src
 
 ** better-defaults ([[https://github.com/technomancy/better-defaults][link]])
@@ -801,7 +800,7 @@ to disk long before something happens to your Emacs session.
 (use-package visible-auto-revert
   :ensure (:fetcher github :repo "kn66/visible-auto-revert.el")
   :custom
-  (auto-revert-use-notify nil)
+  (auto-revert-use-notify t)
   (auto-revert-verbose nil)
   (auto-revert-interval 0.5)
   :config
