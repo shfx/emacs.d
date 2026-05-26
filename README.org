@@ -215,7 +215,7 @@ of other emacsclients instances
 #+begin_src emacs-lisp
 (if (and (fboundp 'server-running-p)
          (not (server-running-p)))
-   (server-start))
+    (server-start))
 #+end_src
 
 ** Setting default display and editing options
@@ -514,10 +514,10 @@ to disk long before something happens to your Emacs session.
 ** Load theme
 
 #+begin_src emacs-lisp
-(defun my/remove-slant-attribute ()
+(defun +remove-slant-attribute (&optional theme)
   "Iterate over all faces and resets slant attributs to `':normal`'.
-  Call it on custom-define-hook so any defered packages will be reset
-  with this function."
+    Call it on custom-define-hook so any defered packages will be reset
+    with this function."
   (mapc (lambda (face)
           (when (not (eq (face-attribute face :slant) 'normal))
             (set-face-attribute face nil :slant 'normal)))
@@ -527,18 +527,13 @@ to disk long before something happens to your Emacs session.
   :ensure (kanagawa-theme :fetcher github :repo "arouene/emacs-kanagawa-theme" :files ("kanagawa-theme.el"))
   :demand t
   :hook
-  ;; lazy loaded modules can define slat faces, this removes them
-  (custom-define . my/remove-slant-attribute)
+  (after-enable-theme . +remove-slant-attribute)
+  :custom
+  (frame-background-mode 'dark)
   :config
-  (load-theme 'kanagawa :no-confim)
   (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
-  ;; (my/remove-slant-attribute)
-  (when (eq system-type 'darwin)
-    (add-to-list 'face-font-rescale-alist '("Apple Color Emoji" . 0.82))
-    (system-packages-install "font-jetbrains-mono"))
-  (when (and (eq system-type 'gnu/linux)
-             (not (file-exists-p "~/.local/share/fonts/fonts/webfonts/JetBrainsMono-Light.woff2")))
-    (shell-command "/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/JetBrains/JetBrainsMono/master/install_manual.sh)\"")))
+  (load-theme 'kanagawa :no-confim)
+  (+remove-slant-attribute))
 #+end_src
 
 ** Nerd Icons
@@ -679,13 +674,13 @@ to disk long before something happens to your Emacs session.
    '("\\*Messages\\*"
      "Output\\*$"
      "\\*Async Shell Command\\*"
-     compilation-mode
-     vterm-mode
-     "\\*verminal"))
-  (popper-mode-line '(:eval
-                      (propertize " POP " 'face 'mode-line-emphasis)))
+     (compile-mode . hide)
+     ghostel-compile-view-mode
+     "*ghostel-compile*"))
+  (popper-mode-line '(:eval (propertize " POP " 'face 'mode-line-emphasis)))
   (popper-display-control t)
   (popper-group-function nil)
+  (popper-display-function #'popper-select-popup-at-bottom)
   :config
   (popper-mode +1)
   (popper-echo-mode +1))
@@ -759,30 +754,6 @@ to disk long before something happens to your Emacs session.
   (zoom-ignored-buffer-name-regexps '("^*calc")))
 #+end_src
 
-** tab-bar
-
-#+begin_src emacs-lisp
-(use-package tab-bar
-  :ensure nil
-  :bind
-  ("s-t" . tab-bar-new-tab)
-  ("s-w" . tab-bar-close-tab)
-  (:map tab-bar-mode-map
-        ("C-<tab>"  . nil))
-  :custom
-  ;; Do not show buttons.
-  (tab-bar-new-button-show nil)
-  (tab-bar-close-button-show nil)
-  (tab-bar-tab-hints t)
-  (tab-bar-select-tab-modifiers "super")
-  (tab-bar-new-tab-choice "*dashboard*")
-  (tab-bar-separator ""))
-
-(use-package vim-tab-bar
-  :hook
-  (tab-bar-mode . vim-tab-bar-mode))
-#+end_src
-
 ** visible-auto-revert
 
 #+begin_src emacs-lisp
@@ -825,7 +796,27 @@ Highlights a line when switching buffers, windows and frames.
   (require 'eval-sexp-fu))
 #+end_src
 
-** meow
+** intend-bars
+
+#+begin_src emacs-lisp
+(use-package indent-bars
+  :custom
+  (indent-bars-no-descend-lists 'skip) ; prevent extra bars in nested lists + skip intermediate bars
+  (indent-bars-treesit-support t)
+  (indent-bars-treesit-ignore-blank-lines-types '("module"))
+  :hook ((prog-mode) . indent-bars-mode))
+#+end_src
+
+** comment-dwim-2
+
+#+begin_src emacs-lisp
+(use-package comment-dwim-2
+  :bind
+  ("M-;" . comment-dwim-2))
+ 
+#+end_src
+
+** COMMENT meow
 
 #+begin_src emacs-lisp
 (use-package meow
@@ -987,15 +978,8 @@ Highlights a line when switching buffers, windows and frames.
      '("<right>" . ignore)))
   
   (meow-setup)
-  (meow-global-mode 1)
-  
-  (scroll-on-jump-advice-add meow-undo)
-  (scroll-on-jump-advice-add meow-search)
-  (scroll-on-jump-advice-add meow-visit)
-  (scroll-on-jump-advice-add meow-line)
-  (scroll-on-jump-advice-add meow-beginning-of-thing)
-  (scroll-on-jump-advice-add meow-end-of-thing)
-  (scroll-on-jump-advice-add meow-pop-selection))
+  ;; (meow-global-mode 1)
+  )
 #+end_src
 
 ** Expand region
@@ -1112,6 +1096,16 @@ so yes, there are kinks. Don't be afraid tho, I've been using it since
 
 (use-package visual-regexp-steroids
   :after visual-regexp)
+#+end_src
+
+** show-paren-mode
+
+#+begin_src emacs-lisp
+(use-package paren
+  :ensure nil
+  :custom
+  (show-paren-predicate '(and (not (derived-mode . special-mode))
+                               (not (derived-mode . ghostel-mode)))))
 #+end_src
 
 * List filtering helpers
@@ -1392,11 +1386,43 @@ Enable richer annotations using the Marginalia package
 #+begin_src emacs-lisp
 (use-package ghostel
   :ensure t
+  :bind-keymap
+  ("C-c v" . +ghostel-map)
+  :bind
+  (:map +ghostel-map
+        ("v" . ghostel)
+        ("p" . +ghostel-pi)
+        ("r" . +ghostel-pi-restart))
   :custom
-  (ghostel-module-auto-install 'download))
+  (ghostel-module-auto-install 'download)
+  (ghostel-detect-password-prompts nil)
+  (ghostel-enable-osc52 t)
+  :config
+  (defvar +ghostel-map (make-sparse-keymap))
+  (defvar-local +ghostel-pi-buffer nil)
+  
+  (defun +ghostel-pi ()
+    (interactive)
+    (let* ((name (if (projectile-project-p)
+                     (concat "*pi - " (projectile-project-name) "*")
+                   ghostel-buffer-name))
+           (buffer (get-buffer-create name)))
+      (with-current-buffer buffer
+        (switch-to-buffer buffer)
+        (setq-local ghostel-detect-password-prompts nil)
+        (ghostel-exec buffer "/bin/zsh" '("-i" "-c" "pi"))
+        (setq-local +ghostel-pi-buffer t))))
+  
+  (defun +ghostel-pi-restart ()
+    (interactive)
+    (while (and (eq major-mode 'ghostel-mode)
+                (boundp '+ghostel-pi-buffer)
+                (eq +ghostel-pi-buffer t))
+      (kill-buffer (buffer-name))
+      (+ghostel-pi))))
 #+end_src
 
-** Eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
+** eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
 
 *Eshell* is a shell written entirely in Emacs-Lisp, and it replicates
 most of the features and commands from GNU CoreUtils and the
@@ -1533,7 +1559,7 @@ PS. some config stolen from https://github.com/gopar/.emacs.d
                 (propertize " " 'face 'default)))))))
 #+end_src
 
-** Eshell Toggle ([[https://github.com/4DA/eshell-toggle][link]])
+** eshell-toggle ([[https://github.com/4DA/eshell-toggle][link]])
 
 Simple functionality to show/hide eshell/ansi-term (or almost any
 other buffer, see eshell-toggle-init-function description below) at
@@ -1562,12 +1588,6 @@ the bottom of active window with directory of its buffer.
   (eshell-toggle-find-project-root-package t))
 #+end_src
 
-** ESUP
-
-#+begin_src emacs-lisp
-(use-package esup)
-#+end_src
-
 * Project management
 
 ** projectile
@@ -1578,10 +1598,13 @@ the bottom of active window with directory of its buffer.
   (projectile-mode +1)
   :custom
   (projectile-sort-order 'recently-active)
-  (projectile-switch-project-action #'projectile-find-dir)
+  (projectile-switch-project-action #'magit-status)
   (projectile-find-dir-includes-top-level t)
-  :bind (:map projectile-mode-map
-              ("s-p" . projectile-command-map)))
+  :bind
+  (:map projectile-mode-map
+        ("s-p" . projectile-command-map))
+  (:map projectile-command-map
+  ("g" . ghostel-project)))
 #+end_src
 
 ** consult jump project
@@ -1641,142 +1664,12 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 #+begin_src emacs-lisp
 (use-package flycheck
   :defer 1
-  :preface
-  ;; Got displaying flycheck errors in eldoc from here https://www.masteringemacs.org/article/seamlessly-merge-multiple-documentation-sources-eldoc
-  (defun mp-flycheck-eldoc (callback &rest _ignored)
-    "Print flycheck messages at point by calling CALLBACK."
-    (when-let* ((flycheck-errors (and flycheck-mode (flycheck-overlay-errors-at (point)))))
-      (mapc
-       (lambda (err)
-         (funcall callback
-                  (format "%s: %s"
-                          (let ((level (flycheck-error-level err)))
-                            (pcase level
-                              ('info (propertize "I" 'face 'flycheck-error-list-info))
-                              ('error (propertize "E" 'face 'flycheck-error-list-error))
-                              ('warning (propertize "W" 'face 'flycheck-error-list-warning))
-                              (_ level)))
-                          (flycheck-error-message err))
-                  :thing (or (flycheck-error-id err)
-                             (flycheck-error-group err))
-                  :face 'font-lock-doc-face))
-       flycheck-errors)))
-
-  (defun my/flycheck-prefer-eldoc ()
-    (add-hook 'eldoc-documentation-functions #'mp-flycheck-eldoc nil t)
-    (setq eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly)
-    (setq flycheck-display-errors-function nil)
-    (setq flycheck-help-echo-function nil))
   :hook
   (prog-mode . flycheck-mode)
-  (flycheck-mode . my/flycheck-prefer-eldoc)
   :custom
   (flycheck-display-errors-delay 0)
   (flycheck-idle-change-delay 0.3)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-#+end_src
-
-* AI
-
-** Pi coding agent
-
-#+begin_src emacs-lisp
-(use-package pi-coding-agent
-  :ensure t
-  :init (defalias 'pi 'pi-coding-agent)
-  :custom
-  (pi-coding-agent-input-window-height 10)        ; Height of input window
-  (pi-coding-agent-tool-preview-lines 10)         ; Lines shown before collapsing tool output
-  (pi-coding-agent-bash-preview-lines 5)          ; Lines shown for bash output
-  (pi-coding-agent-context-warning-threshold 70)  ; Warn when context exceeds this %
-  (pi-coding-agent-context-error-threshold 90)    ; Critical when context exceeds this %
-  (pi-coding-agent-visit-file-other-window t)     ; RET opens file in other window (nil for same)
-  (pi-coding-agent-hot-tail-turn-count 3)         ; Recent headed turns that re-wrap on resize
-  ;; (pi-coding-agent-thinking-display 'visible)      ; Expand completed thinking by default
-  ;; (pi-coding-agent-thinking-hidden-preview nil)    ; Always use generic "Thinking hidden…" stubs
-  ;; (pi-coding-agent-copy-raw-markdown t)            ; Keep raw markdown on copy (default: strip hidden markup)
-  ;; (pi-coding-agent-input-markdown-highlighting t)  ; tree-sitter markdown highlighting in input buffer
-  :config
-
-  (defun pi-coding-agent--format-startup-header ()
-    "Format the startup header string with styled separator."
-    (let ((separator (pi-coding-agent--make-separator "Pi Coding Agent for Emacs")))
-      (concat
-       separator "\n"
-       "C-c C-c   send prompt\n"
-       "C-c C-k   abort\n"
-       "C-c C-r   resume session\n"
-       "C-c C-p   menu\n"))))
-#+end_src
-
-** ClaudeCode
-
-#+begin_src emacs-lisp
-(defun my-claude-notify (title message)
-  "Display a macOS notification with sound."
-  (call-process "osascript" nil nil nil
-                "-e" (format "display notification \"%s\" with title \"%s\" sound name \"Glass\""
-                             message title)))
-
-(use-package claude-code
-  :ensure (claude-code :fetcher github :repo "stevemolitor/claude-code.el" :rev :newest)
-  :bind-keymap ("C-c c" . claude-code-command-map)
-  :hook
-  (claude-code-start . (lambda ()
-                         ;; Reduce line spacing to fix vertical bar gaps
-                         (setq-local line-spacing 0.1)))
-  (claude-code-mode . monet-mode)
-  :custom
-  (claude-code-notification-function #'my-claude-notify)
-  (use-default-font-for-symbols nil)
-  :config
-  (add-to-list 'display-buffer-alist
-                 '("^\\*claude"
-                   (display-buffer-in-side-window)
-                   (side . right)
-                   (window-width . 90)))
-    ;; optional IDE integration with Monet
-  (add-hook 'claude-code-process-environment-functions #'monet-start-server-function)
-  (monet-mode 1)
-
-  (claude-code-mode))
-#+end_src
-
-** ChatGPT
-
-#+begin_src emacs-lisp
-(defun shell-maker-welcome-message-ignore (config) "")
-
-(use-package chatgpt-shell
-  :bind
-  ("C-c C-a" . chatgpt-shell-quick-insert)
-  :custom
-  (chatgpt-shell-model-version "gpt-4.1")
-  (chatgpt-shell-root-path (no-littering-expand-var-file-name "chatgpt"))
-  (chatgpt-shell-openai-key (lambda () (cadr (auth-source-user-and-password "chatgpt" "shfx"))))
-  (chatgpt-shell-welcome-function 'shell-maker-welcome-message-ignore))
-#+end_src
-
-** Monet - Claude Code IDE integration
-
-#+begin_src emacs-lisp
-(use-package monet
-  :ensure (monet :fetcher github :repo "stevemolitor/monet" :rev :newest))
-#+end_src
-
-** agent-shell
-
-#+begin_src emacs-lisp
-(use-package agent-shell
-  :ensure t
-  :ensure-system-package
-  ;; Add agent installation configs here
-  ((claude . "brew install claude-code")
-   (claude-code-acp . "mise install npm:@zed-industries/claude-code-acp"))
-  :custom
-  (agent-shell-preferred-agent-config (agent-shell-anthropic-make-claude-code-config))
-  (agent-shell-anthropic-default-session-mode-id "default")
-  (agent-shell-anthropic-default-model-id "claude-opus-4-5@20251101"))
 #+end_src
 
 * Packages
@@ -1833,6 +1726,13 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   ((lsp-mode . lsp-enable-which-key-integration)
    (lsp-completion-mode . my/corfu-setup-lsp))
   :custom
+  (lsp-client-packages
+   '( lsp-bash lsp-css lsp-crates lsp-docker lsp-dockerfile
+      lsp-elm lasp-emmet lsp-emmet lsp-eslint lsp-eslint lsp-go
+      lsp-grammarly lsp-javascript lsp-just lsp-jq lsp-json
+      lsp-lisp lsp-lua lsp-lua lsp-lua lsp-markdown lsp-marksman
+      lsp-mdx lsp-ocaml lsp-postgres lsp-rust lsp-semgrep lsp-sql
+      lsp-svelte lsp-terraform lsp-toml lsp-typst lsp-yaml lsp-zig))
   (lsp-auto-execute-action nil)
   (lsp-auto-guess-root t)
   (lsp-clients-typescript-prefer-use-project-ts-server t)
@@ -1842,15 +1742,11 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (lsp-diagnostic-clean-after-change t)
   (lsp-diagnostics-modeline-scope :workspace)
   (lsp-diagnostics-provider :flycheck)
-  (lsp-eldoc-render-all nil)
-  (lsp-enable-dap-auto-configure t)
+  (lsp-enable-dap-auto-configure nil)
   (lsp-enable-indentation nil)
   (lsp-enable-links t)
   (lsp-enable-snippet t)
-  (lsp-eslint-auto-fix-on-save nil)
-  (lsp-eslint-working-directories [(pattern "/packages/*")])
-  (lsp-eslint-multi-root nil)
-  (lsp-eslint-server-command (list "node" "--max-old-space-size=8192" (concat (expand-file-name user-emacs-directory) "var/lsp/server/eslint/unzipped/extension/server/out/eslintServer.js") "--stdio"))
+  (lsp-eslint-auto-fix-on-save t)
   (lsp-file-watch-threshold 4000)
   (lsp-enable-file-watchers t)
   (lsp-headerline-breadcrumb-enable nil)
@@ -1863,20 +1759,23 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (lsp-modeline-code-actions-enable nil)
   (lsp-modeline-diagnostics-enable nil)
   (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-signature-doc-lines 1)
   (lsp-typescript-format-enable nil)
   (lsp-use-plists "true")
+  (lsp-semantic-tokens-enable t)
+  (lsp-tailwindcss-major-modes '())
   (lsp-yaml-custom-tags ["!reference sequence"])
   (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
   ;; needed for toolchains that don't support `rustup component add`
   (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
+  ;; :config
+  ;; (add-to-list 'warning-suppress-log-types '(lsp-mode))
+  ;; (add-to-list 'warning-suppress-types '(lsp-mode))
   :config
-  (add-to-list 'warning-suppress-log-types '(lsp-mode))
-  (add-to-list 'warning-suppress-types '(lsp-mode))
-
-  ;; disable eslint server check to override server command
-  (defun lsp-eslint-server-exists? (eslint-server-command)
-    t))
+  (defun lsp-graphql-activate-p (filename &optional _)
+    (string-match-p (rx (one-or-more anything) "."
+                        (or "graphql" "gql") eos)
+                    filename))
+  )
 
 (use-package lsp-ui
   :after lsp-mode
@@ -1887,18 +1786,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
          ([remap xref-find-references]  . lsp-ui-peek-find-references)))
   :custom
   (lsp-ui-doc-enable t)
-  (lsp-ui-doc-position 'at-point)
-  (lsp-ui-doc-alignment 'window)
-  (lsp-ui-doc-show-with-cursor nil)
-  (lsp-ui-doc-show-with-mouse t)
-  (lsp-ui-doc-use-childframe t)
-  (lsp-ui-doc-border "windowBackgroundColor")
-  (lsp-ui-doc-include-signature t)
-  (lsp-ui-doc-max-height 15)
-  (lsp-ui-doc-max-width 100)
-  (lsp-ui-sideline-enable nil)
-  (lsp-ui-peek-always-show nil)
-  (lsp-ui-sideline-show-hover nil))
+  (lsp-ui-sideline-enable nil))
 #+end_src
 
 ** Dabbrev
@@ -1953,7 +1841,11 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (setf (alist-get 'prisma-mode apheleia-mode-alist)
         '(prettier))
   (setf (alist-get 'svelte-ts-mode apheleia-mode-alist)
-        '(prettier)))
+        '(prettier))
+  (setf (alist-get 'rumdl apheleia-formatters)
+        '("rumdl" "fmt" "--silent"))
+  (setf (alist-get 'markdown-mode apheleia-mode-alist)
+        '(rumdl)))
 #+end_src
 
 ** Treesitter
@@ -2053,8 +1945,7 @@ using the Emacs formatting rules for that language.
 #+begin_src emacs-lisp
 (use-package diff-hl
   :hook
-  ((magit-post-refresh . diff-hl-magit-post-refresh)
-   (dired-mode . diff-hl-dired-mode))
+  ((magit-post-refresh . diff-hl-magit-post-refresh))
   :custom
   (vc-handled-backends '(Git))
   (diff-hl-update-async t)
@@ -2742,6 +2633,7 @@ Hides modeline whenever this minor mode is active
   (magit-process-finish-apply-ansi-colors t)
   (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
+  (magit-diff-visit-prefer-worktree t)
   (magit-process-password-functions '(magit-process-password-auth-source))
   (magit-list-refs-sortby "-creatordate")
   ;; optimisation
@@ -2777,17 +2669,6 @@ Hides modeline whenever this minor mode is active
   :config
   (add-to-list 'forge-alist '("gitlab.services.ams.osa" "gitlab.services.ams.osa/api/v4" "gitlab.services.ams.osa" forge-gitlab-repository))
   (add-to-list 'forge-alist '("gitlab.service.osa" "gitlab.service.osa/api/v4" "gitlab.service.osa" forge-gitlab-repository)))
-#+end_src
-
-*** delta
-
-#+begin_src emacs-lisp
-(use-package magit-delta
-  :custom-face
-  (magit-diff-added-highlight ((t (:background "#1C3F20"))))
-  :config
-  (setq magit-delta-delta-args (append magit-delta-delta-args '("--features" "magit-delta")))
-  (magit-delta-mode 1))
 #+end_src
 
 *** Conventional Commit
@@ -3133,38 +3014,18 @@ return windowTitle"))
 
 #+begin_src emacs-lisp
 (use-package markdown-ts-mode
+  :ensure nil
   :mode ("\\.md\\'" . markdown-ts-mode)
-  :defer t
-  :custom
-  (treesit-language-source-alist
-   (append
-    '((markdown
-       "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
-       "split_parser" "tree-sitter-markdown/src")
-      (markdown-inline
-       "https://github.com/tree-sitter-grammars/tree-sitter-markdown"
-       "split_parser" "tree-sitter-markdown-inline/src"))
-    treesit-language-source-alist)))
-
-;; (use-package md-ts-mode
-;;   :ensure t
-;;   :custom
-;;   (md-ts-hide-markup nil)
-;;   :custom-face
-;;   (md-ts-delimiter ((t (:inherit default))))
-;;   :init
-;;   (md-ts-mode-enable-global)
-;;   :config
-;;   (defun md-ts--fontify-thematic-break (node override start end &rest _) nil))
+  :defer t)
 
 (use-package grip-mode
   :ensure t
-  :config (setq grip-command 'mdopen) ;; auto, grip, go-grip or mdopen
+  :config (setq grip-command 'go-grip) ;; auto, grip, go-grip or mdopen
   :bind (:map markdown-mode-command-map
          ("g" . grip-mode)))
 
 (use-package edit-indirect
-  :after markdown-mode)
+  :after markdown-ts-mode)
 #+end_src
 
 ** Justfile
@@ -3207,13 +3068,14 @@ return windowTitle"))
 
 #+begin_src emacs-lisp
 (use-package json-mode
-  :mode "\\.json$"
+  :mode
+  ("\\.json$". json-mode)
+  ("\\.jsonc$". jsonc-mode)
   :hook
   (json-mode . lsp-deferred)
   :interpreter "json"
   :config
   (setq js-indent-level 2))
-
 #+end_src
 
 ** JSON5

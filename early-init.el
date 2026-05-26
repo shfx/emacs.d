@@ -8,6 +8,8 @@
 (setq package-enable-at-startup nil)
 (setq package-quickstart nil)
 
+(setq server-socket-dir "~/.emacs.d/sockets")
+
 ;; Select default encoding
 
 (set-language-environment "UTF-8")
@@ -91,19 +93,14 @@
 
 ;; Set default-frame-alist before init.el
 
-(push '(menu-bar-lines . 0) default-frame-alist)
-(push '(tool-bar-lines . 0) default-frame-alist)
-(push '(vertical-scroll-bars . nil) default-frame-alist)
-(push '(horizontal-scroll-bars . nil) default-frame-alist)
-(push '(ns-transparent-titlebar . t ) default-frame-alist)
-(push '(ns-appearance . dark) default-frame-alist)
-(push '(fullscreen . maximized) default-frame-alist)
-
-;; Disables modeline and set some default until theme is loaded
-
-(setq-default mode-line-format nil)
-(set-face-foreground 'vertical-border "#0c0c0f")
-(set-face-background 'default "#1e1e2e")
+(modify-all-frames-parameters
+ '((menu-bar-lines . 0)
+   (tool-bar-lines . 0)
+   (vertical-scroll-bars . nil)
+   (horizontal-scroll-bars . nil)
+   (ns-transparent-titlebar . t )
+   (ns-appearance . dark)
+   (fullscreen . maximized)))
 
 ;; This is needed by lsp-mode
 
