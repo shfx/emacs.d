@@ -46,7 +46,7 @@ should check this one https://github.com/mathiasbynens/dotfiles/blob/master/.mac
 sudo mdutil -i off
 
 brew tap jimeh/emacs-builds
-brew install emacs-app-good
+brew install jimeh/emacs-builds/emacs-app
 
 # Disable font smoothing
 defaults write $(osascript -e 'id of app "Emacs"') AppleFontSmoothing -int 0
