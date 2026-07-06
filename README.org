@@ -2010,28 +2010,6 @@ using the Emacs formatting rules for that language.
 (use-package scratch)
 #+end_src
 
-** Persistend Scratch
-
-#+begin_src emacs-lisp
-(use-package persistent-scratch
-  :config
-  (persistent-scratch-setup-default))
-#+end_src
-
-** diff-hl
-
-#+begin_src emacs-lisp
-(use-package diff-hl
-  :hook
-  ((magit-post-refresh . diff-hl-magit-post-refresh))
-  :custom
-  (vc-handled-backends '(Git))
-  (diff-hl-update-async t)
-  (diff-hl-draw-borders nil)
-  :config
-  (global-diff-hl-mode))
-#+end_src
-
 ** Editor Config ([[https://github.com/editorconfig/editorconfig-emacs][link]])
 
 *EditorConfig* helps maintain consistent coding styles for multiple
