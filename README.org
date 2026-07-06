@@ -1,4 +1,5 @@
 #+TITLE: ~.emacs.d~
+#+PROPERTY: header-args:elisp :lexical t
 
 * Synopsis
 
