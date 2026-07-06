@@ -252,6 +252,10 @@ of other emacsclients instances
   (minibuffer-prompt-properties '(read-only t point-entered minibuffer-avoid-prompt face minibuffer-prompt))
   (narrow-to-defun-include-comments t)
   (ns-right-alternate-modifier nil)
+  (ns-right-command-modifier 'alt)
+  (ns-option-modifier 'meta)
+  (ns-confirm-quit t)
+  (ns-function-modifier 'none)
   (ns-use-proxy-icon nil)
   (pop-up-frames nil)
   (read-buffer-completion-ignore-case t)
@@ -307,10 +311,6 @@ of other emacsclients instances
     (setq ls-lisp-use-insert-directory-program nil))
   (fset 'yes-or-no-p 'y-or-n-p))
 
-(use-package prog-mode
-  :ensure nil
-  :hook (prog-mode . electric-pair-mode))
-
 ;; http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
 (defconst y-or-n-p-ret-yes-map
   (let ((map (make-sparse-keymap)))
@@ -328,6 +328,12 @@ of other emacsclients instances
 (global-unset-key (kbd "C-<wheel-down>"))
 (global-unset-key (kbd "<mouse-2>"))
 (global-unset-key (kbd "s-t"))
+(global-unset-key (kbd "s-q"))
+
+;; Translate archaic key names
+(define-key function-key-map [(control shift iso-lefttab)] [(control shift tab)])
+(define-key function-key-map [(meta shift iso-lefttab)] [(meta shift tab)])
+(define-key function-key-map [(meta control shift iso-lefttab)] [(meta control shift tab)])
 
 ;; font sizes
 (defun my/increase-font-size ()
