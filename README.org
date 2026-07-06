@@ -338,15 +338,17 @@ of other emacsclients instances
 ;; font sizes
 (defun my/increase-font-size ()
   (interactive)
-  (let ((old-face-attribute (face-attribute 'default :height)))
-    (message (format "Changed font size to %d" (+ old-face-attribute 10)))
-    (set-face-attribute 'default nil :height (+ old-face-attribute 10))))
+  (let* ((old-height (face-attribute 'default :height))
+         (new-height (+ old-height 10)))
+    (message (format "Changed font size to %d" new-height))
+    (set-face-attribute 'default nil :height new-height)))
 
 (defun my/decrease-font-size ()
   (interactive)
-  (let ((old-face-attribute (face-attribute 'default :height)))
-    (message (format "Changed font size to %d" (- old-face-attribute 10)))
-    (set-face-attribute 'default nil :height (- old-face-attribute 10))))
+  (let* ((old-height (face-attribute 'default :height))
+         (new-height (- old-height 10)))
+    (message (format "Changed font size to %d" new-height))
+    (set-face-attribute 'default nil :height new-height)))
 
 ;; TODO: find better replacement for those bindigns
 (global-set-key (kbd "<pinch>") 'ignore)
