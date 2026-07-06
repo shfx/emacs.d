@@ -513,7 +513,7 @@ to disk long before something happens to your Emacs session.
 (defvar after-enable-theme-hook nil
   "Normal hook run after enabling a theme.")
 
-(define-advice enable-theme (:after (theme) run-after-enable-theme-hook)
+(define-advice enable-theme (:after (theme) +run-after-enable-theme-hook)
   "Run `after-enable-theme-hook'."
   (run-hook-with-args 'after-enable-theme-hook theme))
 #+end_src
@@ -521,24 +521,64 @@ to disk long before something happens to your Emacs session.
 ** Load theme
 
 #+begin_src emacs-lisp
-(defun +remove-slant-attribute (&optional theme)
-  "Iterate over all faces and resets slant attributs to `':normal`'.
-    Call it on custom-define-hook so any defered packages will be reset
-    with this function."
-  (mapc (lambda (face)
-          (when (not (eq (face-attribute face :slant) 'normal))
-            (set-face-attribute face nil :slant 'normal)))
-        (face-list)))
+;; -*- lexical-binding: t; -*-
+(defun debounce (func &optional delay)
+  (let ((timer)
+        (delay (or delay 0.5)))
+    (lambda (&rest args)
+      (prog1 nil
+        (if (timerp timer)
+            (timer-set-idle-time timer delay)
+          (setq timer
+                (run-with-idle-timer
+                 delay nil
+                 (lambda (buf)
+                   (setq timer nil)
+                   (with-current-buffer buf
+                     (apply func args)))
+                 (current-buffer))))))))
+
+(defmacro defbounce (name arglist delay &rest body)
+  (declare
+   (doc-string 4) (indent 2))
+  (let* ((parse (byte-run--parse-body body t))
+         (docstring (nth 0 parse))
+         (declare-form (nth 1 parse))
+         (body (nth 3 parse)))
+    (progn 
+      `(let ((debounced (debounce (lambda ,arglist ,@body) ,delay)))
+         (defun ,name ,arglist
+           ,docstring
+           ,declare-form
+           (funcall debounced ,@(seq-difference arglist '(&rest &optional))))))))
+
+(defbounce +remove-slant-attribute (&optional theme) 0.05
+           "Iterate over all faces and resets slant attributs to `':normal`'.
+   Call it on custom-define-hook so any defered packages will be reset
+   with this function."
+           (declare (ftype (function (&optional string) nil)))
+           (mapc (lambda (face)
+                   (when (not (eq (face-attribute face :slant) 'normal))
+                     (set-face-attribute face nil :slant 'normal)))
+                 (face-list)))
 
 (use-package kanagawa-theme
   :ensure (kanagawa-theme :fetcher github :repo "arouene/emacs-kanagawa-theme" :files ("kanagawa-theme.el"))
   :demand t
+  :custom-face (default ((t (:font "JetBrains Mono" :weight normal :height 160))))
   :hook
-  (after-enable-theme . +remove-slant-attribute)
+  ((after-enable-theme custom-define) . +remove-slant-attribute)
   :custom
   (frame-background-mode 'dark)
+  (kanagawa-theme-underline-parens nil)
+  (kanagawa-theme-keyword-italic nil)
+  (kanagawa-theme-comment-italic nil)
+  (face-font-rescale-alist
+   '(("Apple Color Emoji" . 0.85)                                                                                       
+     ("Noto Color Emoji" . 0.85)                                                                                        
+     ("Segoe UI Emoji" . 0.85)                                                                                          
+     ("Symbola" . 0.85)))
   :config
-  (set-face-attribute 'default nil :font "JetBrains Mono" :weight 'normal :height 160)
   (load-theme 'kanagawa :no-confim)
   (+remove-slant-attribute))
 #+end_src
