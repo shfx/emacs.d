@@ -1,15 +1,13 @@
 ;;; -*- lexical-binding: t -*-
 
-(setopt custom-file
-        (if (boundp 'server-socket-dir)
-            (expand-file-name "custom.el" server-socket-dir)
-          (expand-file-name (format "emacs-custom-%s.el" (user-uid)) temporary-file-directory)))
+(setopt custom-file nil)
 
 ;; ;; Track max-specpdl-size exceded error by uncommenting this
 ;; (setq max-specpdl-size 5)
 ;; (setq debug-on-error t)
 
 (setopt
+ disabled-command-function nil
  ad-redefinition-action 'accept
  auto-revert-avoid-polling t
  auto-revert-stop-on-user-input nil
@@ -169,11 +167,6 @@
 
 ;; Load org literal config config
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
-
-;; Load custom-file after all packages have ben initialized
-(add-hook 'elpaca-after-init-hook
-          (lambda ()
-            (load custom-file 'noerror 'nomessage)))
 
 (put 'dired-find-alternate-file 'disabled nil)
 (put 'downcase-region 'disabled nil)
