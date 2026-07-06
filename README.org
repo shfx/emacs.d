@@ -2301,11 +2301,13 @@ syste.
   ("C-c c" . org-capture)
 
   :config
-  (org-babel-add-langs ((emacs-lisp .  t)))
   (org-indent-mode 1)
-  (custom-set-faces '(org-ellipsis ((t (:foreground "gray40" :underline nil)))))
-  (org-babel-add-langs
-   ((ditaa . t)))
+  (org-babel-add-langs 
+   ((emacs-lisp .  t)
+    (ditaa . t)))
+  :custom-face
+  (org-block ((t (:inherit default :foreground unspecified))))
+  (org-ellipsis ((t (:foreground "gray40" :underline unspecified))))
   :custom
   (org-src-window-setup 'current-window)
   (org-modules
