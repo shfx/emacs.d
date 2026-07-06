@@ -103,7 +103,3 @@
    (background-mode . dark)
    (alpha-background . 95)
    (fullscreen . maximized)))
-
-;; This is needed by lsp-mode
-
-(setenv "LSP_USE_PLISTS" "true")

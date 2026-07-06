@@ -1825,81 +1825,11 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
    ((jq . t))))
 #+end_src
 
-** LSP Mode
+** lsp-proxy
 
 #+begin_src emacs-lisp
-(defun my/corfu-setup-lsp ()
-  "Use orderless completion style with lsp-capf instead of the default lsp-passthrough."
-  (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-        '(orderless)))
-
-(use-package lsp-mode
-  :commands (lsp lsp-deferred)
-  :defer 0.5
-  :hook
-  ((lsp-mode . lsp-enable-which-key-integration)
-   (lsp-completion-mode . my/corfu-setup-lsp))
-  :custom
-  (lsp-client-packages
-   '( lsp-bash lsp-css lsp-crates lsp-docker lsp-dockerfile
-      lsp-elm lasp-emmet lsp-emmet lsp-eslint lsp-eslint lsp-go
-      lsp-grammarly lsp-javascript lsp-just lsp-jq lsp-json
-      lsp-lisp lsp-lua lsp-lua lsp-lua lsp-markdown lsp-marksman
-      lsp-mdx lsp-ocaml lsp-postgres lsp-rust lsp-semgrep lsp-sql
-      lsp-svelte lsp-terraform lsp-toml lsp-typst lsp-yaml lsp-zig))
-  (lsp-auto-execute-action nil)
-  (lsp-auto-guess-root t)
-  (lsp-clients-typescript-prefer-use-project-ts-server t)
-  (lsp-clients-typescript-preferences '(:includeCompletionsForModuleExports nil :generateReturnInDocTemplate nil))
-  (lsp-completion-default-behaviour :insert)
-  (lsp-completion-provider :none)
-  (lsp-diagnostic-clean-after-change t)
-  (lsp-diagnostics-modeline-scope :workspace)
-  (lsp-diagnostics-provider :flycheck)
-  (lsp-enable-dap-auto-configure nil)
-  (lsp-enable-indentation nil)
-  (lsp-enable-links t)
-  (lsp-enable-snippet t)
-  (lsp-eslint-auto-fix-on-save t)
-  (lsp-enable-file-watchers nil)
-  (lsp-headerline-breadcrumb-enable nil)
-  (lsp-inlay-hint-enable nil)
-  (lsp-javascript-display-enum-member-value-hints t)
-  (lsp-javascript-format-enable nil)
-  (lsp-keep-workspace-alive nil)
-  (lsp-keymap-prefix "s-l")
-  (lsp-lens-enable nil)
-  (lsp-modeline-code-actions-enable nil)
-  (lsp-modeline-diagnostics-enable nil)
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-typescript-format-enable nil)
-  (lsp-use-plists "true")
-  (lsp-semantic-tokens-enable t)
-  (lsp-tailwindcss-major-modes '())
-  (lsp-yaml-custom-tags ["!reference sequence"])
-  (lsp-yaml-schema-store-local-db (no-littering-expand-var-file-name "./lsp/lsp-yaml-schemas.json"))
-  ;; needed for toolchains that don't support `rustup component add`
-  (lsp-rust-analyzer-server-command (list (substring (shell-command-to-string "rustup which --toolchain stable rust-analyzer") 0 -1)))
-  ;; :config
-  ;; (add-to-list 'warning-suppress-log-types '(lsp-mode))
-  ;; (add-to-list 'warning-suppress-types '(lsp-mode))
-  :config
-  (defun lsp-graphql-activate-p (filename &optional _)
-    (string-match-p (rx (one-or-more anything) "."
-                        (or "graphql" "gql") eos)
-                    filename))
-  )
-
-(use-package lsp-ui
-  :after lsp-mode
-  :hook (lsp-mode . lsp-ui-mode)
-  :bind
-  (:map lsp-ui-mode-map
-        (([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-         ([remap xref-find-references]  . lsp-ui-peek-find-references)))
-  :custom
-  (lsp-ui-doc-enable t)
-  (lsp-ui-sideline-enable nil))
+  (use-package lsp-proxy
+    :ensure (lsp-proxy :fetcher github :repo "jadestrong/lsp-proxy"))
 #+end_src
 
 ** Dabbrev
@@ -2874,7 +2804,6 @@ Hides modeline whenever this minor mode is active
 
 #+begin_src emacs-lisp
 (use-package yasnippet
-  :after lsp-mode
   :hook (prog-mode . yas-minor-mode)
   :bind ("M-<tab>" . yas-insert-snippet)
   :custom
@@ -3040,7 +2969,7 @@ return windowTitle"))
 #+begin_src emacs-lisp
 (use-package bash-mode
   :ensure nil
-  :hook (bash-mode . lsp-deferred))
+  :hook (bash-mode . lsp-proxy-mode))
 #+end_src
 
 ** TOML
@@ -3057,7 +2986,7 @@ return windowTitle"))
 (use-package prisma-mode
   :mode ("\\.prisma\\'" . prisma-mode)
   :ensure (prisma-mode :fetcher github :repo "pimeys/emacs-prisma-mode" :branch "main")
-  :hook (prisma-mode . lsp-deferred))
+  :hook (prisma-mode . lsp-proxy-mode))
 #+end_src
 
 ** el
@@ -3179,7 +3108,7 @@ return windowTitle"))
   ("\\.json$". json-mode)
   ("\\.jsonc$". jsonc-mode)
   :hook
-  (json-mode . lsp-deferred)
+  (json-mode . lsp-proxy-mode)
   :interpreter "json"
   :config
   (setq js-indent-level 2))
@@ -3204,12 +3133,11 @@ Install jsonnet-language-server to enable lsp support
 
 #+begin_src emacs-lisp
 (use-package jsonnet-mode
-  :after lsp-mode
   :mode
   ("\\.jsonnet\\'" . jsonnet-mode)
   ("\\.jsonnet.TEMPLATE\\'" . jsonnet-mode)
   :hook
-  (jsonnet-mode . lsp-deferred)
+  (jsonnet-mode . lsp-proxy-mode)
   :config
 
   ;; https://github.com/grafana/jsonnet-language-server/releases
@@ -3247,7 +3175,7 @@ Install jsonnet-language-server to enable lsp support
 #+begin_src emacs-lisp
 (use-package scss-mode
   :mode "\\.scss"
-  :hook (scss-mode . lsp-deferred))
+  :hook (scss-mode . lsp-proxy-mode))
 #+end_src
 
 ** LUA
@@ -3261,17 +3189,15 @@ Install jsonnet-language-server to enable lsp support
 
 #+begin_src emacs-lisp
 (use-package typescript-mode
-  :after (lsp-mode)
   :mode
   ("\\.ts$" . typescript-ts-mode)
   ("\\.tsx$" . tsx-ts-mode)
-  :hook ((typescript-ts-mode tsx-ts-mode) . lsp-deferred))
+  :hook ((typescript-ts-mode tsx-ts-mode) . lsp-proxy-mode))
 
 (use-package js
   :ensure nil
-  :after (lsp-mode)
   :mode ("\\.[cm]*js$" . js-ts-mode)
-  :hook (js-ts-mode . lsp-deferred))
+  :hook (js-ts-mode . lsp-proxy-mode))
 
 (use-package eslintd-fix
   :hook ((js-base-mode) . eslintd-fix-mode))
@@ -3280,7 +3206,7 @@ Install jsonnet-language-server to enable lsp support
   :mode
   ("\\.html\\'")
   :hook
-  (web-mode . lsp-deferred)
+  (web-mode . lsp-proxy-mode)
   :custom
   (web-mode-content-types-alist
    '(("jsx" . "\\.tsx\\'")
@@ -3302,7 +3228,7 @@ Install jsonnet-language-server to enable lsp support
 (use-package python-mode
   :mode "\\.py"
   :interpreter "py"
-  :hook (python-mode . lsp-deferred)
+  :hook (python-mode . lsp-proxy-mode)
   :config
   (setq python-shell-interpreter "ipython"
         python-shell-interpreter-args "-i --simple-prompt"))
@@ -3319,7 +3245,7 @@ Install jsonnet-language-server to enable lsp support
 (use-package svelte-ts-mode
   :mode ("\\.svelte\\'")
   :ensure (:host github :repo "leafOfTree/svelte-ts-mode")
-  :hook (svelte-ts-mode . lsp-deferred)
+  :hook (svelte-ts-mode . lsp-proxy-mode)
   :custom
   (treesit-language-source-alist
    (append
@@ -3345,11 +3271,11 @@ Install jsonnet-language-server to enable lsp support
 
 #+begin_src emacs-lisp
 (use-package dockerfile-mode
-  :hook (dockerfile-mode . lsp-deferred)
+  :hook (dockerfile-mode . lsp-proxy-mode)
   :mode "Dockerfile$")
 
 (use-package docker-compose-mode
-  :hook (docker-compose-mode . lsp-deferred)
+  :hook (docker-compose-mode . lsp-proxy-mode)
   :mode "docker-compose.yml.py$")
 #+end_src
 
