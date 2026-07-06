@@ -864,6 +864,17 @@ Highlights a line when switching buffers, windows and frames.
 ;; Sometimes i press kill-region when transient mark mode is not
 ;; active, This should prevent that.
 (setq mark-even-if-inactive nil)
+
+(defmacro electric-pair-ignore-chars (mode &rest char-list)
+  "Defines an electric pair ignore list for MODEs hook variable"
+  (let ((name (intern (format "electric-pair-ignore-chars-%s" (symbol-name mode))))
+        (hook (intern (format "%s-hook" (symbol-name mode)))))
+    `(progn
+      (defun ,name ()
+         (add-function :before-until
+                       (local 'electric-pair-inhibit-predicate)                                       
+                       (lambda (c) (memq c (list ,char-list)))))
+      (add-hook ',hook #',name))))
 #+end_src
 
 ** eval-sexp-fu
