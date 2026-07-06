@@ -11,3 +11,4 @@
 /etc/yasnippet/snippets/*/.yas-compiled-*.el
 /tree-sitter/
 /.agent-shell/
+/.pi/
