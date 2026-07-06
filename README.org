@@ -674,6 +674,35 @@ to disk long before something happens to your Emacs session.
 (pixel-scroll-precision-mode +1)
 #+end_src
 
+** tab-bar
+
+#+begin_src emacs-lisp
+(use-package tab-bar
+  :ensure nil
+  :bind
+  (:map tab-bar-mode-map
+        ("C-<tab>" . nil)
+        ("C-S-<tab>" . nil)
+        ("s-t" . #'tab-bar-new-tab)
+        ("s-w" . #'tab-bar-close-tab))
+  :custom
+  (tab-bar-auto-width nil)
+  (tab-bar-separator (propertize "  " 'face 'tab-bar-separator))
+  (tab-bar-new-button-show nil)
+  (tab-bar-close-button-show nil)
+  (tab-bar-tab-hints t)
+  :custom-face
+  (tab-bar ((t (:inherit default))))
+  (tab-bar-tab ((t (:inherit default))))
+  (tab-bar-tab-inactive ((t (:foreground "#54536D"))))
+  (tab-bar-tab-highlight ((t (:inherit background))))
+  (tab-bar-separator ((t (:foreground "#54536D" :height 1.2 :inherit tab-bar))))
+  :config;
+  (defun tab-bar-tab-name-format-hints (name _tab i)
+    (if tab-bar-tab-hints (concat (format "[%d] " i) name) name))
+  (tab-bar-mode +1))
+#+end_src
+
 ** Focus new frame
 
 #+begin_src emacs-lisp
