@@ -2712,7 +2712,7 @@ Hides modeline whenever this minor mode is active
   :config
   (magit-auto-revert-mode -1)
   (remove-hook 'magit-section-movement-hook #'magit-hunk-set-window-start)
-  (remove-hook 'magit-refs-sections-hook 'magit-insert-tags)
+  (add-hook 'magit-status-sections-hook #'magit-insert-worktrees t)
   ;; TODO: add to magit-process-password-functions an auth source
   (transient-define-suffix magit-submodule-update-all ()
     "Update all submodules"
