@@ -100,6 +100,8 @@
    (horizontal-scroll-bars . nil)
    (ns-transparent-titlebar . t )
    (ns-appearance . dark)
+   (background-mode . dark)
+   (alpha-background . 95)
    (fullscreen . maximized)))
 
 ;; This is needed by lsp-mode
