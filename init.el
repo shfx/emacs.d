@@ -1,7 +1,5 @@
 ;;; -*- lexical-binding: t -*-
 
-(setopt custom-file nil)
-
 ;; ;; Track max-specpdl-size exceded error by uncommenting this
 ;; (setq max-specpdl-size 5)
 ;; (setq debug-on-error t)
@@ -146,17 +144,6 @@
 (use-package exec-path-from-shell
   :functions exec-path-from-shell-initialize
   :custom
-  (exec-path-from-shell-variables
-   '("PATH"
-     "MANPATH"
-     "LSP_USE_PLISTS" 
-     "ANTHROPIC_API_KEY"
-     "OPENAI_API_KEY"
-     "OLLAMA_API_BASE"
-     "OPENAI_API_URL"
-     "ANTHROPIC_API_URL"
-     "ECA_CONFIG"
-     "XDG_CONFIG_HOME"))
   (exec-path-from-shell-arguments '("-l"))
   :config
   (when (or (memq window-system '(mac ns x))
@@ -167,7 +154,3 @@
 
 ;; Load org literal config config
 (org-babel-load-file (expand-file-name "README.org" user-emacs-directory))
-
-(put 'dired-find-alternate-file 'disabled nil)
-(put 'downcase-region 'disabled nil)
-(put 'upcase-region 'disabled nil)

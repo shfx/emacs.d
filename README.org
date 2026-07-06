@@ -109,8 +109,10 @@ Fixing weird quirks and poor defaults
 #+begin_src emacs-lisp
 (use-package better-defaults
   :demand t
+  :custom
+  (custom-file (make-temp-file "emacs-custom"))
   :config
-  (ido-mode 0))
+  (ido-mode -1))
 #+end_src
 
 ** EasyGP Assistant
@@ -523,7 +525,6 @@ to disk long before something happens to your Emacs session.
 ** Load theme
 
 #+begin_src emacs-lisp
-;; -*- lexical-binding: t; -*-
 (defun debounce (func &optional delay)
   (let ((timer)
         (delay (or delay 0.5)))
@@ -567,7 +568,10 @@ to disk long before something happens to your Emacs session.
 (use-package kanagawa-theme
   :ensure (kanagawa-theme :fetcher github :repo "arouene/emacs-kanagawa-theme" :files ("kanagawa-theme.el"))
   :demand t
-  :custom-face (default ((t (:font "JetBrains Mono" :weight normal :height 160))))
+  :custom-face
+  (default ((t (:font "JetBrains Mono" :weight normal :height 160))))
+  (org-block ((t (:inherit default :foreground unspecified))))
+  (org-ellipsis ((t (:foreground "gray40" :underline unspecified))))
   :hook
   ((after-enable-theme custom-define) . +remove-slant-attribute)
   :custom
@@ -1782,7 +1786,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   (prog-mode . flycheck-mode)
   :custom
   (flycheck-display-errors-delay 0)
-  (flycheck-idle-change-delay 0.3)
+  (flycheck-idle-change-delay 0.2)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
 
@@ -2235,9 +2239,6 @@ syste.
   (org-babel-add-langs 
    ((emacs-lisp .  t)
     (ditaa . t)))
-  :custom-face
-  (org-block ((t (:inherit default :foreground unspecified))))
-  (org-ellipsis ((t (:foreground "gray40" :underline unspecified))))
   :custom
   (org-src-window-setup 'current-window)
   (org-modules
