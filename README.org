@@ -52,7 +52,7 @@ brew install jimeh/emacs-builds/emacs-app
 # Disable font smoothing
 defaults write $(osascript -e 'id of app "Emacs"') AppleFontSmoothing -int 0
 
-# Disable Language Selector Bubble 
+# Disable Language Selector Bubble
 defaults write kCFPreferencesAnyApplication TSMLanguageIndicatorEnabled -bool false
 
 # Key press and hold behaviour
@@ -85,7 +85,7 @@ defaults write com.apple.screencapture disable-shadow -bool true
 
 To make ~C-g~ (keyboard-quit) a little better, we're adding additional conditions
 inside an advice to ~keyboard-quit~ thus making it quit minibuffer when
-not both  
+not both
 
 #+begin_src emacs-lisp
 (define-advice keyboard-quit
@@ -97,7 +97,7 @@ not both
     (if (minibufferp)
         (minibuffer-keyboard-quit)
       (abort-recursive-edit)))
-   (t 
+   (t
     (unless (or defining-kbd-macro executing-kbd-macro)
       (funcall-interactively quit)))))
 #+end_src
@@ -304,7 +304,7 @@ of other emacsclients instances
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
-(fset 'yes-or-no-p 'y-or-n-p)  
+(fset 'yes-or-no-p 'y-or-n-p)
 
 ;; http://mbork.pl/2021-11-13_y-or-n-p_but_with_RET_meaning_yes
 (defconst y-or-n-p-ret-yes-map
@@ -540,10 +540,11 @@ to disk long before something happens to your Emacs session.
                 (run-with-idle-timer
                  delay nil
                  (lambda (buf)
-                   (setq timer nil)
-                   (with-current-buffer buf
-                     (apply func args)))
-                 (current-buffer))))))))
+		   (when (get-buffer buf)
+                     (setq timer nil)
+                     (with-current-buffer buf
+                       (apply func args)))
+                   (current-buffer)))))))))
 
 (defmacro defbounce (name arglist delay &rest body)
   (declare
@@ -552,7 +553,7 @@ to disk long before something happens to your Emacs session.
          (docstring (nth 0 parse))
          (declare-form (nth 1 parse))
          (body (nth 3 parse)))
-    (progn 
+    (progn
       `(let ((debounced (debounce (lambda ,arglist ,@body) ,delay)))
          (defun ,name ,arglist
            ,docstring
@@ -585,9 +586,9 @@ to disk long before something happens to your Emacs session.
   (kanagawa-theme-keyword-italic nil)
   (kanagawa-theme-comment-italic nil)
   (face-font-rescale-alist
-   '(("Apple Color Emoji" . 0.85)                                                                                       
-     ("Noto Color Emoji" . 0.85)                                                                                        
-     ("Segoe UI Emoji" . 0.85)                                                                                          
+   '(("Apple Color Emoji" . 0.85)
+     ("Noto Color Emoji" . 0.85)
+     ("Segoe UI Emoji" . 0.85)
      ("Symbola" . 0.85)))
   :config
   (+remove-slant-attribute))
@@ -895,7 +896,7 @@ Highlights a line when switching buffers, windows and frames.
     `(progn
       (defun ,name ()
          (add-function :before-until
-                       (local 'electric-pair-inhibit-predicate)                                       
+                       (local 'electric-pair-inhibit-predicate)
                        (lambda (c) (memq c (list ,char-list)))))
       (add-hook ',hook #',name))))
 #+end_src
@@ -925,7 +926,7 @@ Highlights a line when switching buffers, windows and frames.
 (use-package comment-dwim-2
   :bind
   ("M-;" . comment-dwim-2))
- 
+
 #+end_src
 
 ** COMMENT meow
@@ -942,7 +943,7 @@ Highlights a line when switching buffers, windows and frames.
   (meow-use-enhanced-selection-effect t)
   (meow-use-cursor-position-hack t)
   (meow-mode-state-list
-   '((conf-mode . normal)    
+   '((conf-mode . normal)
      (fundamental-mode . normal)
      (help-mode . motion)
      (prog-mode . normal)
@@ -977,7 +978,7 @@ Highlights a line when switching buffers, windows and frames.
      'angle
      '(pair ("<") (">"))
      '(pair ("<") (">")))
-    
+
     ;; -------------------- ;;
     ;;       MAPPINGS       ;;
     ;; -------------------- ;;
@@ -989,7 +990,7 @@ Highlights a line when switching buffers, windows and frames.
      '("k" . meow-next)
      '("j" . meow-left)
      '("l" . meow-right))
-    
+
     (meow-normal-define-key
      ;; expansion
      '("0" . meow-expand-0)
@@ -1074,21 +1075,21 @@ Highlights a line when switching buffers, windows and frames.
      '("nr" . meow-start-kmacro)
      '("ne" . meow-end-or-call-kmacro)
 
-     ;; prefix 
+     ;; prefix
      '(";f" . save-buffer)
      '(";F" . save-some-buffers)
      '(";d" . meow-query-replace-regexp)
 
      ;; ... etc
      '("?" . meow-cheatsheet)
-     
+
      ;; ignore
      '("<escape>" . ignore)
      '("<up>" . ignore)
      '("<down>" . ignore)
      '("<left>" . ignore)
      '("<right>" . ignore)))
-  
+
   (meow-setup)
   ;; (meow-global-mode 1)
   )
@@ -1514,7 +1515,7 @@ Enable richer annotations using the Marginalia package
   :config
   (defvar +ghostel-map (make-sparse-keymap))
   (defvar-local +ghostel-pi-buffer nil)
-  
+
   (defun +ghostel-pi ()
     (interactive)
     (let* ((name (if (projectile-project-p)
@@ -1526,7 +1527,7 @@ Enable richer annotations using the Marginalia package
         (setq-local ghostel-detect-password-prompts nil)
         (ghostel-exec buffer "/bin/zsh" '("-i" "-c" "pi"))
         (setq-local +ghostel-pi-buffer t))))
-  
+
   (defun +ghostel-pi-restart ()
     (interactive)
     (while (and (eq major-mode 'ghostel-mode)
@@ -1726,7 +1727,7 @@ the bottom of active window with directory of its buffer.
 #+begin_src emacs-lisp
 (use-package consult-jump-project
   :ensure (consult-jump-project :fetcher github :repo "jdtsmith/consult-jump-project")
-  :custom 
+  :custom
   (consult-jump-project-direct-jump-modes '(dired-mode))
   (recentf-filename-handlers (lambda (f)  ; avoid remote ~/abbreviations to recentf files can be matched
 			       (if (file-remote-p f) f
@@ -2232,7 +2233,7 @@ syste.
 
   :config
   (org-indent-mode 1)
-  (org-babel-add-langs 
+  (org-babel-add-langs
    ((emacs-lisp .  t)
     (ditaa . t)))
   :custom
@@ -2316,7 +2317,7 @@ syste.
   :hook ((org-tree-slide-play . my/presentation-setup)
          (org-tree-slide-stop . my/presentation-end))
   :custom
-  (org-tree-slide-skip-outline-level 0) 
+  (org-tree-slide-skip-outline-level 0)
   (org-tree-slide-header nil)
   (org-tree-slide-slide-in-effect nil)
   (org-tree-slide-activate-message "Presentation started!")
@@ -2807,7 +2808,7 @@ Hides modeline whenever this minor mode is active
   (yas-wrap-around-region t)
   ;; We don't want to expand non keywords, like a function call chain
   ;; This will go back all the alpha chars back and see if there is a
-  ;; whitespace or an 
+  ;; whitespace or an
   (yas-buffer-local-condition
    (lambda ()
      (save-excursion
@@ -2874,7 +2875,7 @@ With some additions of course, like [[https://github.com/purcell/diredfl][~dired
   (dired-vc-rename-file t)
   (dired-auto-revert-buffer t)
   :bind
-  (:map dired-mode-map 
+  (:map dired-mode-map
         ;; Disable mouse interaction with directories in dired
         ("<follow-link>" . nil)
         ("<mouse-2>" . nil))
