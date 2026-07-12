@@ -109,7 +109,7 @@ not both
   (setopt epa-file-encrypt-to "shfx@shfx.pl")
   (setopt password-cache-expiry (* 60 15))
   (setopt epa-file-select-keys t)
-  (setopt epg-pinentry-mode 'loopback)
+  (setopt epg-pinentry-mode 'ask)
   (fset 'epg-wait-for-status 'ignore))
 
 (use-package epa
