@@ -3188,7 +3188,7 @@ Install jsonnet-language-server to enable lsp support
 #+begin_src emacs-lisp
 (use-package typescript-mode
   :mode
-  ("\\.ts$" . typescript-ts-mode)
+  ("\\.[cm]?ts$" . typescript-ts-mode)
   ("\\.tsx$" . tsx-ts-mode)
   :hook ((typescript-ts-mode tsx-ts-mode) . lsp-proxy-mode))
 
