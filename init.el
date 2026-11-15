@@ -36,7 +36,6 @@
   display-line-numbers-width 3
   display-time-default-load-average nil
   ediff-split-window-function #'split-window-horizontally
-  ediff-window-setup-function #'ediff-setup-windows-plain
   eldoc-documentation-strategy 'eldoc-documentation-compose-eagerly
   ffap-machine-p-known 'reject
   find-file-suppress-same-file-warnings t

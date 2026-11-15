@@ -203,9 +203,10 @@ Start emacs server if you run just the app. This can help with startup
 of other emacsclients instances
 
 #+begin_src emacs-lisp
-(if (and (fboundp 'server-running-p)
-         (not (server-running-p)))
-    (server-start))
+(require 'server)
+(setq server-socket-dir (expand-file-name "sockets" user-emacs-directory))
+(unless (server-running-p)
+  (server-start))
 #+end_src
 
 ** Setting default display and editing options
@@ -255,27 +256,23 @@ of other emacsclients instances
   (require-final-newline t)
   (ring-bell-function 'ignore)
   (save-interprogram-paste-before-kill t)
-  (scroll-conservatively 10000)
-  (scroll-margin 0)
-  (scroll-preserve-screen-position t)
-  (scroll-step 1)
-  (search-default-mode t ;; regex isearch
-		       (show-trailing-whitespace nil)
-		       (switch-to-buffer-obey-display-actions t)
-		       (text-mode-ispell-word-completion nil)
-		       (undo-limit         50000000)
-		       (undo-outer-limit  300000000)
-		       (undo-strong-limit 100000000)
-		       (use-dialog-box nil)
-		       (visible-bell nil)
-		       (x-stretch-cursor t)
-		       (vc-ignore-dir-regexp
-			(format "%s\\|%s"
-				vc-ignore-dir-regexp
-				tramp-file-name-regexp))))
+  (search-default-mode t)   ;; regex isearch
+  (show-trailing-whitespace nil)
+  (switch-to-buffer-obey-display-actions t)
+  (text-mode-ispell-word-completion nil)
+  (undo-limit         50000000)
+  (undo-outer-limit  300000000)
+  (undo-strong-limit 100000000)
+  (use-dialog-box nil)
+  (visible-bell nil)
+  (x-stretch-cursor t)
+  (vc-ignore-dir-regexp
+   (format "%s\\|%s"
+	   vc-ignore-dir-regexp
+	   tramp-file-name-regexp)))
 
 (transient-mark-mode t)
-(indent-tabs-mode 0)
+(indent-tabs-mode -1)
 (prefer-coding-system 'utf-8)
 (set-default 'truncate-lines t)
 (global-hl-line-mode 0)
@@ -316,14 +313,19 @@ of other emacsclients instances
 
 (setq y-or-n-p-map y-or-n-p-ret-yes-map)
 
-(global-unset-key (kbd "C-x C-c"))
-(global-unset-key (kbd "s-w"))
-(global-unset-key (kbd "C-x C-z"))
-(global-unset-key (kbd "C-<wheel-up>"))
-(global-unset-key (kbd "C-<wheel-down>"))
-(global-unset-key (kbd "<mouse-2>"))
-(global-unset-key (kbd "s-t"))
-(global-unset-key (kbd "s-q"))
+(unbind-key "C-x C-c")
+(unbind-key "s-w")
+(unbind-key "C-x C-z")
+(unbind-key "C-<wheel-up>")
+(unbind-key "C-<wheel-down>")
+(unbind-key "<mouse-2>")
+(unbind-key "s-t")
+(unbind-key "s-q")
+(unbind-key "C-<down-mouse-1>")
+(unbind-key "C-<down-mouse-3>")
+
+(unbind-key "C-<next>")
+(unbind-key "C-<prior>")
 
 ;; Translate archaic key names
 (define-key function-key-map [(control shift iso-lefttab)] [(control shift tab)])
@@ -578,7 +580,6 @@ to disk long before something happens to your Emacs session.
   :preface
   (load-theme 'kanagawa :no-confim)
   :custom-face
-  (default ((t (:font "JetBrains Mono" :weight normal :height 160))))
   (org-block ((t (:extend t :background "#16161D" :foreground "#DCD7BA" :slant normal))))
   (org-ellipsis ((t (:foreground "gray40" :underline unspecified))))
   :custom
@@ -591,6 +592,7 @@ to disk long before something happens to your Emacs session.
      ("Segoe UI Emoji" . 0.85)
      ("Symbola" . 0.85)))
   :config
+  (set-face-attribute 'default nil :family "JetBrains Mono")
   (+remove-slant-attribute))
 #+end_src
 
@@ -676,14 +678,22 @@ to disk long before something happens to your Emacs session.
 * Buffers, Windows, Frames, Tabs and Scrolling
 
 #+begin_src emacs-lisp
-(setopt jit-lock-defer-time 0)
-(setopt fast-but-imprecise-scrolling t)
-(setopt pixel-resolution-fine-flag t)
-(setopt pixel-scroll-precision-interpolate-page t)
-(setopt pixel-scroll-precision-use-momentum t)
-(setopt ns-pop-up-frames nil)
-
-(pixel-scroll-precision-mode +1)
+(setopt ns-pop-up-frames nil
+	auto-window-vscroll nil
+        fast-but-imprecise-scrolling t
+        isearch-allow-scroll 'unlimited
+        ns-pop-up-frames nil
+        make-cursor-line-fully-visible nil
+        pixel-resolution-fine-flag nil
+        pixel-scroll-precision-interpolate-page t
+        scroll-conservatively 105
+        scroll-error-top-bottom t
+        scroll-preserve-screen-position t
+        redisplay-skip-fontification-on-input t
+        jit-lock-defer-time 0
+        scroll-margin 5
+	mouse-wheel-progressive-speed nil
+	mouse-wheel-scroll-amount '(2 ((shift) . hscroll)))
 #+end_src
 
 ** tab-bar
@@ -713,13 +723,6 @@ to disk long before something happens to your Emacs session.
   (defun tab-bar-tab-name-format-hints (name _tab i)
     (if tab-bar-tab-hints (concat (format "[%d] " i) name) name))
   (tab-bar-mode +1))
-#+end_src
-
-** Scroll On Jump
-
-#+begin_src emacs-lisp
-(use-package scroll-on-jump
-  :demand t)
 #+end_src
 
 ** activities
@@ -838,18 +841,6 @@ to disk long before something happens to your Emacs session.
   (winner-mode 1))
 #+end_src
 
-** ultra-scroll
-
-#+begin_src emacs-lisp
-(use-package ultra-scroll
-  :ensure (ultra-scroll :fetcher github :repo "jdtsmith/ultra-scroll")
-  :custom
-  (scroll-conservatively 3)
-  (scroll-margin 0)
-  :config
-  (ultra-scroll-mode 1))
-#+end_src
-
 ** zoom
 
 #+begin_src emacs-lisp
@@ -910,17 +901,6 @@ Highlights a line when switching buffers, windows and frames.
 (use-package eval-sexp-fu
   :config
   (require 'eval-sexp-fu))
-#+end_src
-
-** intend-bars
-
-#+begin_src emacs-lisp
-(use-package indent-bars
-  :custom
-  (indent-bars-no-descend-lists 'skip) ; prevent extra bars in nested lists + skip intermediate bars
-  (indent-bars-treesit-support t)
-  (indent-bars-treesit-ignore-blank-lines-types '("module"))
-  :hook ((prog-mode) . indent-bars-mode))
 #+end_src
 
 ** comment-dwim-2
@@ -1503,20 +1483,28 @@ Enable richer annotations using the Marginalia package
 
 #+begin_src emacs-lisp
 (use-package ghostel
-  :ensure t
+  :hook (after-init . ghostel-status-indicator-mode)
   :bind-keymap
   ("C-c v" . +ghostel-map)
   :bind
-  (:map +ghostel-map
-        ("v" . ghostel)
-        ("p" . +ghostel-pi)
-        ("r" . +ghostel-pi-restart))
+  (("C-x m" . ghostel)
+   :map +ghostel-map
+   ("v" . ghostel)
+   ("p" . +ghostel-pi)
+   ("r" . +ghostel-pi-restart)
+   :map ghostel-semi-char-mode-map
+   ("C-s"  . consult-line))
+  ;;("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+  ;;("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
   :custom
   (ghostel-module-auto-install 'download)
   (ghostel-detect-password-prompts nil)
   (ghostel-enable-osc52 t)
   :config
+  (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer))
+    
   (defvar +ghostel-map (make-sparse-keymap))
+  
   (defvar-local +ghostel-pi-buffer nil)
 
   (defun +ghostel-pi ()
@@ -1538,6 +1526,40 @@ Enable richer annotations using the Marginalia package
                 (eq +ghostel-pi-buffer t))
       (kill-buffer (buffer-name))
       (+ghostel-pi))))
+
+(use-package ghostel-project
+  :after ghostel
+  :ensure nil
+  :bind (:map project-prefix-map
+         ("m" . ghostel-project)
+         ("M" . ghostel-project-list-buffers))
+  :config
+  (add-to-list 'project-switch-commands '(ghostel-project "Ghostel") t)
+  (add-to-list 'project-switch-commands '(ghostel-project-list-buffers "Ghostel buffers") t))
+
+(use-package ghostel-eshell
+  :after ghostel
+  :ensure nil
+  :hook (eshell-load . ghostel-eshell-visual-command-mode))
+
+(use-package ghostel-compile
+  :after ghostel
+  :ensure nil
+  :hook (after-init . ghostel-compile-global-mode))
+
+(use-package ghostel-shell-command
+  :after ghostel
+  :ensure nil
+  :hook (after-init . ghostel-shell-command-global-mode))
+
+(use-package ghostel-comint
+  :after ghostel
+  :ensure nil
+  :hook (after-init . ghostel-comint-global-mode))
+
+(use-package ghostel-org
+  :ensure nil
+  :after (org ghostel))
 #+end_src
 
 ** eshell ([[https://masteringemacs.org/article/complete-guide-mastering-eshell][link]])
@@ -1785,7 +1807,7 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
   :hook
   (prog-mode . flycheck-mode)
   :custom
-  (flycheck-display-errors-delay 0)
+  (flycheck-display-errors-delay 0.2)
   (flycheck-idle-change-delay 0.2)
   (flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 #+end_src
@@ -1834,6 +1856,16 @@ https://coredumped.dev/2025/06/18/making-tramp-go-brrrr./
 #+begin_src emacs-lisp
   (use-package lsp-proxy
     :ensure (lsp-proxy :fetcher github :repo "jadestrong/lsp-proxy"))
+#+end_src
+
+** eldoc-box
+
+#+begin_src emacs-lisp
+(use-package eldoc-box
+  :hook (lsp-proxy-mode . eldoc-box-hover-mode)
+  :config
+  (setq eldoc-display-functions
+	(remove 'eldoc-display-in-buffer eldoc-display-functions)))
 #+end_src
 
 ** Dabbrev
@@ -2140,8 +2172,8 @@ Consult users will also want the embark-consult package.
               ("C-p" . corfu-previous)
               ("<escape>" . corfu-quit)
               ("<return>" . corfu-insert)
-              ("M-d" . corfu-popupinfo-show)
-              ("M-l" . corfu-show-location)
+              ("M-d" . corfu-info-documentation)
+              ("M-l" . corfu-info-location)
               ("H-SPC" . corfu-insert-separator)
               ("SPC" . corfu-insert-separator))
 
@@ -2156,17 +2188,18 @@ Consult users will also want the embark-consult package.
   (corfu-echo-documentation t)
   (corfu-min-width 80)
   (corfu-max-width corfu-min-width)
-  (corfu-preselect-first t)
   (corfu-preview-current t)
-  (corfu-preselect 'prompt)
+  (corfu-preselect 'first)
   (corfu-separator ?\s)
-  (corfu-quit-at-boundary 'separator)
-  (corfu-quit-no-match 'separator)
+  (corfu-quit-at-boundary t)
+  (corfu-quit-no-match t)
   (corfu-scroll-margin 4)
-  (corfu-popupinfo-delay '(0.3 . 0.1))
+  (corfu-popupinfo-delay '(0.1 . 0.1))
   (corfu-popupinfo-hide nil)
   (tab-always-indent 'complete)
   (tab-first-completion 'word-or-paren-or-punct)
+  (text-mode-ispell-word-completion nil)
+
   (read-extended-command-predicate #'command-completion-default-include-p)
 
   :config
@@ -2576,7 +2609,6 @@ fill those notes in with more details!"
 #+begin_src emacs-lisp
 (use-package org-download
   :hook ((dired-mode org-mode) . org-download-enable)
-  :ensure-system-package pngpaste
   :custom
   (org-download-screenshot-method "screencapture -i %s"))
 #+end_src
@@ -2627,7 +2659,7 @@ fill those notes in with more details!"
   :config
   (mood-line-mode)
   :custom
-  (mood-line-glyph-alist mood-line-glyphs-fira-code)
+  (mood-line-glyph-alist mood-line-glyphs-unicode)
   (mood-line-format mood-line-format-default))
 #+end_src
 
@@ -2645,6 +2677,9 @@ Hides modeline whenever this minor mode is active
 *** magit - best git client ever
 
 #+begin_src emacs-lisp
+(use-package with-editor
+  :demand t)
+
 (use-package magit
   :after transient
   :bind
@@ -2654,6 +2689,12 @@ Hides modeline whenever this minor mode is active
   :hook
   (git-commit-mode . flyspell-mode)
   :custom
+  (magit-git-executable
+   (let ((xcode-git "/Applications/Xcode.app/Contents/Developer/usr/bin/git")
+         (linux-git "/usr/bin/git"))
+     (cond ((and (eq system-type 'darwin) (file-exists-p xcode-git)) xcode-git)
+           ((and (eq system-type 'gnu/linux) (file-exists-p linux-git)) linux-git)
+           (t magit-git-executable))))
   (magit-process-finish-apply-ansi-colors t)
   (magit-display-buffer-function 'magit-display-buffer-same-window-except-diff-v1)
   (magit-bury-buffer-function 'magit-restore-window-configuration)
@@ -2680,11 +2721,7 @@ Hides modeline whenever this minor mode is active
       (magit-run-git-async "submodule" "update" "--init" "--recursive")))
 
   (transient-append-suffix 'magit-submodule "u"
-    '("U" magit-submodule-update-all))
-
-  (let ((git-path "/Applications/Xcode.app/Contents/Developer/usr/bin/git"))
-    (when (file-exists-p git-path)
-      (setq magit-git-executable git-path))))
+    '("U" magit-submodule-update-all)))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2708,42 +2745,6 @@ Hides modeline whenever this minor mode is active
   :ensure (conventional-commit :fetcher github :repo "akirak/conventional-commit.el")
   :hook
   (git-commit-mode . conventional-commit-setup))
-#+end_src
-
-*** COMMENT browse-at-remote (link)
-
-#+begin_src emacs-lisp
-(use-package browse-at-remote
-  :bind ("C-c C-g" . browse-at-remote)
-  :custom
-  (browse-at-remote-remote-type-regexps
-   '(
-     (:host "^git\\.service\\.osa"               :type "oslo")
-     (:host "^gitlab\\.services\\.ams\\.osa$" :type "gitlab")
-     (:host "^gitlab\\.service\\.osa$"        :type "gitlab")
-     (:host "^github\\.com$"                  :type "github")
-     (:host "^bitbucket\\.org$"               :type "bitbucket")
-     (:host "^gitlab\\.com$"                  :type "gitlab")
-     (:host "^gist\\.github\\.com$"           :type "gist"))))
-
-(defun browse-at-remote-oslo-format-url (repo-url)
-  "Get a gnu formatted URL."
-  (let* ((parts (split-string repo-url "/var/git" t))
-   (domain (butlast parts))
-   (project (car (last parts))))
-    (string-join
-     (append domain (list project)) "/")))
-
-(defun browse-at-remote--format-region-url-as-oslo (repo-url location filename &optional linestart lineend)
-  "URL formatter for gnu."
-  (let ((repo-url (browse-at-remote-oslo-format-url repo-url)))
-    (cond
-     (linestart (format "%s/tree/%s?h=%s#n%d" repo-url filename location linestart))
-     (t (format "%s/tree/%s?h=%s" repo-url filename location)))))
-
-(defun browse-at-remote--format-commit-url-as-gnu (repo-url commithash)
-  "Commit URL formatted for gnu"
-  (format "%s/commit/?id=%s" (browse-at-remote-oslo-format-url repo-url) commithash))
 #+end_src
 
 *** lab - gitlab integration
@@ -2973,6 +2974,12 @@ return windowTitle"))
   :hook (bash-mode . lsp-proxy-mode))
 #+end_src
 
+** kdl
+
+#+begin_src emacs-lisp
+(use-package kdl-mode)
+#+end_src
+
 ** terraform
 
 #+begin_src emacs-lisp
@@ -3007,29 +3014,25 @@ return windowTitle"))
          ("C-x C-e" . eval-last-sexp))))
 #+end_src
 
-** rustic
+** rust
 
 #+begin_src emacs-lisp
 (use-package rust-mode
-  :defer t
-  :custom
-  (rust-mode-treesitter-derive t)
   :config
-  (let (auto-mode-alist)
-    (require 'rustic nil t)))
+  (setq rust-mode-treesitter-derive t)
+  (setq auto-mode-alist (remove '("\\.rs\\'" . rust-mode) auto-mode-alist))
+  (setq auto-mode-alist (remove '("\\.rs\\'" . rust-ts-mode) auto-mode-alist)))
 
 (use-package rustic
-  :defer t
-  :mode ("\\.rs\\'" . rustic-mode)
-  :preface
-  (defun rustic-mode-auto-save-hook ()
-    "Enable auto-saving in rustic-mode buffers."
-    (when buffer-file-name
-      (setq-local compilation-ask-about-save nil)))
+  :after (rust-mode)
   :hook
-  (rustic-mode-hook . (rustic-flycheck-setup rustic-mode-auto-save-hook))
+  (rustic-mode . rustic-flycheck-setup)
+  (rustic-mode . lsp-proxy-mode)
   :custom
-  (rustic-cargo-use-last-stored-arguments t))
+  (rustic-lsp-client nil)
+  (rustic-analyzer-command '("rustup" "run" "stable" "rust-analyzer"))
+  (rustic-cargo-use-last-stored-arguments t)
+  (push 'rustic-clippy flycheck-checkers))
 #+end_src
 
 ** .env
@@ -3195,11 +3198,26 @@ Install jsonnet-language-server to enable lsp support
 ** JS
 
 #+begin_src emacs-lisp
-(use-package typescript-mode
-  :mode
-  ("\\.[cm]?ts$" . typescript-ts-mode)
-  ("\\.tsx$" . tsx-ts-mode)
-  :hook ((typescript-ts-mode tsx-ts-mode) . lsp-proxy-mode))
+(use-package typescript-ts-mode
+  :ensure nil
+  :preface
+  (defun my/typescript-interpreter-mode ()
+    "Choose a mode for Node scripts based on the file extension."
+    (cond
+     ((and buffer-file-name (string-match-p "\\.tsx\\'" buffer-file-name))
+      (tsx-ts-mode))
+     ((and buffer-file-name (string-match-p "\\.[cm]?ts\\'" buffer-file-name))
+      (typescript-ts-mode))
+     (t (js-mode))))
+  :init
+  ;; Interpreter matches (for example, #!/usr/bin/env node) take precedence
+  ;; over file-name matches, so dispatch Node scripts by their extension.
+  (add-to-list 'interpreter-mode-alist '("nodejs" . my/typescript-interpreter-mode))
+  (add-to-list 'interpreter-mode-alist '("node" . my/typescript-interpreter-mode))
+  :mode (("\\.[cm]?ts\\'" . typescript-ts-mode)
+         ("\\.tsx\\'" . tsx-ts-mode))
+  :hook ((typescript-ts-mode . lsp-proxy-mode)
+         (tsx-ts-mode . lsp-proxy-mode)))
 
 (use-package js
   :ensure nil
@@ -3260,6 +3278,8 @@ Install jsonnet-language-server to enable lsp support
        . ("https://github.com/tree-sitter-grammars/tree-sitter-svelte"))
       (typescript
        . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "typescript/src"))
+      (tsx
+       . ("https://github.com/tree-sitter/tree-sitter-typescript" nil "tsx/src"))
       (javascript
        . ("https://github.com/tree-sitter/tree-sitter-javascript"))
       (css
@@ -3274,16 +3294,12 @@ Install jsonnet-language-server to enable lsp support
                   (setq-local css-indent-offset indent))))))
 #+end_src
 
-** Dockerfile and docker-compose.yml
+** Dockerfile
 
 #+begin_src emacs-lisp
 (use-package dockerfile-mode
   :hook (dockerfile-mode . lsp-proxy-mode)
   :mode "Dockerfile$")
-
-(use-package docker-compose-mode
-  :hook (docker-compose-mode . lsp-proxy-mode)
-  :mode "docker-compose.yml.py$")
 #+end_src
 
 ** Hyprland

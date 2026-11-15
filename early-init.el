@@ -3,6 +3,34 @@
 ;; See the summary to learn more
 ;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Startup-Summary.html
 
+;; Compile optiomisation from https://www.jamescherti.com/compiling-emacs/
+
+(setq my/cpu-architecture "znver5")
+(setq native-comp-compiler-options
+      `("-O2"
+        ,(format "-mtune=%s" my/cpu-architecture)
+        ,(format "-march=%s" my/cpu-architecture)
+        "-g0"
+        "-fno-omit-frame-pointer"
+        "-fno-finite-math-only"))
+
+(setq native-comp-driver-options
+      '("-Wl,-z,pack-relative-relocs"
+        "-Wl,-O2"
+        "-Wl,--as-needed"))
+
+;; Put eln cache files in ./var dir
+
+(when (fboundp 'startup-redirect-eln-cache)
+  (startup-redirect-eln-cache
+   (convert-standard-filename
+    (expand-file-name  "var/eln-cache/" user-emacs-directory))))
+
+(setopt native-comp-async-report-warnings-errors 'silent)
+;; Make native compilation happens asynchronously
+(setopt native-comp-jit-compilation t)
+(setopt package-native-compile t)
+
 ;; We use elpaca so we need to disable package.el initialization
 
 (setq package-enable-at-startup nil)
@@ -17,17 +45,6 @@
 ;; Byte compile
 
 (setopt load-prefer-newer t)
-
-(when (featurep 'native-compile)
-  ;; Set the right directory to store the native compilation cache
-  (when (fboundp 'startup-redirect-eln-cache)
-    (startup-redirect-eln-cache
-     (convert-standard-filename
-      (expand-file-name  "var/eln-cache/" user-emacs-directory))))
-  (setopt native-comp-async-report-warnings-errors 'silent)
-  ;; Make native compilation happens asynchronously
-  (setopt native-comp-jit-compilation t)
-  (setopt package-native-compile t))
 
 ;; Make emacs less verbose
 
